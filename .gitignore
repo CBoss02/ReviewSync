@@ -4,6 +4,7 @@ node_modules/
 # Environment variables
 .env
 
+
 # Logs
 logs
 *.log
@@ -33,6 +34,7 @@ bower_components
 # Lock files
 package-lock.json
 yarn.lock
+backend/package-lock.json
 
 # Compiled binary addons (https://nodejs.org/api/addons.html)
 build/Release
@@ -91,3 +93,6 @@ dist
 
 # Webstrom
 .idea/
+
+# Firebase
+backend/config/serviceAccountKey.json
