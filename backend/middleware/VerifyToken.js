@@ -1,4 +1,5 @@
 import auth from "../config/firebase-config.js";
+//Keeps track of who's signed in
 
 export const VerifyToken = async (req, res, next) => {
     const token = req.headers.authorization.split(" ")[1];

@@ -1,3 +1,5 @@
+//Configures the firebase cloud
+
 import { initializeApp, cert } from "firebase-admin/app";
 import { getAuth } from "firebase-admin/auth";
 
