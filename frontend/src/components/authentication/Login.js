@@ -4,19 +4,19 @@ import {useNavigate} from "react-router-dom";
 
 export default function Login() {
     const navigate = useNavigate();
-    const {currentUser, login, setError} = useAuth();
+    const [formData, setFormData] = React.useState({
+        email: "",
+        password: ""
+    });
     const [loading, setLoading] = React.useState(false);
+
+    const {currentUser, login, setError} = useAuth();
 
     useEffect(() => {
         if (currentUser) {
             navigate("/");
         }
     }, [currentUser, navigate]);
-
-    const [formData, setFormData] = React.useState({
-        email: "",
-        password: ""
-    });
 
     const handleFormChange = (e) => {
         const {name, value} = e.target;
