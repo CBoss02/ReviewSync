@@ -9,6 +9,7 @@ import ThemeToggler from "./ThemeToggler";
 
 import logo from "../../assets/logos/ReviewSync-Logo.png";
 import auth from "../../config/firebase";
+import axios from "axios";
 
 export default function Header() {
     const [modal, setModal] = useState(false);
@@ -27,9 +28,7 @@ export default function Header() {
                         Authorization: `Bearer ${token}`,
                     },
                 };
-
-                const res = await fetch("http://localhost:5001", payloadHeader);
-                console.log(await res.text());
+                await axios.get("", payloadHeader);
             } catch (e) {
                 console.log(e);
             }
@@ -43,7 +42,7 @@ export default function Header() {
         <>
             <nav className="px- px-2 sm:px-4 py-2.5 bg-gray-50 border-gray-200 dark:bg-gray-800 dark:border-gray-700 text-gray-900 text-sm rounded border dark:text-white">
                 <div className="container mx-auto flex flex-wrap items-center justify-between">
-                    <Link to="/" className="flex">
+                    <Link to="/profile" className="flex">
             <span className="self-center text-lg font-semibold whitespace-nowrap text-gray-900 dark:text-white">
               <img src={logo} alt="ReviewSync" className="h-8" />
             </span>

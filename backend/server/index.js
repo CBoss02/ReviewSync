@@ -6,6 +6,7 @@ import cors from "cors";    //Helps connect the backend and the frontend
 import dotenv from "dotenv";
 
 import { VerifyToken } from "../middleware/VerifyToken.js";
+import userRoutes from "../routes/userRoutes.js";
 
 const app = express();  //Declaring the express app
 
@@ -19,8 +20,9 @@ app.use(VerifyToken);
 
 const PORT = process.env.PORT || 8080;  //Backup port if 5001 isn't available
 
-app.get("/", (req, res) => {
-    res.send("working fine");
+app.use("/api/users", userRoutes);
+
+app.get("/", async (req, res) => {
 });
 
 app.listen(PORT, () => {
