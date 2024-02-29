@@ -5,7 +5,7 @@ import {AuthProvider} from "./contexts/AuthContext";
 import ErrorMessage from "./components/layouts/ErrorMessage";
 import Header from "./components/layouts/Header";
 import WithPrivateRoute from "./utils/WithPrivateRoute";
-import Profile from "./components/account/Profile";
+import Home from "./pages/Home";
 
 function App() {
     return (
@@ -18,10 +18,10 @@ function App() {
                     <Route path="/login" element={<Login />}/>
                     <Route
                         exact
-                        path="/profile"
+                        path="/"
                         element={
                             <WithPrivateRoute>
-                                <Profile />
+                                <Home />
                             </WithPrivateRoute>
                         }
                     />
