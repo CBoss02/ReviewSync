@@ -1,19 +1,21 @@
 import { db } from "../config/firebase-config.js";
 
+//The way I'm envisioning this function is that the frontend will pass the email of the user making the request, and that's
+//how we can know who the owner is
 export const createCompany = async (req, res) => {
     try {
         const companyData = req.body;
         let userID;
         let companyID;
         const snapshot = await db.collection('users').where('email', '==', companyData.email).get();
-        snapshot.forEach(doc => {
+        snapshot.forEach(doc => { //This is a foreach loop but we know that emails are unique
             userID = doc.id; //get the id of the owner of the company
         });
-        db.collection("companies").add({ //Changing this to add because it returns a document reference and I can use that to get the ID
+        db.collection("companies").add({ //Changing this to add because it returns a document reference and I can use that to get the newly created document ID
             name: companyData.name,
             owner: userID, //As per my discord message (on 3/7), I think we need some way of getting this from the frontend. Right now I have the user's email coming from the frontend
             employees: [],
-            roles: [],
+            roles: null, //Changing this because I think we've established that a user cannot have more than one role
             projects: [],
             documents: []
         }).then((docRef) => {
@@ -61,7 +63,7 @@ export const addRole = async (req, res) => {
                     res.status(400).send(error.message);
                 });
             } else {
-                console.log("Two roles cannot have the same name");
+                res.send("Two roles cannot have the same name"); //may need to change
             }
         })
     } catch (error) {
@@ -106,11 +108,11 @@ export const addEmployeeToCompany = async (req, res) => {
         const snapshot2 = await db.collection('users').where('email', '==', data.ownerEmail).get();
         snapshot2.forEach(doc => {
             let data = doc.data();
-            companyID = data.company;
+            companyID = data.company; //get the company ID we need
         });
         const snapshot3 = await db.collection('companies').doc(companyID).collection('roles').where('name', '==', data.role).get();
         snapshot3.forEach(doc => {
-            roleID = doc.id;
+            roleID = doc.id; //get the role ID
         });
         db.collection("users").doc(userID).set({
             company: companyID,
@@ -121,7 +123,7 @@ export const addEmployeeToCompany = async (req, res) => {
             res.status(400).send(error.message);
         })
         await db.collection("companies").doc(companyID).update({
-            employees: FieldValue.arrayUnion(userID)
+            employees: FieldValue.arrayUnion(userID) //I changed firebase-config.js to include FieldValue
         });
     } catch (error) {
         res.status(400).send(error.message);
