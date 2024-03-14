@@ -5,7 +5,10 @@ import {AuthProvider} from "./contexts/AuthContext";
 import ErrorMessage from "./components/layouts/ErrorMessage";
 import Header from "./components/layouts/Header";
 import WithPrivateRoute from "./utils/WithPrivateRoute";
-import Profile from "./components/account/Profile";
+import Profile from "./pages/account/Profile";
+import Home from "./pages/Home";
+import VerifyEmail from "./pages/account/VerifyEmail";
+
 
 function App() {
     return (
@@ -18,6 +21,15 @@ function App() {
                     <Route path="/login" element={<Login />}/>
                     <Route
                         exact
+                        path="/"
+                        element={
+                            <WithPrivateRoute>
+                                <Home />
+                            </WithPrivateRoute>
+                        }
+                    />
+                    <Route
+                        exact
                         path="/profile"
                         element={
                             <WithPrivateRoute>
@@ -25,6 +37,8 @@ function App() {
                             </WithPrivateRoute>
                         }
                     />
+                    <Route path="/verify-email" element={<VerifyEmail />}/>
+                    <Route path="*" element={<h1>Not Found</h1>}/>
                 </Routes>
             </Router>
         </AuthProvider>

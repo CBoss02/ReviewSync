@@ -4,10 +4,12 @@ import {
     createUserWithEmailAndPassword,
     signInWithEmailAndPassword,
     signOut,
+    sendEmailVerification,
 } from "firebase/auth";
 
 
 import auth from "../config/firebase";
+import axios from "axios";
 
 const AuthContext = createContext();
 
@@ -20,10 +22,22 @@ export function AuthProvider({ children }) {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
 
-    function register(email, password) {
-        return createUserWithEmailAndPassword(auth, email, password).then(
-
-        )
+    async function register(email, password, first_name, last_name) {
+        try {
+            await createUserWithEmailAndPassword(auth, email, password).then(async (userCredential) => {
+                const user = userCredential.user;
+                await axios.post("/api/users/createUser", {
+                    uid: user.uid,
+                    first_name: first_name,
+                    last_name: last_name,
+                    email: email,
+                }).then((response) => {
+                    sendEmailVerification(user);
+                });
+            });
+        } catch (error) {
+            setError("Failed to create an account");
+        }
     }
 
     function login(email, password) {
