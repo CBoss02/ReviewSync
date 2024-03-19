@@ -9,6 +9,8 @@ import Profile from "./pages/account/Profile";
 import Home from "./pages/Home";
 import VerifyEmail from "./pages/account/VerifyEmail";
 
+import Home from "./pages/Home";
+
 
 function App() {
     return (
@@ -33,7 +35,7 @@ function App() {
                         path="/profile"
                         element={
                             <WithPrivateRoute>
-                                <Profile />
+                                <Home />
                             </WithPrivateRoute>
                         }
                     />
