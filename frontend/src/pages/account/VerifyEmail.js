@@ -1,14 +1,20 @@
 import {useAuth} from "../../contexts/AuthContext";
 import {useEffect, useState} from "react";
 import { sendEmailVerification} from "firebase/auth";
+import {useNavigate} from "react-router-dom";
 
 export default function VerifyEmail() {
     const auth = useAuth();
-    const [user, setUser] = useState(null);
+    const navigate = useNavigate();
+
 
     useEffect(() => {
-        setUser(auth.currentUser);
-    });
+        if(auth.currentUser.emailVerified){
+            navigate("/");
+        } else {
+            console.log("Email not verified");
+        }
+    }, [auth.currentUser, navigate]);
 
     return (
         <div className="flex flex-col items-center justify-center h-screen">
@@ -16,7 +22,7 @@ export default function VerifyEmail() {
             <p className="mb-4">We have sent an email to your email address. Please verify your email.</p>
             <button className="bg-indigo-600 text-white px-3 py-1.5 rounded-md font-semibold" onClick={async () => {
                 try{
-                await sendEmailVerification(user);
+                await sendEmailVerification(auth.currentUser);
                 console.log("Email sent");
                 } catch (error){
                     console.log(error);
