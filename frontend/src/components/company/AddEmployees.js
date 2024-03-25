@@ -11,7 +11,7 @@ const EmployeeRoles = () => {
         const fetchRoles = async () => {
             try {
                 const response = await axios.get('/api/roles'); // Adjust the URL to your actual endpoint
-                setRoles(response.data.roles); // Adjust according to the shape of your response
+                setRoles(response.data.roles);
             } catch (error) {
                 console.error('Failed to fetch roles:', error);
                 // Handle error (e.g., show an error message to the user)
@@ -19,7 +19,7 @@ const EmployeeRoles = () => {
         };
 
         fetchRoles();
-    }, []); // Empty dependency array means this effect runs once after the initial render
+    }, []);
 
     const handleInputChange = (index, field, value) => {
         const newEmployees = [...employees];
@@ -37,12 +37,12 @@ const EmployeeRoles = () => {
 
     const submitEmployees = async () => {
         try {
-            // Here we loop over the employees array and make a POST request for each
+
             await Promise.all(employees.map(employee =>
                 axios.post('/api/addEmployeeToCompany', {
                     userEmail: employee.email,
                     role: employee.role,
-                    ownerEmail: 'owner@example.com', // Adjust this as necessary
+                    ownerEmail: 'owner@example.com',
                 })
             ));
 
@@ -92,7 +92,7 @@ const EmployeeRoles = () => {
                 ))}
                 <div style={{display: 'flex', justifyContent: 'space-between'}}>
                     <button onClick={addEmployee}
-                            style={{width: '100%', marginRight: '10px', padding: '10px', borderRadius: '5px'}}>+
+                            style={{width: '100%', marginRight: '10px', padding: '10px', border: '1px solid #ccc', borderRadius: '5px'}}>Add Employees
                     </button>
                     <button onClick={submitEmployees} style={{padding: '10px', borderRadius: '5px'}}>
                         <img src={saveIcon} alt="Save" style={{height: '24px', width: '24px'}}/>
