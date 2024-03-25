@@ -6,6 +6,8 @@ import ErrorMessage from "./components/layouts/ErrorMessage";
 import Header from "./components/layouts/Header";
 import WithPrivateRoute from "./utils/WithPrivateRoute";
 import Home from "./pages/Home";
+import EditRoles from "./components/company/EditRoles";
+import AddEmployees from "./components/company/AddEmployees";
 
 function App() {
     return (
@@ -25,6 +27,8 @@ function App() {
                             </WithPrivateRoute>
                         }
                     />
+                    <Route path="/edit-roles" element={<EditRoles />}/>
+                    <Route path="/add-employees" element={<AddEmployees />}/>
                 </Routes>
             </Router>
         </AuthProvider>
