@@ -8,6 +8,8 @@ import dotenv from "dotenv";
 import { VerifyToken } from "../middleware/VerifyToken.js";
 import userRoutes from "../routes/userRoutes.js";
 
+import companyRoutes from "../routes/companyRoutes.js";
+
 const app = express();  //Declaring the express app
 
 dotenv.config();
@@ -22,11 +24,12 @@ app.use(
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
-app.use(VerifyToken);
+//app.use(VerifyToken);
 
 const PORT = process.env.PORT || 8080;  //Backup port if 5001 isn't available
 
 app.use("/api/users", userRoutes);
+app.use("/api/companies", companyRoutes);
 
 app.get("/", async (req, res) => {
 });

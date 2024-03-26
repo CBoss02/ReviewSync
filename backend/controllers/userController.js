@@ -3,7 +3,7 @@ import { db } from "../config/firebase-config.js";
 export const createUser = async (req, res) => {
     try {
         const user = req.body;
-        db.collection("users").doc(user.uid).set({
+        db.collection("users").doc().set({
             first_name: user.first_name,
             last_name: user.last_name,
             email: user.email,
