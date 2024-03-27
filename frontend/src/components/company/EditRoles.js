@@ -79,7 +79,7 @@ export default function EditRoles() {
     const [currentID, setID] = useState(5);
 
     //Creates a list of role buttons that will appear in our left column
-    const listRoles = roles.map((role, index) => <li className="py-1 mb-auto" key={role.id}>
+    const listRoles = roles.map((role) => <li className="py-1 mb-auto" key={role.id}>
         <button
             type="submit"
             value={role.id}
@@ -140,6 +140,24 @@ export default function EditRoles() {
         else if(index == 4){return "Respond to Comments"}
         else if(index == 5){return "Upload Revisions to Documents"}
         else if(index == 6){return "Upload Documents"}
+    }//end function
+
+
+    //handles when the user clicks on a checkbox
+    function handleOnChange(permIndex){
+        let swappedBool = !activeRole.permissions[permIndex];
+        setRoles(roles.map(role => {
+            if(role.id === activeRole.id) {
+                let tempPermissions = activeRole.permissions;
+                tempPermissions[permIndex] = !tempPermissions[permIndex];
+                return {...role, permissions: tempPermissions};
+
+            }else{
+                return role;
+            }//end if else
+
+        }));//end map
+
     }//end function
 
     const listPermissions = activeRole.permissions.map((perm, index) =>
