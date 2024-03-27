@@ -79,7 +79,7 @@ export default function EditRoles() {
     const [currentID, setID] = useState(5);
 
     //Creates a list of role buttons that will appear in our left column
-    const listRoles = roles.map((role, index) => <li className="py-1 mb-auto" key={role.id}>
+    const listRoles = roles.map((role) => <li className="py-1 mb-auto" key={role.id}>
         <button
             type="submit"
             value={role.id}
