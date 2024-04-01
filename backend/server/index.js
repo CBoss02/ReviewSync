@@ -10,6 +10,8 @@ import userRoutes from "../routes/userRoutes.js";
 
 import companyRoutes from "../routes/companyRoutes.js";
 
+import documentRoutes from "../routes/documentRoutes.js";
+
 const app = express();  //Declaring the express app
 
 dotenv.config();
@@ -30,6 +32,7 @@ const PORT = process.env.PORT || 8080;  //Backup port if 5001 isn't available
 
 app.use("/api/users", userRoutes);
 app.use("/api/companies", companyRoutes);
+app.use("/api/documents", documentRoutes);
 
 app.get("/", async (req, res) => {
 });

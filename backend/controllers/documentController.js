@@ -57,34 +57,44 @@ export const deleteComment = async (req, res) => {
         collection.where('replies', 'array-contains', comment.id).get().then((parent => {
             if(parent.empty)
             {
-                let i = 0;
-                while(i < comment.replies.length) //delete all replies before deleting comment
-                {
-                    collection.doc(comment.replies[i]).delete().catch((error) => {
-                        res.status(400).send(error.message);
-                    })
-                    i++;
-                }
-                collection.doc(comment.id).delete().catch((error) => {
-                    res.status(400).send(error.message);
+                collection.doc(comment.id).get().then((doc) => {
+                    let data = doc.data();
+                    let i = 0;
+                    while(i < data.replies.length)
+                    {
+                        collection.doc(data.replies[i]).delete();
+                        i++;
+                    }
+                    collection.doc(comment.id).delete();
+                    res.status(200).send();
                 })
-                res.status(200).send();
             }
             else
             {
                 parent.forEach(doc => {
                     collection.doc(doc.id).update({
                         replies: FieldValue.arrayRemove(comment.id)
-                    }).catch((error) => {
-                        res.status(400).send(error.message);
-                    })
+                    });
                 })
-                collection.doc(comment.id).delete().catch((error) => {
-                    res.status(400).send(error.message);
-                })
+                collection.doc(comment.id).delete();
                 res.status(200).send();
             }
         }))
+    } catch (error) {
+        res.status(400).send(error.message);
+    }
+}
+
+export const getComments = async (req, res) => {
+    try {
+        const data = req.body;
+        const comments = [];
+        const collection = await db.collection("companies").doc(data.companyID).collection("documents").doc(data.documentID).collection("comments");
+        const snapshot = await collection.get();
+        snapshot.forEach(doc => {
+            comments.push(doc.data());
+        });
+        res.status(200).send(comments);
     } catch (error) {
         res.status(400).send(error.message);
     }
