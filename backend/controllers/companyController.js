@@ -162,9 +162,11 @@ export const addEmployeeToCompany = async (req, res) => {
                     if (company.pendingList[i].email === user.email) {
                         userFound = true;
                         const role = company.pendingList[i].role;
+                        const newPendingList = company.pendingList.splice(i, 1);
                         const userCollection = db.collection("users");
                         companyCollection.doc(companyData.id).update({
-                            employees: FieldValue.arrayUnion(userSnap.id)
+                            employees: FieldValue.arrayUnion(userSnap.id),
+                            pendingList: newPendingList
                         }).then(() => {
                             userCollection.doc(data.userID).update({
                                 company: companyData.id,
@@ -173,15 +175,15 @@ export const addEmployeeToCompany = async (req, res) => {
                                 res.status(200).send()
                             }).catch((error) => {
                                 res.status(400).send(error.message)
+                            }).catch((error) => {
+                                res.status(400).send(error.message)
                             })
-                        }).catch((error) => {
-                            res.status(400).send(error.message)
                         })
+                        i++;
                     }
-                    i++;
-                }
-                if (!userFound) {
-                    res.status(400).send({message: "You have not been invited to join this company. Please contact the owner."});
+                    if (!userFound) {
+                        res.status(400).send({message: "You have not been invited to join this company. Please contact the owner."});
+                    }
                 }
             })
         }
