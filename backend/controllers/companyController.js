@@ -118,15 +118,6 @@ export const getRoles = async (req, res) => {
     }
 }
 
-// functions to:
-// 1 - check if company exists
-// 2 - check if user is in company's pending list
-// 3 - add email and role to company's pending list
-// 4 - add employee to company officially
-// I think the 1, 2, and 4 can be 1 function. If 1 or 2 fail it'll send
-// back the 400 error code and an associated message.
-
-// 3 - add email and role to company's pending list
 export const addEmployeeToPendingList = async (req, res) => {
     try {
         const data = req.body;
@@ -162,11 +153,10 @@ export const addEmployeeToCompany = async (req, res) => {
                     if (company.pendingList[i].email === user.email) {
                         userFound = true;
                         const role = company.pendingList[i].role;
-                        const newPendingList = company.pendingList.splice(i, 1);
                         const userCollection = db.collection("users");
                         companyCollection.doc(companyData.id).update({
                             employees: FieldValue.arrayUnion(userSnap.id),
-                            pendingList: newPendingList
+                            pendingList: FieldValue.arrayRemove({email: user.email, role: role})
                         }).then(() => {
                             userCollection.doc(data.userID).update({
                                 company: companyData.id,
@@ -175,15 +165,15 @@ export const addEmployeeToCompany = async (req, res) => {
                                 res.status(200).send()
                             }).catch((error) => {
                                 res.status(400).send(error.message)
-                            }).catch((error) => {
-                                res.status(400).send(error.message)
                             })
+                        }).catch((error) => {
+                            res.status(400).send(error.message)
                         })
-                        i++;
                     }
-                    if (!userFound) {
-                        res.status(400).send({message: "You have not been invited to join this company. Please contact the owner."});
-                    }
+                    i++;
+                }
+                if (!userFound) {
+                    res.status(400).send({message: "You have not been invited to join this company. Please contact the owner."});
                 }
             })
         }
