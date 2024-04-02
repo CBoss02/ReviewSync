@@ -21,5 +21,20 @@ export const createUser = async (req, res) => {
     }
 }
 
+export const getUsers = async (req, res) => {
+    try {
+        const data = req.body;
+        const users = [];
+        const collection = await db.collection("users");
+        const snapshot = await collection.get();
+        snapshot.forEach(doc => {
+            users.push(doc.data());
+        });
+        res.status(200).send(users);
+    } catch (error) {
+        res.status(400).send(error.message);
+    }
+}
+
 
 

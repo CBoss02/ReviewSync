@@ -22,7 +22,7 @@ export const addDocument = async (req, res) => {
 export const addComment = async (req, res) => {
     try {
         const comment = req.body;
-        let collection = await db.collection("companies").doc(comment.companyID).collection("documents").doc(comment.documentID).collection("comments");
+        const collection = await db.collection("companies").doc(comment.companyID).collection("documents").doc(comment.documentID).collection("comments");
         collection.add({
             text: comment.text,
             owner: comment.owner,
@@ -53,33 +53,31 @@ export const addComment = async (req, res) => {
 export const deleteComment = async (req, res) => {
     try {
         const comment = req.body;
-        let collection = await db.collection("companies").doc(comment.companyID).collection("documents").doc(comment.documentID).collection("comments");
-        collection.where('replies', 'array-contains', comment.id).get().then((parent => {
-            if(parent.empty)
+        const collection = await db.collection("companies").doc(comment.companyID).collection("documents").doc(comment.documentID).collection("comments");
+        const parent = await collection.where('replies', 'array-contains', comment.id).get();
+        if(parent.empty)
+        {
+            const doc = await collection.doc(comment.id).get();
+            const data = doc.data();
+            let i = 0;
+            while(i < data.replies.length)
             {
-                collection.doc(comment.id).get().then((doc) => {
-                    let data = doc.data();
-                    let i = 0;
-                    while(i < data.replies.length)
-                    {
-                        collection.doc(data.replies[i]).delete();
-                        i++;
-                    }
-                    collection.doc(comment.id).delete();
-                    res.status(200).send();
-                })
+                await collection.doc(data.replies[i]).delete();
+                i++;
             }
-            else
-            {
-                parent.forEach(doc => {
-                    collection.doc(doc.id).update({
-                        replies: FieldValue.arrayRemove(comment.id)
-                    });
+            await collection.doc(comment.id).delete();
+            res.status(200).send();
+        }
+        else
+        {
+            await parent.forEach(doc => {
+                collection.doc(doc.id).update({
+                    replies: FieldValue.arrayRemove(comment.id)
                 })
-                collection.doc(comment.id).delete();
-                res.status(200).send();
-            }
-        }))
+            })
+            await collection.doc(comment.id).delete();
+            res.status(200).send();
+        }
     } catch (error) {
         res.status(400).send(error.message);
     }
