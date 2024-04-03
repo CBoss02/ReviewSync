@@ -4,11 +4,11 @@ import {useState} from "react";
 //import { useNavigate} from "react-router-dom";
 import deleteIcon from "../../assets/icons/RedDelete-Icon.png";
 import saveIcon from "../../assets/icons/GreenSave-Icon.png";
+import axios from 'axios';
 
 export default function EditRoles() {
 
-    //Roles object for testing that holds its name, permissions and an id
-
+    //Default roles object that holds its name, permissions and an id
     let initialRoles = [{
         id: 1, // Used in JSX as a key
         name: 'Manager',
@@ -60,23 +60,67 @@ export default function EditRoles() {
     //Creates a new array anytime that the old one would need to be changed, updating the state
     const [roles, setRoles] = useState(initialRoles);
 
+    //From addEmployees
+    useEffect(() => {
+        const fetchRoles = async () => {
+            try {
+                const response = await axios.get('/api/getRoles'); // Adjust the URL to your actual endpoint
+                setRoles(response.data.roles);
+            } catch (error) {
+                console.error('Failed to fetch roles:', error);
+                // Handle error (e.g., show an error message to the user)
+            }
+        };
+
+        fetchRoles();
+    }, []);
+
+    //Reskinned from addEmployees
+    const submitRoles = async () => {
+        try {
+
+            await Promise.all(roles.map(role =>
+                axios.post('/api/addRole', {
+                    name: role.name,
+                    permissions: role.permissions,
+                })
+            ));
+
+            alert('All roles added successfully!');
+            // Reset the form or redirect the user as necessary
+        } catch (error) {
+            console.error('Error adding roles:', error);
+            alert('Failed to add some or all roles.');
+        }
+    };
+
+
     //Updates the activeRole to the role clicked by the user
     //This object is a role type, not just a number
     const [activeRole, selectRole] = useState(roles[0]);
 
-
     //Should be passed an int that represents a roles ID
     function setActiveRole(passedID){
         for(let role of roles){
-            if(role.id==passedID){
+            if(role.id===passedID){
                 selectRole(role);
             }//end if
         }//end for loop
     }//end function
 
+    //ChatGPT hook that does not appear to work
+    /*
+    useEffect(() => {
+        // Whenever roles change, update the active role
+        setActiveRole(roles.find(role => role.id === activeRole.id));
+    }, [roles]);
+    */
+
+
     //Keeps track of the newest ID number for a role to be given
     //This is just a number, not a special type
     const [currentID, setID] = useState(5);
+
 
     //Creates a list of role buttons that will appear in our left column
     const listRoles = roles.map((role) => <li className="py-1 mb-auto" key={role.id}>
@@ -129,19 +173,35 @@ export default function EditRoles() {
             //FAILSAFE IF IT'S THE ONLY ROLE LEFT
             alert('Your company must have at least 1 role!');
         }//end if else
-
     }//end delete role
 
-    function getPermFromIndex(index){
-        if(index == 0){return "Close Documents"}
-        else if(index == 1){return "Comment on Documents"}
-        else if(index == 2){return "Notify Reviewers"}
-        else if(index == 3){return "Resolve Comments"}
-        else if(index == 4){return "Respond to Comments"}
-        else if(index == 5){return "Upload Revisions to Documents"}
-        else if(index == 6){return "Upload Documents"}
+
+    //Updates the name in the role state when the role gets renamed
+    function handleRename(newName){
+        setRoles(roles.map(role => {
+            if(role.id === activeRole.id) {
+                return {...role, name: newName};
+            }else{
+                return role;
+            }//end if else
+        }));//end map
     }//end function
 
+    //Creates the checkboxes and labels that describe the user's permissions
+    const listPermissions = activeRole.permissions.map((perm, index) =>
+            <li key={index}>
+                <input
+                    type="checkbox"
+                    id={`checkbox-${index}`}
+                    name={getPermFromIndex(index)}
+                    value={perm}
+                    checked={Boolean(perm)}
+                    onChange={() => handleOnChange(index)}
+                    //This does not SAVE the changes, but places them in the roles state array
+                    //They must still be pushed to the database using the save button
+                />
+                <label htmlFor={`checkbox-${index}`}>{getPermFromIndex(index)}</label>
+            </li>);
 
     //handles when the user clicks on a checkbox
     function handleOnChange(permIndex){
@@ -155,29 +215,22 @@ export default function EditRoles() {
             }else{
                 return role;
             }//end if else
-
         }));//end map
+    }//end handleOnChange function
 
+    //Translates the index of the permissions array into the actual permission name
+    function getPermFromIndex(index){
+        if(index == 0){return "Close Documents"}
+        else if(index == 1){return "Comment on Documents"}
+        else if(index == 2){return "Notify Reviewers"}
+        else if(index == 3){return "Resolve Comments"}
+        else if(index == 4){return "Respond to Comments"}
+        else if(index == 5){return "Upload Revisions to Documents"}
+        else if(index == 6){return "Upload Documents"}
+        else{return "Permission not found"}
     }//end function
 
-    const listPermissions = activeRole.permissions.map((perm, index) =>
-
-            <li key={index}>
-                <input
-                    type="checkbox"
-                    id={`checkbox-${index}`}
-                    name={getPermFromIndex(index)}
-                    value={perm}
-                    checked={Boolean(perm)}
-                    //May not need on change, may just only change permissions on save
-                    onChange={() => handleOnChange(index)}
-                />
-                <label htmlFor={`checkbox-${index}`}>{getPermFromIndex(index)}</label>
-
-            </li>);
-
-
-
+    //The actual code of the web page
     return (
         <div className="flex flex-col justify-center items-center w-full mb-auto mx-auto">
             {/*Create the header for the page */}
@@ -197,7 +250,9 @@ export default function EditRoles() {
                             //value={}
                             onClick={addRole}
                             type="submit"
-                            className="flex justify-center rounded-md bg-indigo-600 px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+                            className="flex justify-center rounded-md bg-indigo-600 px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm
+                            hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
+
                         >
                             Add
                         </button>
@@ -215,27 +270,43 @@ export default function EditRoles() {
                     {/*Create the row container for the Name, save and delete*/}
                     <div className="flex flex-row overflow-y">
 
+                        {/*
+                        //Basic text header used before input textbox
                         <h1 className="justify-start min-w-40 ">
                             {activeRole.name} / ID: {activeRole.id}
                         </h1>
+                        */}
+                        <form>
+                            <labeL>
+                                <input
+                                    id={activeRole.id}
+                                    name="roleName"
+                                    type="roleName"
+                                    value={activeRole.name}
+                                    onChange={(e) => handleRename(e.target.value)}
+                                    className="block rounded-md border-0 min-w-30 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                                />
+                            </labeL>
+                        </form>
+
 
                         <button className="justify-end mx-auto h-8 w-auto px-2"
                             //onClick={saveRole}>
-                            >
+                        >
                             <img
                                 className="justify-end mx-auto h-8 w-auto"
                                 src={saveIcon}
-                                //onClick={saveRole}
-                                alt="Delete Role">
+                                onClick={submitRoles}
+                                alt="Save Role">
                             </img>
                         </button>
 
                         <button className="justify-end mx-auto h-8 w-auto"
-                            onClick={deleteRole}>
+                                onClick={deleteRole}>
                             <img
                                 className="justify-end mx-auto h-8 w-auto"
-                                 src={deleteIcon}
-                                 alt="Delete Role">
+                                src={deleteIcon}
+                                alt="Delete Role">
                             </img>
                         </button>
 
