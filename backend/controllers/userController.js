@@ -7,9 +7,12 @@ export const createUser = async (req, res) => {
             first_name: req.body.first_name,
             last_name: req.body.last_name,
             email: req.body.email,
+            company: null,
+            role: null,
+            documents: [],
+            projects: []
         });
-
-        res.status(200).send("User created successfully");
+        res.status(200).send();
     } catch (error) {
         res.status(400).send(error.message);
     }

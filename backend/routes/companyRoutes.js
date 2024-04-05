@@ -1,7 +1,10 @@
 import express from "express";
-import {createCompany} from "../controllers/companyController.js";
+import {createCompany, getCompanyID, addEmployeeToPendingList, addEmployeeToCompany} from "../controllers/companyController.js";
 const router = express.Router();
 
 router.post("/createCompany", createCompany);
+router.get("/getCompanyID", getCompanyID);
+router.post("/addEmployeeToPendingList", addEmployeeToPendingList);
+router.put("/addEmployeeToCompany", addEmployeeToCompany);
 
 export default router;
