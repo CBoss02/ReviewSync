@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { ArrowRightIcon } from "@heroicons/react/solid";
 import {useAuth} from "../contexts/AuthContext";
-import {sendEmailVerification} from "firebase/auth";
 
 export default function Home() {
     const [state, setState] = useState(0);
@@ -66,15 +65,7 @@ export default function Home() {
                 )}
                 <button
                     className={`bg-blue-700 hover:bg-blue-500 text-white font-bold py-2 px-4 rounded w-full transition-all duration-500 ${state === 0 ? "block" : "hidden"}`}
-                    onClick={(async () => {
-                        setState(2);
-                        try {
-                            await sendEmailVerification(auth.currentUser);
-                            console.log("Email sent");
-                        } catch (error) {
-                            console.log(error);
-                        }
-                    })}
+                    onClick={() => { setState(2); }}
                 >
                     Create a Company
                 </button>
