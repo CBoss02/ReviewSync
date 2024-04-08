@@ -9,6 +9,7 @@ import Profile from "./pages/account/Profile";
 import VerifyEmail from "./pages/account/VerifyEmail";
 
 import Home from "./pages/Home";
+import EditRoles from "./components/company/EditRoles";
 
 
 function App() {
@@ -29,6 +30,9 @@ function App() {
                             </WithPrivateRoute>
                         }
                     />
+
+                    <Route path="/edit-roles" element={<EditRoles />}/>
+
                     <Route
                         exact
                         path="/profile"
@@ -40,6 +44,7 @@ function App() {
                     />
                     <Route path="/verify-email" element={<VerifyEmail />}/>
                     <Route path="*" element={<h1>Not Found</h1>}/>
+
                 </Routes>
             </Router>
         </AuthProvider>
