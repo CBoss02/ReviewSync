@@ -6,7 +6,6 @@ import ErrorMessage from "./components/layouts/ErrorMessage";
 import Header from "./components/layouts/Header";
 import WithPrivateRoute from "./utils/WithPrivateRoute";
 import Profile from "./pages/account/Profile";
-import Home from "./pages/Home";
 import VerifyEmail from "./pages/account/VerifyEmail";
 
 import Home from "./pages/Home";
