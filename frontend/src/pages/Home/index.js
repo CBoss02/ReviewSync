@@ -1,9 +1,11 @@
 import { useState, useEffect } from "react";
 import { ArrowRightIcon } from "@heroicons/react/solid";
+import { useNavigate } from "react-router-dom"; // Import useNavigate
 
 export default function Home() {
     const [state, setState] = useState(0);
     const [isVisible, setIsVisible] = useState(false); // New state to manage visibility for animation
+    const navigate = useNavigate(); // Instantiate useNavigate
 
     useEffect(() => {
         if (state === 1 || state === 2) {
@@ -27,6 +29,11 @@ export default function Home() {
         };
     }, [state]);
 
+    // Function to navigate to /edit-roles when the arrow button is clicked
+    const handleArrowClick = () => {
+        navigate('/edit-roles'); // Navigate to /edit-roles
+    };
+
     // Conditional class to apply transition effects
     const transitionClass = isVisible ? "opacity-100 scale-100" : "opacity-0 scale-95";
 
@@ -48,7 +55,7 @@ export default function Home() {
                         />
                         <button
                             className="bg-blue-700 hover:bg-blue-500 text-white font-bold py-2 px-4 rounded-full"
-                            onClick={() => setState(0)}
+                            onClick={handleArrowClick} // Use the handleArrowClick to navigate
                         >
                             <ArrowRightIcon className="h-6 w-6" />
                         </button>
