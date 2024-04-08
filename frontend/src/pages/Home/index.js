@@ -1,9 +1,17 @@
 import { useState, useEffect } from "react";
 import { ArrowRightIcon } from "@heroicons/react/solid";
 
+//Caleb's broken content
+import {useNavigate} from "react-router-dom";
+
 export default function Home() {
     const [state, setState] = useState(0);
     const [isVisible, setIsVisible] = useState(false); // New state to manage visibility for animation
+
+
+    //Caleb's new data passing content
+    const navigate = useNavigate();
+    const [companyName, setCompanyName] = useState("") ;
 
     useEffect(() => {
         if (state === 1 || state === 2) {
@@ -45,10 +53,11 @@ export default function Home() {
                             type="text"
                             placeholder={state === 1 ? "Search Company" : "Enter New Company Name"}
                             className="w-full border-2 border-gray-300 p-2 rounded-full transition-all duration-500"
+                            onChange={(e) => setCompanyName(e.target.value)}
                         />
                         <button
                             className="bg-blue-700 hover:bg-blue-500 text-white font-bold py-2 px-4 rounded-full"
-                            onClick={() => setState(0)}
+                            onClick={() => navigate('/edit-roles', {state: {companyName: companyName}})}
                         >
                             <ArrowRightIcon className="h-6 w-6" />
                         </button>

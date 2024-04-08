@@ -5,6 +5,7 @@ import {useState} from "react";
 import deleteIcon from "../../assets/icons/RedDelete-Icon.png";
 import saveIcon from "../../assets/icons/GreenSave-Icon.png";
 import axios from 'axios';
+import {useLocation} from 'react-router-dom';
 
 export default function EditRoles() {
 
@@ -57,30 +58,35 @@ export default function EditRoles() {
         permissions: [0,1,0,0,1,0,0],
     }];
 
+    //Caleb's new data passing content
+    const {state} = useLocation();
+    const {companyName} = state;
+
     //Creates a new array anytime that the old one would need to be changed, updating the state
     const [roles, setRoles] = useState(initialRoles);
 
     //From addEmployees
+    //Only run once because of the empty dependencies array
     useEffect(() => {
         const fetchRoles = async () => {
             try {
-                const response = await axios.get('/api/getRoles'); // Adjust the URL to your actual endpoint
+                const response = await axios.get('/api/companies/getRoles'); // Adjust the URL to your actual endpoint
                 setRoles(response.data.roles);
             } catch (error) {
                 console.error('Failed to fetch roles:', error);
+                alert('Failed to fetch roles');
                 // Handle error (e.g., show an error message to the user)
-            }
-        };
+            }//end try catch
+        };//end fetchRoles const
 
         fetchRoles();
-    }, []);
+    }, []); //end useEffect
 
     //Reskinned from addEmployees
     const submitRoles = async () => {
         try {
-
             await Promise.all(roles.map(role =>
-                axios.post('/api/addRole', {
+                axios.post('/api/companies/addRole', {
                     name: role.name,
                     permissions: role.permissions,
                 })
@@ -205,7 +211,7 @@ export default function EditRoles() {
 
     //handles when the user clicks on a checkbox
     function handleOnChange(permIndex){
-        let swappedBool = !activeRole.permissions[permIndex];
+        //let swappedBool = !activeRole.permissions[permIndex];
         setRoles(roles.map(role => {
             if(role.id === activeRole.id) {
                 let tempPermissions = activeRole.permissions;
@@ -220,13 +226,13 @@ export default function EditRoles() {
 
     //Translates the index of the permissions array into the actual permission name
     function getPermFromIndex(index){
-        if(index == 0){return "Close Documents"}
-        else if(index == 1){return "Comment on Documents"}
-        else if(index == 2){return "Notify Reviewers"}
-        else if(index == 3){return "Resolve Comments"}
-        else if(index == 4){return "Respond to Comments"}
-        else if(index == 5){return "Upload Revisions to Documents"}
-        else if(index == 6){return "Upload Documents"}
+        if(index === 0){return "Close Documents"}
+        else if(index === 1){return "Comment on Documents"}
+        else if(index === 2){return "Notify Reviewers"}
+        else if(index === 3){return "Resolve Comments"}
+        else if(index === 4){return "Respond to Comments"}
+        else if(index === 5){return "Upload Revisions to Documents"}
+        else if(index === 6){return "Upload Documents"}
         else{return "Permission not found"}
     }//end function
 
@@ -235,7 +241,8 @@ export default function EditRoles() {
         <div className="flex flex-col justify-center items-center w-full mb-auto mx-auto">
             {/*Create the header for the page */}
             <h2 className="mt-10 text-center text-2xl font-bold leading-9 tracking-tight text-gray-900">
-                Edit your company's roles
+                {/*Edit your company's roles*/}
+                Edit {companyName}'s Roles
             </h2>
 
             {/*Create the container that will split out edit roles into two columns*/}
