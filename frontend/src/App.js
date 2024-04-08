@@ -5,7 +5,9 @@ import {AuthProvider} from "./contexts/AuthContext";
 import ErrorMessage from "./components/layouts/ErrorMessage";
 import Header from "./components/layouts/Header";
 import WithPrivateRoute from "./utils/WithPrivateRoute";
-import Profile from "./components/account/Profile";
+import Home from "./pages/Home";
+import EditRoles from "./components/company/EditRoles";
+import AddEmployees from "./components/company/AddEmployees";
 
 function App() {
     return (
@@ -18,13 +20,15 @@ function App() {
                     <Route path="/login" element={<Login />}/>
                     <Route
                         exact
-                        path="/profile"
+                        path="/"
                         element={
                             <WithPrivateRoute>
-                                <Profile />
+                                <Home />
                             </WithPrivateRoute>
                         }
                     />
+                    <Route path="/edit-roles" element={<EditRoles />}/>
+                    <Route path="/add-employees" element={<AddEmployees />}/>
                 </Routes>
             </Router>
         </AuthProvider>
