@@ -2,9 +2,8 @@
 
 import { initializeApp, cert } from "firebase-admin/app";
 import { getAuth } from "firebase-admin/auth";
-
 import serviceAccountKey from "./serviceAccountKey.json" assert { type: "json" };
-import {getFirestore} from "firebase-admin/firestore";
+import {getFirestore, FieldValue} from "firebase-admin/firestore";
 
 import {FieldValue} from "firebase-admin/firestore";
 
@@ -14,6 +13,6 @@ const app = initializeApp({
 
 const auth = getAuth(app);
 const db = getFirestore(app);
-export default auth;
-export { db };
-export { FieldValue };
+
+export { db, auth , FieldValue };
+

@@ -40,7 +40,7 @@ export default function Register() {
         try {
             setError("");
             setLoading(true);
-            await register(formData.email, formData.password);
+            await register(formData.email, formData.password, formData.first_name, formData.last_name);
             navigate("/profile");
         } catch (error) {
             console.error(error);
