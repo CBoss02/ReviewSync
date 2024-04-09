@@ -1,4 +1,4 @@
-# ReviewSyn
+# ReviewSync
 1. **Project Title**: A single line that's the name of your project.
 2. **Description**: A brief description of your project, what it does, and any unique features or highlights.
 3. **Installation**: Step-by-step instructions on how to get a development environment running.

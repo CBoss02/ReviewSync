@@ -7,10 +7,9 @@ import Header from "./components/layouts/Header";
 import WithPrivateRoute from "./utils/WithPrivateRoute";
 import Profile from "./pages/account/Profile";
 import VerifyEmail from "./pages/account/VerifyEmail";
-
 import Home from "./pages/Home";
 import EditRoles from "./components/company/EditRoles";
-
+import AddEmployees from "./components/company/AddEmployees";
 
 function App() {
     return (
@@ -32,7 +31,7 @@ function App() {
                     />
 
                     <Route path="/edit-roles" element={<EditRoles />}/>
-
+                    <Route path="/add-employees" element={<AddEmployees />}/>
                     <Route
                         exact
                         path="/profile"
