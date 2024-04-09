@@ -1,10 +1,21 @@
 import express from "express";
-import {createCompany} from "../controllers/companyController.js";
+
+import {
+    createCompany,
+    getCompanyID,
+    modifyPendingListAndEditRoles,
+    addEmployeeToCompany,
+    getRoles,
+    addOrUpdateRoles,
+} from "../controllers/companyController.js";
 const router = express.Router();
 
 router.post("/createCompany", createCompany);
-router.post("/addRoles", addRole);
-router.post("/editRole", editRole);
-router.post("/addEmployees", addEmployeeToCompany);
+router.get("/getCompanyID", getCompanyID);
+router.put("/modifyPendingListAndEditRoles", modifyPendingListAndEditRoles);
+router.put("/addEmployeeToCompany", addEmployeeToCompany);
+router.get("/getRoles", getRoles);
+router.put("/addOrUpdateRoles", addOrUpdateRoles);
+
 
 export default router;

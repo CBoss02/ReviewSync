@@ -5,6 +5,8 @@ import {AuthProvider} from "./contexts/AuthContext";
 import ErrorMessage from "./components/layouts/ErrorMessage";
 import Header from "./components/layouts/Header";
 import WithPrivateRoute from "./utils/WithPrivateRoute";
+import Profile from "./pages/account/Profile";
+import VerifyEmail from "./pages/account/VerifyEmail";
 import Home from "./pages/Home";
 import EditRoles from "./components/company/EditRoles";
 import AddEmployees from "./components/company/AddEmployees";
@@ -27,8 +29,21 @@ function App() {
                             </WithPrivateRoute>
                         }
                     />
+
                     <Route path="/edit-roles" element={<EditRoles />}/>
                     <Route path="/add-employees" element={<AddEmployees />}/>
+                    <Route
+                        exact
+                        path="/profile"
+                        element={
+                            <WithPrivateRoute>
+                                <Home />
+                            </WithPrivateRoute>
+                        }
+                    />
+                    <Route path="/verify-email" element={<VerifyEmail />}/>
+                    <Route path="*" element={<h1>Not Found</h1>}/>
+
                 </Routes>
             </Router>
         </AuthProvider>
