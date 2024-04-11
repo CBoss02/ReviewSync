@@ -1,5 +1,6 @@
 import admin from "firebase-admin";
 
+
 async function VerifyToken(req, res, next) {
     console.log(req.headers);
     if(req.headers?.authorization?.startsWith('Bearer ')) {
@@ -9,6 +10,7 @@ async function VerifyToken(req, res, next) {
             next();
         } catch (error) {
             return res.status(401).send("Unauthorized: Invalid token");
+
         }
     } else {
         return res.status(403).send("No authentication token found");

@@ -1,3 +1,4 @@
+
 import { db , FieldValue } from "../config/firebase-config.js";
 
 export const createCompany = async (req, res) => {
@@ -6,8 +7,10 @@ export const createCompany = async (req, res) => {
         db.collection("companies").add({
             name: companyData.name,
             owner: companyData.owner,
+
             pendingList: [],
             employees: []
+
         }).then((data) => {
             db.collection("users").doc(companyData.owner).update({
                 company: data.id
@@ -23,6 +26,7 @@ export const createCompany = async (req, res) => {
         res.status(400).send(error.message);
     }
 }
+
 
 export const getCompanyID = async (req, res) => {
     try {
@@ -109,6 +113,7 @@ export const addEmployeeToCompany = async (req, res) => {
     } catch (error) {
         res.status(400).send(error.message);
     }
+
 }
 
 export const getRoles = async (req, res) => {

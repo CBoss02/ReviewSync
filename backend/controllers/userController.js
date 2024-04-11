@@ -18,6 +18,7 @@ export const createUser = async (req, res) => {
     }
 }
 
+
 export const getCurrentUser = async (req, res) => {
     try {
         const user = req.currentUser;
@@ -52,5 +53,6 @@ export const uploadDocument = async (req, res) => {
         res.status(404).send(error.message);
     }
 }
+
 
 
