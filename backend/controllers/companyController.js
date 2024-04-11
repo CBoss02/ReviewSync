@@ -29,7 +29,36 @@ export const getCompanyID = async (req, res) => {
         const uid = req.body.uid;
         const user = await db.collection("users").doc(uid).get();
         const userData = user.data();
-        res.status(200).send(userData.company);
+        res.status(200).send({companyID: userData.company});
+    } catch (error) {
+        res.status(400).send(error.message);
+    }
+}
+
+export const getEmailsAndRoles = async (req, res) => {
+    try {
+        const companyID = req.body.companyID;
+        const company = await db.collection("companies").doc(companyID).get();
+        const companyData = company.data();
+        let emailsAndRoles = companyData.pendingList
+        const qSnapUsers = await db.collection("users").where('company', '==', companyID).get();
+        if(!qSnapUsers.empty) {
+            let roles = {};
+            let i = 0
+            const qSnapRoles = await db.collection("companies").doc(companyID).collection("roles").get();
+            await qSnapRoles.forEach(role => {
+                const roleData = role.data()
+                roles[role.id] = roleData.name
+            })
+            await qSnapUsers.forEach(user => {
+                const userData = user.data();
+                let emailAndRole = {}
+                emailAndRole.email = userData.email
+                emailAndRole.role = roles[userData.role]
+                emailsAndRoles.push(emailAndRole)
+            })
+        }
+        res.status(200).send({emailsAndRoles: emailsAndRoles});
     } catch (error) {
         res.status(400).send(error.message);
     }
@@ -90,7 +119,7 @@ export const getRoles = async (req, res) => {
         const snapshot = await collection.get();
         if(snapshot.empty)
         {
-            res.status(200).send([])
+            res.status(200).send({roles: []})
         }
         else
         {
@@ -106,7 +135,7 @@ export const getRoles = async (req, res) => {
                     roles.push(data)
                 }
             });
-            res.status(200).send(roles)
+            res.status(200).send({roles: roles})
         }
     } catch (error) {
         res.status(400).send(error.message);
@@ -163,6 +192,7 @@ export const modifyPendingListAndEditRoles = async (req, res) => {
     try {
         const employees = req.body.employees;
         const companyID = req.body.companyID;
+        const company = db.collection("companies").doc(companyID);
         let joinedCompany = false;
         for(let i = 0; i < employees.length; i++)
         {
@@ -174,7 +204,7 @@ export const modifyPendingListAndEditRoles = async (req, res) => {
                     if(userData.company === companyID) //User has already joined company, so update their role
                     {
                         joinedCompany = true;
-                        const roleCollection = db.collection("companies").doc(companyID).collection("roles");
+                        const roleCollection = company.collection("roles");
                         roleCollection.where('name', '==', employees[i].role).get().then((roleSnapshot) => {
                             roleSnapshot.forEach(role => {
                                 db.collection("users").doc(user.id).update({
@@ -187,14 +217,13 @@ export const modifyPendingListAndEditRoles = async (req, res) => {
             }
             if(!joinedCompany) //This also accounts for if a user has not registered yet
             {
-                const company = db.collection("companies").doc(companyID);
                 await company.update({
-                    pendingList: FieldValue.arrayUnion({email: employees[i].email, role: employees[i].role})
+                    pendingList: FieldValue.arrayUnion(employees[i])
                 })
             }
         }
         const employeesOfCompany = await db.collection("users").where('company', '==', companyID).get();
-        if(employeesOfCompany.empty)
+        if(!employeesOfCompany.empty)
         {
             await employeesOfCompany.forEach(employeeOfCompany => {
                 const employeeOfCompanyData = employeeOfCompany.data();
@@ -210,13 +239,37 @@ export const modifyPendingListAndEditRoles = async (req, res) => {
                 if(!found) //This user's email wasn't found in the request, so the owner is removing them
                 {
                     db.collection("users").doc(employeeOfCompany.id).update({
-                        company: null
+                        company: null,
+                        role: null
                     })
-                    db.collection("companies").doc(companyID).update({
+                    company.update({
                         employees: FieldValue.arrayRemove(employeeOfCompany.id)
                     })
                 }
             })
+        }
+        const companySnapshot = await company.get();
+        const companyData = await companySnapshot.data();
+        const pendingList = companyData.pendingList;
+        console.log(pendingList)
+        console.log(employees)
+        for(let i = 0; i < pendingList.length; i++)
+        {
+            let found = false
+            for(let j = 0; j < employees.length; j++)
+            {
+                if((pendingList[i].email === employees[j].email) && (pendingList[i].role === employees[j].role))
+                {
+                    found = true;
+                    break
+                }
+            }
+            if(!found)
+            {
+                await company.update({
+                    pendingList: FieldValue.arrayRemove(pendingList[i])
+                })
+            }
         }
         res.status(200).send();
     } catch (error) {
