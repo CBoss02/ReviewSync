@@ -3,7 +3,7 @@ import cors from "cors";    //Helps connect the backend and the frontend
 import dotenv from "dotenv";
 
 import userRoutes from "../routes/userRoutes.js";
-import VerifyToken from "../middleware/VerifyToken.js";
+import {VerifyToken} from "../middleware/VerifyToken.js";
 import companyRoutes from "../routes/companyRoutes.js";
 
 
