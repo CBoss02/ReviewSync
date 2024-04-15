@@ -1,3 +1,27 @@
+//This is the version that is working on Caleb's system
+//I'll leave the other version that seems to be broken on some systems at the bottom of the page.
+
+import {auth} from "../config/firebase-config.js";
+//Keeps track of who's signed in
+
+export const VerifyToken = async (req, res, next) => {
+    const token = req.headers.authorization.split(" ")[1];
+
+    try {
+        const decodeValue = await auth.verifyIdToken(token);
+        if (decodeValue) {
+            req.user = decodeValue;
+            return next();
+        }
+    } catch (e) {
+        return res.json({ message: "Internal Error" });
+    }
+};
+
+export default VerifyToken;
+
+
+/* Presumably broken version of verifyToken.js
 import admin from "firebase-admin";
 
 
@@ -18,3 +42,4 @@ async function VerifyToken(req, res, next) {
 }
 
 export default VerifyToken;
+ */
