@@ -6,7 +6,7 @@ import userRoutes from "../routes/userRoutes.js";
 import VerifyToken from "../middleware/VerifyToken.js";
 import companyRoutes from "../routes/companyRoutes.js";
 
-import companyRoutes from "../routes/companyRoutes.js";
+
 
 import documentRoutes from "../routes/documentRoutes.js";
 

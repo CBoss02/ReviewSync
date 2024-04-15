@@ -1,9 +1,9 @@
 import React, {useEffect} from "react";
 import {useState} from "react";
-//import { useAuth } from "../../contexts/AuthContext";
-//import { useNavigate} from "react-router-dom";
+import { useNavigate} from "react-router-dom";
 import deleteIcon from "../../assets/icons/RedDelete-Icon.png";
 import saveIcon from "../../assets/icons/GreenSave-Icon.png";
+import auth from "../../config/firebase";
 import axios from 'axios';
 import {useLocation} from 'react-router-dom';
 
