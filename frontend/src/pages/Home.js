@@ -1,8 +1,21 @@
 import { useState, useEffect } from "react";
 import { ArrowRightIcon } from "@heroicons/react/solid";
 import {useAuth} from "../contexts/AuthContext";
+import axios from 'axios';
+
+//Caleb's code from index.js used to navigate into the /edit-roles page
+import { useNavigate } from "react-router-dom"; // Import useNavigate
+//import auth from "../config/firebase";
 
 export default function Home() {
+
+    //Caleb's code from index.js used to navigate into the /edit-roles page
+    const navigate = useNavigate(); // Instantiate useNavigate
+    const [companyName, setCompanyName] = useState("") ;
+    const [error, setError] = useState("");
+    const auth = useAuth();
+    console.log(auth.currentUser.uid);
+
     const [state, setState] = useState(0);
     const [isVisible, setIsVisible] = useState(false); // New state to manage visibility for animation
 
@@ -28,11 +41,32 @@ export default function Home() {
         };
     }, [state]);
 
+    //Caleb's code from index.js used to navigate into the /edit-roles page
+    const submitCompany = async (companyName) => {
+        try {
+            await axios.post("/api/users/createCompany", {
+                owner: auth.currentUser.uid,
+                name: companyName,
+            });
+            alert('You MIGHT have created a company');
+        } catch (error) {
+            setError("Failed to create the company");
+        }//end try catch
+    }
+
+    const handleArrowClick = () => {
+        if(state === 1){
+            //Search for a company with the name and respond accordingly
+        }else if(state === 2) {
+            //Create a company with the name passed
+            submitCompany(companyName);
+            navigate('/edit-roles', {state: {companyName}}); // Navigate to /edit-roles
+        }//end if
+
+    };
+
     // Conditional class to apply transition effects
     const transitionClass = isVisible ? "opacity-100 scale-100" : "opacity-0 scale-95";
-
-   const auth = useAuth();
-   console.log(auth.currentUser.uid);
 
     return (
         <div className="flex flex-col items-center justify-center h-screen transition-all duration-500">
@@ -49,10 +83,11 @@ export default function Home() {
                             type="text"
                             placeholder={state === 1 ? "Search Company" : "Enter New Company Name"}
                             className="w-full border-2 border-gray-300 p-2 rounded-full transition-all duration-500"
+                            onChange={(e) => setCompanyName(e.target.value)}
                         />
                         <button
                             className="bg-blue-700 hover:bg-blue-500 text-white font-bold py-2 px-4 rounded-full"
-                            onClick={() => setState(0)}
+                            onClick={handleArrowClick}
                         >
                             <ArrowRightIcon className="h-6 w-6" />
                         </button>
