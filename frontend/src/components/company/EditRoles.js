@@ -1,9 +1,9 @@
 import React, {useEffect} from "react";
 import {useState} from "react";
-//import { useAuth } from "../../contexts/AuthContext";
-//import { useNavigate} from "react-router-dom";
+import {useNavigate} from "react-router-dom";
 import deleteIcon from "../../assets/icons/RedDelete-Icon.png";
 import saveIcon from "../../assets/icons/GreenSave-Icon.png";
+//import auth from "../../config/firebase";
 import axios from 'axios';
 import {useLocation} from 'react-router-dom';
 
@@ -58,6 +58,8 @@ export default function EditRoles() {
         permissions: [0,1,0,0,1,0,0],
     }];
 
+    const navigate = useNavigate(); // Instantiate useNavigate
+
     //Caleb's new data passing content
     const {state} = useLocation();
     const {companyName} = state;
@@ -89,6 +91,7 @@ export default function EditRoles() {
                 axios.post('/api/companies/addRole', {
                     name: role.name,
                     permissions: role.permissions,
+                    id: role.id,
                 })
             ));
 
@@ -114,14 +117,10 @@ export default function EditRoles() {
         }//end for loop
     }//end function
 
-    //ChatGPT hook that does not appear to work
-
     useEffect(() => {
         // Whenever roles change, update the active role
         selectRole(roles.find(role => role.id === activeRole.id));
     }, [roles]);
-
-
 
     //Keeps track of the newest ID number for a role to be given
     //This is just a number, not a special type
@@ -236,7 +235,12 @@ export default function EditRoles() {
         else{return "Permission not found"}
     }//end function
 
-    //The actual code of the web page
+    const handleNextClick = () => {
+        navigate('/add-employees', {state: {roles, companyName}}) // Navigate to /add-employees
+    };
+
+
+//The actual code of the web page
     return (
         <div className="flex flex-col justify-center items-center w-full mb-auto mx-auto">
             {/*Create the header for the page */}
@@ -263,7 +267,7 @@ export default function EditRoles() {
                         >
                             Add
                         </button>
-                        <h1 className="flex justify-end px-2" > Roles: {roles.length}/50 </h1>
+                        <h1 className="flex justify-end px-2 mt-1" > Roles: {roles.length}/50 </h1>
                     </div>
 
                     {/*Generates the list of roles*/}
@@ -277,12 +281,6 @@ export default function EditRoles() {
                     {/*Create the row container for the Name, save and delete*/}
                     <div className="flex flex-row overflow-y">
 
-                        {/*
-                        //Basic text header used before input textbox
-                        <h1 className="justify-start min-w-40 ">
-                            {activeRole.name} / ID: {activeRole.id}
-                        </h1>
-                        */}
                         <form>
                             <labeL>
                                 <input
@@ -291,7 +289,9 @@ export default function EditRoles() {
                                     type="roleName"
                                     value={activeRole.name}
                                     onChange={(e) => handleRename(e.target.value)}
-                                    className="block rounded-md border-0 min-w-30 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                                    className="block p-2 rounded-md h-8 border-0 min-w-28 text-black shadow-sm ring-1
+                                    ring-inset ring-gray-300 placeholder:text-black focus:ring-2 focus:ring-inset
+                                    focus:ring-indigo-600 sm:text-sm sm:leading-6"
                                 />
                             </labeL>
                         </form>
@@ -320,9 +320,20 @@ export default function EditRoles() {
                     </div>
 
                     {/*Create the container for the permissions*/}
-                    <div className="flex justify-start lg: overflow-y">
+                    <div className="flex mt-3 mb-1 justify-start lg: overflow-y">
                         <ul className="justify-start"> {listPermissions} </ul>
                     </div>
+
+                    <button className="flex ml-auto w-19 justify-center rounded-md bg-green-600 px-3 py-1.5 text-sm
+                    font-semibold leading-6 text-white shadow-sm hover:bg-green-500 focus-visible:outline
+                    focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:bg-green-600"
+                        type="submit"
+                        value= "Next"
+                        onClick={handleNextClick}
+                    >
+                        Next →
+                    </button>
+
                 </div>
             </div>
         </div>
