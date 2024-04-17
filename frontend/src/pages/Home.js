@@ -32,7 +32,6 @@ export default function Home() {
     const transitionClass = isVisible ? "opacity-100 scale-100" : "opacity-0 scale-95";
 
    const auth = useAuth();
-   console.log(auth.currentUser.uid);
 
     return (
         <div className="flex flex-col items-center justify-center h-screen transition-all duration-500">

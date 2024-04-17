@@ -1,32 +1,45 @@
-
 import { db , FieldValue } from "../config/firebase-config.js";
 
 export const createCompany = async (req, res) => {
     try {
         const companyData = req.body;
-        db.collection("companies").add({
+        const doc = await db.collection("companies").add({
             name: companyData.name,
             owner: companyData.owner,
-
             pendingList: [],
-            employees: []
-
-        }).then((data) => {
-            db.collection("users").doc(companyData.owner).update({
-                company: data.id
-            }).then(() => {
-                res.status(200).send();
-            }).catch((error) => {
-                res.status(400).send(error.message);
-            })
-        }).catch((error) => {
-            res.status(400).send(error.message);
+            employees: [],
+            employeesChanged: false,
+            documentsChanged: false,
+            projectsChanged: false,
+            rolesChanged: false
+        })
+        await db.collection("users").doc(companyData.owner).update({
+            company: doc.id
         })
     } catch (error) {
         res.status(400).send(error.message);
     }
 }
 
+export const getEmployeesChangedFlag = async (req, res) => {
+    try {
+        const company = await db.collection("companies").doc(req.body.companyID).get();
+        const companyData = company.data();
+        res.status(200).send(companyData.employeesChanged);
+    } catch (error) {
+        res.status(400).send(error.message);
+    }
+}
+
+export const resetEmployeesChangedFlag = async (req, res) => {
+    try {
+        await db.collection("companies").doc(req.body.companyID).update({
+            employeesChanged: false
+        })
+    } catch (error) {
+        res.status(400).send(error.message);
+    }
+}
 
 export const getCompanyID = async (req, res) => {
     try {
@@ -34,6 +47,31 @@ export const getCompanyID = async (req, res) => {
         const user = await db.collection("users").doc(uid).get();
         const userData = user.data();
         res.status(200).send({companyID: userData.company});
+    } catch (error) {
+        res.status(400).send(error.message);
+    }
+}
+
+export const getEmployees = async (req, res) => {
+    try {
+        const uid = req.body.uid;
+        const user = await db.collection("users").doc(uid).get();
+        const userData = user.data();
+        let employees = [];
+        const snapshot = await db.collection("users").where("company", "==", userData.company).get();
+        if(!snapshot.empty)
+        {
+            snapshot.forEach(employee => {
+                if(employee.id !== uid)
+                {
+                    const employeeData = employee.data();
+                    const name = employeeData.first_name.concat(" ").concat(employeeData.last_name);
+                    const employeeJson = {id: employee.id, name: name}
+                    employees.push(employeeJson)
+                }
+            })
+        }
+        res.status(200).send({employees: employees});
     } catch (error) {
         res.status(400).send(error.message);
     }
@@ -169,6 +207,13 @@ export const addOrUpdateRoles = async (req, res) => {
             if(!ids.includes(doc.id))
             {
                 collection.doc(doc.id).delete()
+                db.collection("users").where("role", "==", doc.id).get().then(usersWithRole => {
+                    usersWithRole.forEach(userWithRole => {
+                        db.collection("users").doc(userWithRole.id).update({
+                            role: null
+                        })
+                    })
+                })
             }
         })
         for(let i = 0; i < roles.length; i++) {

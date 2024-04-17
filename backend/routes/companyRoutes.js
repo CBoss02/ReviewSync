@@ -7,12 +7,14 @@ import {
     addEmployeeToCompany,
     getRoles,
     addOrUpdateRoles,
-    getEmailsAndRoles
+    getEmailsAndRoles,
+    getEmployees
 } from "../controllers/companyController.js";
 const router = express.Router();
 
 router.post("/createCompany", createCompany);
-router.get("/getCompanyID", getCompanyID);
+router.post("/getCompanyID", getCompanyID);
+router.post("/getEmployees", getEmployees);
 router.put("/modifyPendingListAndEditRoles", modifyPendingListAndEditRoles);
 router.put("/addEmployeeToCompany", addEmployeeToCompany);
 router.get("/getRoles", getRoles);
