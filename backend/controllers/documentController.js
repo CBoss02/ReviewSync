@@ -19,6 +19,23 @@ export const addDocument = async (req, res) => {
     }
 }
 
+export const addEmployeeToDocument = async (req, res) => {
+    try {
+        const { employeeID, companyID, documentID } = req.body;
+        const documentRef = db.collection('companies').doc(companyID).collection('documents').doc(documentID);
+
+        // Using arrayUnion to add an employee ID to the 'Employees' array field in the document
+        await documentRef.update({
+            Employees: FieldValue.arrayUnion(employeeID)
+        });
+
+        res.status(200).send({ message: 'Employee added to document successfully.' });
+    } catch (error) {
+        console.error('Failed to add employee to document:', error);
+        res.status(400).send({ message: 'Failed to add employee to document.', error: error.message });
+    }
+}
+
 export const addComment = async (req, res) => {
     try {
         const comment = req.body;
