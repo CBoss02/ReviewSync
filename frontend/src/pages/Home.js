@@ -54,15 +54,31 @@ export default function Home() {
         }//end try catch
     }
 
-    const handleArrowClick = () => {
-        if(state === 1){
-            //Search for a company with the name and respond accordingly
-        }else if(state === 2) {
-            //Create a company with the name passed
-            submitCompany(companyName);
-            navigate('/edit-roles', {state: {companyName}}); // Navigate to /edit-roles
-        }//end if
+    const handleJoinCompany = async () => {
+        try {
+            const response = await axios.post("/api/companies/addEmployeeToCompany", {
+                userID: auth.currentUser.uid,
+                companyName: companyName,
+            });
+            if (response.status === 200) {
+                alert('Successfully joined the company');
+                navigate('/dashboard'); // Adjust as needed
+            } else {
+                alert('Failed to join the company. Please check the company name or your permissions.');
+            }
+        } catch (error) {
+            console.error("Error joining company:", error);
+            setError("Failed to join the company. Please try again.");
+        }
+    };
 
+    const handleArrowClick = () => {
+        if (state === 1) {
+            handleJoinCompany();
+        } else if (state === 2) {
+            submitCompany(companyName);
+            navigate('/edit-roles', { state: { companyName } });
+        }
     };
 
     // Conditional class to apply transition effects
