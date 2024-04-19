@@ -5,7 +5,7 @@ import dotenv from "dotenv";
 import userRoutes from "../routes/userRoutes.js";
 import {VerifyToken} from "../middleware/VerifyToken.js";
 import companyRoutes from "../routes/companyRoutes.js";
-
+import projectRoutes from "../routes/projectRoutes.js"
 
 
 import documentRoutes from "../routes/documentRoutes.js";
@@ -25,10 +25,11 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
 
-const PORT = process.env.PORT || 8080;  //Backup port if 5001 isn't available
+const PORT = process.env.PORT || 5001;  //Backup port if 5001 isn't available
 
 app.use("/api/users", userRoutes);
 app.use("/api/companies", companyRoutes);
+app.use("/api/projects", projectRoutes);
 
 //Left in from merge request with edit roles
 //app.use("/api/documents", documentRoutes);

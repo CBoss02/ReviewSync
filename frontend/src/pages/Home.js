@@ -14,7 +14,7 @@ export default function Home() {
     const [companyName, setCompanyName] = useState("") ;
     const [error, setError] = useState("");
     const auth = useAuth();
-    console.log(auth.currentUser.uid);
+    const uid = auth.currentUser.uid;
 
     const [state, setState] = useState(0);
     const [isVisible, setIsVisible] = useState(false); // New state to manage visibility for animation
@@ -44,11 +44,10 @@ export default function Home() {
     //Caleb's code from index.js used to navigate into the /edit-roles page
     const submitCompany = async (companyName) => {
         try {
-            await axios.post("/api/users/createCompany", {
-                owner: auth.currentUser.uid,
-                name: companyName,
+            await axios.post("/api/companies/createCompany", {
+                owner: uid,
+                name: companyName
             });
-            alert('You MIGHT have created a company');
         } catch (error) {
             setError("Failed to create the company");
         }//end try catch
@@ -59,8 +58,9 @@ export default function Home() {
             //Search for a company with the name and respond accordingly
         }else if(state === 2) {
             //Create a company with the name passed
-            submitCompany(companyName);
-            navigate('/edit-roles', {state: {companyName}}); // Navigate to /edit-roles
+            submitCompany(companyName).then(() => {
+                navigate('/edit-roles', {state: {companyName}});
+            }) // Navigate to /edit-roles
         }//end if
 
     };

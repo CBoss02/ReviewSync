@@ -2,33 +2,48 @@ import React, { useState, useEffect } from 'react';
 import {useLocation, useNavigate} from 'react-router-dom';
 import deleteIcon from "../../assets/icons/RedDelete-Icon.png";
 import saveIcon from "../../assets/icons/GreenSave-Icon.png";
+import {useAuth} from "../../contexts/AuthContext";
 import axios from 'axios';
 
 const EmployeeRoles = () => {
-
-    //Caleb's Data passing code
-    //Gets the company name and the list of roles from the edit-roles page
-    const location = useLocation();
-    const data = location.state;
-    const companyName = data.companyName;
-    const roleList = data.roles;
+    const auth = useAuth();
+    const uid = auth.currentUser.uid;
 
     const [employees, setEmployees] = useState([{ email: '', role: '' }]);
-    const [roles, setRoles] = useState(roleList);
+    const [roles, setRoles] = useState([]);
     const navigate = useNavigate(); // Correctly placed useNavigate call
-
+    const [companyName, setCompanyName] = useState([]);
 
     useEffect(() => {
         const fetchRoles = async () => {
             try {
-                const response = await axios.get('/api/roles'); // Adjust the URL to your actual endpoint
-                setRoles(response.data.roles);
+                const response = await axios.post('/api/companies/getRoles', {uid: uid});
+                setRoles(response.data.roles)
+            } catch (error) {console.error('Failed to fetch roles:', error);
+                // Handle error (e.g., show an error message to the user)
+            }//end try catch
+        };//end fetchRoles const
+        const fetchEmailsAndRoles = async () => {
+            try {
+                const response = await axios.post('/api/companies/getEmailsAndRoles', {uid: uid});
+                if(response.data.emailsAndRoles.length !== 0)
+                    setEmployees(response.data.emailsAndRoles)
+            } catch (error) {console.error('Failed to fetch emails and roles:', error);
+                // Handle error (e.g., show an error message to the user)
+            }//end try catch
+        };//end fetchEmailsAndRoles const
+        const fetchCompanyName = async () => {
+            try {
+                const response = await axios.post('/api/companies/getCompanyName', {uid: uid});
+                setCompanyName(response.data.companyName)
             } catch (error) {
-                console.error('Failed to fetch roles:', error);
-            }
-        };
-
+                console.error('Failed to fetch company name:', error);
+                // Handle error (e.g., show an error message to the user)
+            }//end try catch
+        };//end fetchCompanyName
         fetchRoles();
+        fetchEmailsAndRoles();
+        fetchCompanyName();
     }, []);
 
     const handleInputChange = (index, field, value) => {
@@ -51,20 +66,10 @@ const EmployeeRoles = () => {
 
     const submitEmployees = async () => {
         try {
-
-            await Promise.all(employees.map(employee =>
-                axios.post('/api/addEmployeeToCompany', {
-                    userEmail: employee.email,
-                    role: employee.role,
-                    ownerEmail: 'owner@example.com',
-                })
-            ));
-
-            alert('All employees added successfully!');
+            await axios.put("/api/companies/modifyPendingListAndEditRoles", {uid: uid, employees: employees})
             // Reset the form or redirect the user as necessary
         } catch (error) {
             console.error('Error adding employees:', error);
-            alert('Failed to add some or all employees.');
         }
     };
 
@@ -72,10 +77,12 @@ const EmployeeRoles = () => {
 
         <div className="flex flex-col justify-center items-center mb-auto mx-auto">
 
+            {companyName && (
             <h2 className="mt-10 text-center text-2xl font-bold leading-9 tracking-tight text-gray-900">
                 {/*Edit your company's roles*/}
                 Edit {companyName}'s Employees
             </h2>
+            )}
 
             <div style={{border: '1px solid #ccc', padding: '20px', borderRadius: '5px'}}>
                 {employees.map((employee, index) => (

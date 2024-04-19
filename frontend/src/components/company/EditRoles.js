@@ -3,29 +3,21 @@ import {useState} from "react";
 import {useNavigate} from "react-router-dom";
 import deleteIcon from "../../assets/icons/RedDelete-Icon.png";
 import saveIcon from "../../assets/icons/GreenSave-Icon.png";
-//import auth from "../../config/firebase";
+import {useAuth} from "../../contexts/AuthContext";
 import axios from 'axios';
 import {useLocation} from 'react-router-dom';
 
 export default function EditRoles() {
-
-    //Default roles object that holds its name, permissions and an id
+    const auth = useAuth();
+    const uid = auth.currentUser.uid;
+//Default roles object that holds its name, permissions and an id
     let initialRoles = [{
-        id: 1, // Used in JSX as a key
-        name: 'Manager',
-        /* read isn't relevant since the visibility of a file will determine whether*/
-        /* it can be read or not*/
-        //close: true,
-        //comment: true,
-        //notify: true,
-        //resolve: true,
-        //respond: true,
-        //revise: true,
-        //upload: true,
-        permissions: [0,0,0,0,0,0,0],
-    }, {
-        id: 2,
+        permissions: [false,true,true,true,true,true,true],
         name: 'Author',
+        id: 1,
+        // Used in JSX as a key
+        /* read isn't relevant since the visibility of a file will determine whether */
+        /* it can be read or not*/
         //close: false,
         //comment: true,
         //notify: true,
@@ -33,10 +25,21 @@ export default function EditRoles() {
         //respond: true,
         //revise: true,
         //upload: true,
-        permissions: [0,1,1,1,1,1,1],
     }, {
-        id: 3,
+        permissions: [false,false,false,false,false,false,false],
+        name: 'Manager',
+        id: 2,
+        //close: false,
+        //comment: false,
+        //notify: false,
+        //resolve: false,
+        //respond: false,
+        //revise: false,
+        //upload: false,
+    }, {
+        permissions: [true,false,true,true,true,false,false],
         name: 'QA',
+        id: 3,
         //close: true,
         //comment: true,
         //notify: false,
@@ -44,10 +47,10 @@ export default function EditRoles() {
         //respond: true,
         //revise: false,
         //upload: false,
-        permissions: [1,0,1,1,1,0,0],
     }, {
-        id: 4,
+        permissions: [false,true,false,false,true,false,false],
         name: 'Consultant',
+        id: 4,
         //close: false,
         //comment: true,
         //notify: false,
@@ -55,58 +58,68 @@ export default function EditRoles() {
         //respond: true,
         //revise: false,
         //upload: false,
-        permissions: [0,1,0,0,1,0,0],
     }];
 
     const navigate = useNavigate(); // Instantiate useNavigate
 
-    //Caleb's new data passing content
-    const {state} = useLocation();
-    const {companyName} = state;
-
+    const [companyName, setCompanyName] = useState("");
     //Creates a new array anytime that the old one would need to be changed, updating the state
-    const [roles, setRoles] = useState(initialRoles);
+    const [roles, setRoles] = useState([]);
+    const [activeRole, selectRole] = useState({});
 
     //From addEmployees
     //Only run once because of the empty dependencies array
     useEffect(() => {
         const fetchRoles = async () => {
             try {
-                const response = await axios.get('/api/companies/getRoles'); // Adjust the URL to your actual endpoint
-                setRoles(response.data.roles);
+                const response = await axios.post('/api/companies/getRoles', {uid: uid});
+                if(response.data.roles.length !== 0)
+                {
+                    setRoles(response.data.roles)
+                    selectRole(response.data.roles[0])
+                }
+                else
+                {
+                    setRoles(initialRoles)
+                    selectRole(initialRoles[0])
+                }
             } catch (error) {
                 console.error('Failed to fetch roles:', error);
-                alert('Failed to fetch roles');
                 // Handle error (e.g., show an error message to the user)
             }//end try catch
         };//end fetchRoles const
-
+        const fetchCompanyName = async () => {
+            try {
+                const response = await axios.post('/api/companies/getCompanyName', {uid: uid});
+                setCompanyName(response.data.companyName)
+            } catch (error) {
+                console.error('Failed to fetch company name:', error);
+                // Handle error (e.g., show an error message to the user)
+            }//end try catch
+        };//end fetchCompanyName
+        fetchCompanyName();
         fetchRoles();
     }, []); //end useEffect
+
 
     //Reskinned from addEmployees
     const submitRoles = async () => {
         try {
-            await Promise.all(roles.map(role =>
-                axios.post('/api/companies/addRole', {
-                    name: role.name,
-                    permissions: role.permissions,
-                    id: role.id,
-                })
-            ));
-
-            alert('All roles added successfully!');
+            await axios.put('api/companies/addOrUpdateRoles', {
+                uid: uid, roles: roles
+            }).catch(function (error) {
+                if (error.response) {
+                    alert(error.response.data.message);
+                }
+            });
             // Reset the form or redirect the user as necessary
         } catch (error) {
-            console.error('Error adding roles:', error);
-            alert('Failed to add some or all roles.');
+            console.log(error.message);
         }
-    };
-
+    }
 
     //Updates the activeRole to the role clicked by the user
     //This object is a role type, not just a number
-    const [activeRole, selectRole] = useState(roles[0]);
 
     //Should be passed an int that represents a roles ID
     function setActiveRole(passedID){
@@ -125,7 +138,6 @@ export default function EditRoles() {
     //Keeps track of the newest ID number for a role to be given
     //This is just a number, not a special type
     const [currentID, setID] = useState(5);
-
 
     //Creates a list of role buttons that will appear in our left column
     const listRoles = roles.map((role) => <li className="py-1 mb-auto" key={role.id}>
@@ -148,7 +160,6 @@ export default function EditRoles() {
         }])
         setActiveRole(currentID);
         setID(currentID + 1);
-
     }//end addRole
 
     //Deletes the activeRole from the roles array and changes it to a new role
@@ -193,20 +204,20 @@ export default function EditRoles() {
     }//end function
 
     //Creates the checkboxes and labels that describe the user's permissions
-    const listPermissions = activeRole.permissions.map((perm, index) =>
-            <li key={index}>
-                <input
-                    type="checkbox"
-                    id={`checkbox-${index}`}
-                    name={getPermFromIndex(index)}
-                    value={perm}
-                    checked={Boolean(perm)}
-                    onChange={() => handleOnChange(index)}
-                    //This does not SAVE the changes, but places them in the roles state array
-                    //They must still be pushed to the database using the save button
-                />
-                <label htmlFor={`checkbox-${index}`}>{getPermFromIndex(index)}</label>
-            </li>);
+    const listPermissions = activeRole?.permissions?.map((perm, index) =>
+        <li key={index}>
+            <input
+                type="checkbox"
+                id={`checkbox-${index}`}
+                name={getPermFromIndex(index)}
+                value={perm}
+                checked={Boolean(perm)}
+                onChange={() => handleOnChange(index)}
+                //This does not SAVE the changes, but places them in the roles state array
+                //They must still be pushed to the database using the save button
+            />
+            <label htmlFor={`checkbox-${index}`}>{getPermFromIndex(index)}</label>
+        </li>);
 
     //handles when the user clicks on a checkbox
     function handleOnChange(permIndex){
@@ -216,7 +227,6 @@ export default function EditRoles() {
                 let tempPermissions = activeRole.permissions;
                 tempPermissions[permIndex] = !tempPermissions[permIndex];
                 return {...role, permissions: tempPermissions};
-
             }else{
                 return role;
             }//end if else
@@ -242,100 +252,100 @@ export default function EditRoles() {
 
 //The actual code of the web page
     return (
-        <div className="flex flex-col justify-center items-center w-full mb-auto mx-auto">
-            {/*Create the header for the page */}
-            <h2 className="mt-10 text-center text-2xl font-bold leading-9 tracking-tight text-gray-900">
-                {/*Edit your company's roles*/}
-                Edit {companyName}'s Roles
-            </h2>
+    <div className="flex flex-col justify-center items-center w-full mb-auto mx-auto">
+        {/*Create the header for the page */}
+        {companyName && (
+        <h2 className="mt-10 text-center text-2xl font-bold leading-9 tracking-tight text-gray-900">
+            {/*Edit your company's roles*/}
+            Edit {companyName}'s Roles
+        </h2>
+        )}
 
-            {/*Create the container that will split out edit roles into two columns*/}
-            <div className="flex min-h-full flex-1 flex-row justify-center px-10 mb-auto py-4 lg:px-12">
+        {/*Create the container that will split out edit roles into two columns*/}
+        <div className="flex min-h-full flex-1 flex-row justify-center px-10 mb-auto py-4 lg:px-12">
 
-                {/*Create the container for the roles, add button and counter*/}
-                <div className="flex flex-col justify-end mb-auto overflow-y">
+            {/*Create the container for the roles, add button and counter*/}
+            <div className="flex flex-col justify-end mb-auto overflow-y">
 
-                    {/* Creates the Add button and the role counter*/}
-                    <div className="flex flex-row justify-end py-1">
-                        <button
-                            //value={}
-                            onClick={addRole}
-                            type="submit"
-                            className="flex justify-center rounded-md bg-indigo-600 px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm
+                {/* Creates the Add button and the role counter*/}
+                <div className="flex flex-row justify-end py-1">
+                    <button
+                        //value={}
+                        onClick={addRole}
+                        type="submit"
+                        className="flex justify-center rounded-md bg-indigo-600 px-3 py-1.5 text-sm font-semibold leading-6 text-white shadow-sm
                             hover:bg-indigo-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600"
-
-                        >
-                            Add
-                        </button>
-                        <h1 className="flex justify-end px-2 mt-1" > Roles: {roles.length}/50 </h1>
-                    </div>
-
-                    {/*Generates the list of roles*/}
-                    <ul className="justify-end" > {listRoles} </ul>
-
+                    >
+                        Add
+                    </button>
+                    <h1 className="flex justify-end px-2 mt-1"> Roles: {roles.length}/50 </h1>
                 </div>
 
-                {/*Create the container for the permissions and options column*/}
-                <div className="flex flex-1 flex-col justify-start px-6 py-1">
+                {/*Generates the list of roles*/}
+                <ul className="justify-end"> {listRoles} </ul>
 
-                    {/*Create the row container for the Name, save and delete*/}
-                    <div className="flex flex-row overflow-y">
+            </div>
 
-                        <form>
-                            <labeL>
-                                <input
-                                    id={activeRole.id}
-                                    name="roleName"
-                                    type="roleName"
-                                    value={activeRole.name}
-                                    onChange={(e) => handleRename(e.target.value)}
-                                    className="block p-2 rounded-md h-8 border-0 min-w-28 text-black shadow-sm ring-1
+            {/*Create the container for the permissions and options column*/}
+            {activeRole && (
+            <div className="flex flex-1 flex-col justify-start px-6 py-1">
+                {/*Create the row container for the Name, save and delete*/}
+                <div className="flex flex-row overflow-y">
+                    <form>
+                        <labeL>
+                            <input
+                                id={activeRole.id}
+                                name="roleName"
+                                type="roleName"
+                                value={activeRole.name}
+                                onChange={(e) => handleRename(e.target.value)}
+                                className="block p-2 rounded-md h-8 border-0 min-w-28 text-black shadow-sm ring-1
                                     ring-inset ring-gray-300 placeholder:text-black focus:ring-2 focus:ring-inset
                                     focus:ring-indigo-600 sm:text-sm sm:leading-6"
-                                />
-                            </labeL>
-                        </form>
+                            />
+                        </labeL>
+                    </form>
 
-
-                        <button className="justify-end mx-auto h-8 w-auto px-2"
-                            //onClick={saveRole}>
-                        >
-                            <img
-                                className="justify-end mx-auto h-8 w-auto"
-                                src={saveIcon}
-                                onClick={submitRoles}
-                                alt="Save Role">
-                            </img>
-                        </button>
-
-                        <button className="justify-end mx-auto h-8 w-auto"
-                                onClick={deleteRole}>
-                            <img
-                                className="justify-end mx-auto h-8 w-auto"
-                                src={deleteIcon}
-                                alt="Delete Role">
-                            </img>
-                        </button>
-
-                    </div>
-
-                    {/*Create the container for the permissions*/}
-                    <div className="flex mt-3 mb-1 justify-start lg: overflow-y">
-                        <ul className="justify-start"> {listPermissions} </ul>
-                    </div>
-
-                    <button className="flex ml-auto w-19 justify-center rounded-md bg-green-600 px-3 py-1.5 text-sm
-                    font-semibold leading-6 text-white shadow-sm hover:bg-green-500 focus-visible:outline
-                    focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:bg-green-600"
-                        type="submit"
-                        value= "Next"
-                        onClick={handleNextClick}
+                    <button className="justify-end mx-auto h-8 w-auto px-2"
+                        //onClick={saveRole}>
                     >
-                        Next →
+                        <img
+                            className="justify-end mx-auto h-8 w-auto"
+                            src={saveIcon}
+                            onClick={submitRoles}
+                            alt="Save Role">
+                        </img>
+                    </button>
+
+                    <button className="justify-end mx-auto h-8 w-auto"
+                            onClick={deleteRole}>
+                        <img
+                            className="justify-end mx-auto h-8 w-auto"
+                            src={deleteIcon}
+                            alt="Delete Role">
+                        </img>
                     </button>
 
                 </div>
+
+                {/*Create the container for the permissions*/}
+                <div className="flex mt-3 mb-1 justify-start lg: overflow-y">
+                    <ul className="justify-start"> {listPermissions} </ul>
+                </div>
+
+                <button className="flex ml-auto w-19 justify-center rounded-md bg-green-600 px-3 py-1.5 text-sm
+                    font-semibold leading-6 text-white shadow-sm hover:bg-green-500 focus-visible:outline
+                    focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:bg-green-600"
+                        type="submit"
+                        value="Next"
+                        onClick={handleNextClick}
+                >
+                    Next →
+                </button>
+
             </div>
+            )}
         </div>
+    </div>
     );
 }

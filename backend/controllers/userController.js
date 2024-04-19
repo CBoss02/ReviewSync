@@ -8,9 +8,13 @@ export const createUser = async (req, res) => {
             last_name: req.body.last_name,
             email: req.body.email,
             company: null,
+            cUpdated: false,
             role: null,
+            roleUpdated: false,
             documents: [],
-            projects: []
+            dUpdated: false,
+            projects: [],
+            pUpdated: false
         });
         res.status(200).send();
     } catch (error) {
@@ -18,6 +22,86 @@ export const createUser = async (req, res) => {
     }
 }
 
+export const getCUpdatedFlag = async (req, res) => {
+    try {
+        const user = await db.collection("users").doc(req.body.uid).get();
+        const userData = user.data()
+        res.status(200).send({cUpdated: userData.cUpdated});
+    } catch (error) {
+        res.status(400).send(error.message);
+    }
+}
+
+export const resetCUpdatedFlag = async (req, res) => {
+    try {
+        await db.collection("users").doc(req.body.uid).update({
+            cUpdated: false
+        })
+    } catch (error) {
+        res.status(400).send(error.message);
+    }
+}
+
+export const getRoleUpdatedFlag = async (req, res) => {
+    try {
+        const user = await db.collection("users").doc(req.body.uid).get();
+        const userData = user.data()
+        res.status(200).send({roleUpdated: userData.roleUpdated});
+    } catch (error) {
+        res.status(400).send(error.message);
+    }
+}
+
+export const resetRoleUpdatedFlag = async (req, res) => {
+    try {
+        await db.collection("users").doc(req.body.uid).update({
+            roleUpdated: false
+        })
+    } catch (error) {
+        res.status(400).send(error.message);
+    }
+}
+
+export const getDUpdatedFlag = async (req, res) => {
+    try {
+        const user = await db.collection("users").doc(req.body.uid).get();
+        const userData = user.data()
+        res.status(200).send({dUpdated: userData.dUpdated});
+    } catch (error) {
+        res.status(400).send(error.message);
+    }
+}
+
+export const resetDUpdatedFlag = async (req, res) => {
+    try {
+        await db.collection("users").doc(req.body.uid).update({
+            dUpdated: false
+        })
+    } catch (error) {
+        res.status(400).send(error.message);
+    }
+}
+
+export const getPUpdatedFlag = async (req, res) => {
+    try {
+        const user = await db.collection("users").doc(req.body.uid).get();
+        const userData = user.data()
+        res.status(200).send({pUpdated: userData.pUpdated});
+    } catch (error) {
+        res.status(400).send(error.message);
+    }
+}
+
+export const resetPUpdatedFlag = async (req, res) => {
+    try {
+        await db.collection("users").doc(req.body.uid).update({
+            pUpdated: false
+        })
+        res.status(200).send();
+    } catch (error) {
+        res.status(400).send(error.message);
+    }
+}
 
 export const getCurrentUser = async (req, res) => {
     try {
@@ -72,7 +156,6 @@ export const updateLName = async (req, res) => {
 export const uploadDocument = async (req, res) => {
     try {
         const user = req.currentUser;
-
         if (user) {
             const document = {
                 document_name: req.body.document_name,
@@ -92,11 +175,16 @@ export const uploadDocument = async (req, res) => {
 export const getPermissions = async (req, res) => {
     const data = req.body;
     const user = await db.collection("users").doc(data.uid).get();
-    const userData = await user.data();
+    const userData = user.data();
     const roleID = userData.role;
-    const role = await db.collection("companies").doc(userData.company).collection("roles").doc(roleID).get();
-    const roleData = await role.data();
-    const permissions = roleData.permissions;
-    res.status(200).send({permissions: permissions});
+    if(roleID === "owner")
+        res.status(200).send({permissions: [true, true, true, true, true, true, true]})
+    else
+    {
+        const role = await db.collection("companies").doc(userData.company).collection("roles").doc(roleID).get();
+        const roleData = role.data();
+        const permissions = roleData.permissions;
+        res.status(200).send({permissions: permissions});
+    }
 }
 

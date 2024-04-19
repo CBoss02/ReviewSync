@@ -11,6 +11,7 @@ import VerifyEmail from "./pages/account/VerifyEmail";
 import Home from "./pages/Home";
 import EditRoles from "./components/company/EditRoles";
 import AddEmployees from "./components/company/AddEmployees";
+import DocumentPage from "./pages/account/DocumentPage";
 
 function App() {
     return (
@@ -39,6 +40,15 @@ function App() {
                         element={
                             <WithPrivateRoute>
                                 <Profile />
+                            </WithPrivateRoute>
+                        }
+                    />
+                    <Route
+                        exact
+                        path="/document"
+                        element={
+                            <WithPrivateRoute>
+                                <DocumentPage />
                             </WithPrivateRoute>
                         }
                     />

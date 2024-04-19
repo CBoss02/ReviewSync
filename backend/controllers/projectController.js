@@ -33,7 +33,8 @@ export const createProject = async (req, res) => {
             changed: false
         }).then((project) => {
             db.collection("users").doc(data.owner).update({
-                projects: FieldValue.arrayUnion(project.id)
+                projects: FieldValue.arrayUnion(project.id),
+                pUpdated: true
             })
         }).catch((error) => {
             console.log(error)
@@ -47,9 +48,21 @@ export const createProject = async (req, res) => {
 export const updateName = async (req, res) => {
     try {
         const data = req.body
-        await db.collection("companies").doc(data.companyID).collection("projects").doc(data.projectID).update({
+        const project = await db.collection("companies").doc(data.companyID).collection("projects").doc(data.projectID)
+        await project.update({
             name: data.name
         })
+        const projectSnap = await project.get();
+        const projectData = projectSnap.data();
+        for(let i = 0; i < projectData.employees.length; i++)
+        {
+            await db.collection("users").doc(projectData.employees[i]).update({
+                pUpdated: true
+            })
+            await db.collection("users").doc(projectData.owner).update({
+                pUpdated: true
+            })
+        }
         res.status(200).send();
     } catch (error) {
         res.status(400).send(error.message);
@@ -67,7 +80,8 @@ export const updateEmployee = async (req, res) => {
                 employees: FieldValue.arrayRemove(data.employeeID)
             })
             await db.collection("users").doc(data.employeeID).update({
-                projects: FieldValue.arrayRemove(data.projectID)
+                projects: FieldValue.arrayRemove(data.projectID),
+                pUpdated: true
             })
         }
         else
@@ -76,7 +90,8 @@ export const updateEmployee = async (req, res) => {
                 employees: FieldValue.arrayUnion(data.employeeID)
             })
             await db.collection("users").doc(data.employeeID).update({
-                projects: FieldValue.arrayUnion(data.projectID)
+                projects: FieldValue.arrayUnion(data.projectID),
+                pUpdated: true
             })
         }
         res.status(200).send();
@@ -116,15 +131,19 @@ export const deleteProject = async (req, res) => {
         const projectData = project.data();
         if(projectData.documents.length === 0)
         {
-            console.log("in if block")
             await db.collection("companies").doc(data.companyID).collection("projects").doc(data.projectID).delete();
-            const users = await db.collection("users").where("company", "==", data.companyID).get();
+            const users = await db.collection("users").where(("company", "==", data.companyID) && ("projects", "array-contains", data.projectID)).get();
             if(!users.empty)
             {
                 await users.forEach(user => {
-                    db.collection("users").doc(user.id).update({
-                        projects: FieldValue.arrayRemove(data.projectID)
-                    })
+                    const userData = user.data();
+                    if(userData.projects.includes(data.projectID))
+                    {
+                        db.collection("users").doc(user.id).update({
+                            projects: FieldValue.arrayRemove(data.projectID),
+                            pUpdated: true
+                        })
+                    }
                 })
             }
             res.status(200).send();
