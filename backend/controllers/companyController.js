@@ -1,6 +1,7 @@
-import { db , FieldValue } from "../config/firebase-config.js";
+const {db} = require('../config/firebase-config');
+const {FieldValue} = require('firebase-admin').firestore;
 
-export const createCompany = async (req, res) => {
+exports.createCompany = async (req, res) => {
     try {
         const companyData = req.body;
         const doc = await db.collection("companies").add({
@@ -21,7 +22,7 @@ export const createCompany = async (req, res) => {
     }
 }
 
-export const getEUpdatedFlag = async (req, res) => {
+exports.getEUpdatedFlag = async (req, res) => {
     try {
         const company = await db.collection("companies").doc(req.body.companyID).get();
         const companyData = company.data();
@@ -31,7 +32,7 @@ export const getEUpdatedFlag = async (req, res) => {
     }
 }
 
-export const resetEUpdatedFlag = async (req, res) => {
+exports.resetEUpdatedFlag = async (req, res) => {
     try {
         await db.collection("companies").doc(req.body.companyID).update({
             eUpdated: false
@@ -41,7 +42,7 @@ export const resetEUpdatedFlag = async (req, res) => {
     }
 }
 
-export const getRolesUpdatedFlag = async (req, res) => {
+exports.getRolesUpdatedFlag = async (req, res) => {
     try {
         const company = await db.collection("companies").doc(req.body.companyID).get();
         const companyData = company.data();
@@ -51,7 +52,7 @@ export const getRolesUpdatedFlag = async (req, res) => {
     }
 }
 
-export const resetRolesUpdatedFlag = async (req, res) => {
+exports.resetRolesUpdatedFlag = async (req, res) => {
     try {
         await db.collection("companies").doc(req.body.companyID).update({
             rolesUpdated: false
@@ -61,7 +62,7 @@ export const resetRolesUpdatedFlag = async (req, res) => {
     }
 }
 
-export const getCompanyID = async (req, res) => {
+exports.getCompanyID = async (req, res) => {
     try {
         const uid = req.body.uid;
         const user = await db.collection("users").doc(uid).get();
@@ -72,7 +73,7 @@ export const getCompanyID = async (req, res) => {
     }
 }
 
-export const getCompanyName = async (req, res) => {
+exports.getCompanyName = async (req, res) => {
     try {
         const uid = req.body.uid;
         const user = await db.collection("users").doc(uid).get();
@@ -85,7 +86,7 @@ export const getCompanyName = async (req, res) => {
     }
 }
 
-export const getEmployees = async (req, res) => {
+exports.getEmployees = async (req, res) => {
     try {
         const uid = req.body.uid;
         const user = await db.collection("users").doc(uid).get();
@@ -110,7 +111,7 @@ export const getEmployees = async (req, res) => {
     }
 }
 
-export const getEmailsAndRoles = async (req, res) => {
+exports.getEmailsAndRoles = async (req, res) => {
     try {
         const user = await db.collection("users").doc(req.body.uid).get();
         const userData = user.data();
@@ -136,7 +137,7 @@ export const getEmailsAndRoles = async (req, res) => {
     }
 }
 
-export const addEmployeeToCompany = async (req, res) => {
+exports.addEmployeeToCompany = async (req, res) => {
     try {
         const data = req.body;
         const companyCollection = await db.collection("companies");
@@ -179,7 +180,7 @@ export const addEmployeeToCompany = async (req, res) => {
 
 }
 
-export const getRoles = async (req, res) => {
+exports.getRoles = async (req, res) => {
     try {
         const roles = [];
         const user = await db.collection("users").doc(req.body.uid).get();
@@ -204,7 +205,7 @@ export const getRoles = async (req, res) => {
     }
 }
 
-export const addOrUpdateRoles = async (req, res) => {
+exports.addOrUpdateRoles = async (req, res) => {
     try {
         const roles = req.body.roles; //array of jsons
         const user = await db.collection("users").doc(req.body.uid).get();
@@ -263,7 +264,7 @@ export const addOrUpdateRoles = async (req, res) => {
     }
 }
 
-export const modifyPendingListAndEditRoles = async (req, res) => {
+exports.modifyPendingListAndEditRoles = async (req, res) => {
     try {
         const employees = req.body.employees;
         const uid = req.body.uid;

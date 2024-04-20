@@ -1,10 +1,20 @@
-import express from "express";
-import {addDocument, addComment, deleteComment, getComments} from "../controllers/documentController.js";
+const express = require('express');
+const { uploadDocument, getDocuments, testRoute, deleteComment, createComment, getComments} = require('../controllers/documentController');
+const multer = require('multer');
+const authMiddleware = require("../middleware/authMiddleware");
+const upload = multer({ dest: 'uploads/' });
+
 const router = express.Router();
 
-router.post("/addDocument", addDocument);
-router.post("/addComment", addComment);
+router.post('/uploadDocument', upload.single('file'), authMiddleware, uploadDocument);
+router.post("/addComment", createComment);
 router.delete("/deleteComment", deleteComment);
 router.get("/getComments", getComments);
+router.get('/', getDocuments);
+router.get('/testRoute', authMiddleware, testRoute);
 
-export default router;
+module.exports = router;
+
+
+
+

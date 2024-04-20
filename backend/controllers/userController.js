@@ -1,20 +1,15 @@
-import {db} from "../config/firebase-config.js";
-import {auth} from "../config/firebase-config.js";
+const {db} = require("../config/firebase-config");
 
-export const createUser = async (req, res) => {
+exports.createUser = async (req, res) => {
     try {
         await db.collection("users").doc(req.body.uid).set({
             first_name: req.body.first_name,
             last_name: req.body.last_name,
             email: req.body.email,
             company: null,
-            cUpdated: false,
             role: null,
-            roleUpdated: false,
             documents: [],
-            dUpdated: false,
-            projects: [],
-            pUpdated: false
+            projects: []
         });
         res.status(200).send();
     } catch (error) {
@@ -22,7 +17,43 @@ export const createUser = async (req, res) => {
     }
 }
 
-export const getCUpdatedFlag = async (req, res) => {
+// Get user by id
+exports.getUser = async (req, res) => {
+    const user = req.user;
+
+    const userRef = db.collection('users').doc(user.uid);
+    const doc = await userRef.get();
+
+    if (!doc.exists) {
+        return res.status(404).send('User not found');
+    } else {
+        return res.status(200).send(doc.data());
+    }
+}
+
+exports.getUserById = async (req, res) => {
+    const userId = req.body.userId;
+    try {
+        const user = await db.collection("users").doc(userId).get();
+        if (user.exists) {
+            res.status(200).send(user.data());
+        } else {
+            res.status(404).send("User not found");
+        }
+    } catch (error) {
+        res.status(400).send(error.message);
+    }
+}
+
+exports.updateUser = async (req, res) => {
+
+}
+
+exports.deleteUser = async (req, res) => {
+
+}
+
+exports.getCUpdatedFlag = async (req, res) => {
     try {
         const user = await db.collection("users").doc(req.body.uid).get();
         const userData = user.data()
@@ -32,7 +63,7 @@ export const getCUpdatedFlag = async (req, res) => {
     }
 }
 
-export const resetCUpdatedFlag = async (req, res) => {
+exports.resetCUpdatedFlag = async (req, res) => {
     try {
         await db.collection("users").doc(req.body.uid).update({
             cUpdated: false
@@ -42,7 +73,7 @@ export const resetCUpdatedFlag = async (req, res) => {
     }
 }
 
-export const getRoleUpdatedFlag = async (req, res) => {
+exports.getRoleUpdatedFlag = async (req, res) => {
     try {
         const user = await db.collection("users").doc(req.body.uid).get();
         const userData = user.data()
@@ -52,7 +83,7 @@ export const getRoleUpdatedFlag = async (req, res) => {
     }
 }
 
-export const resetRoleUpdatedFlag = async (req, res) => {
+exports.resetRoleUpdatedFlag = async (req, res) => {
     try {
         await db.collection("users").doc(req.body.uid).update({
             roleUpdated: false
@@ -62,7 +93,7 @@ export const resetRoleUpdatedFlag = async (req, res) => {
     }
 }
 
-export const getDUpdatedFlag = async (req, res) => {
+exports.getDUpdatedFlag = async (req, res) => {
     try {
         const user = await db.collection("users").doc(req.body.uid).get();
         const userData = user.data()
@@ -72,7 +103,7 @@ export const getDUpdatedFlag = async (req, res) => {
     }
 }
 
-export const resetDUpdatedFlag = async (req, res) => {
+exports.resetDUpdatedFlag = async (req, res) => {
     try {
         await db.collection("users").doc(req.body.uid).update({
             dUpdated: false
@@ -82,7 +113,7 @@ export const resetDUpdatedFlag = async (req, res) => {
     }
 }
 
-export const getPUpdatedFlag = async (req, res) => {
+exports.getPUpdatedFlag = async (req, res) => {
     try {
         const user = await db.collection("users").doc(req.body.uid).get();
         const userData = user.data()
@@ -92,7 +123,7 @@ export const getPUpdatedFlag = async (req, res) => {
     }
 }
 
-export const resetPUpdatedFlag = async (req, res) => {
+exports.resetPUpdatedFlag = async (req, res) => {
     try {
         await db.collection("users").doc(req.body.uid).update({
             pUpdated: false
@@ -103,7 +134,7 @@ export const resetPUpdatedFlag = async (req, res) => {
     }
 }
 
-export const getCurrentUser = async (req, res) => {
+exports.getCurrentUser = async (req, res) => {
     try {
         const user = req.currentUser;
         if (user) {
@@ -118,7 +149,7 @@ export const getCurrentUser = async (req, res) => {
     }
 }
 
-export const getName = async (req, res) => {
+exports.getName = async (req, res) => {
     try {
         const uid = req.body.uid;
         const user = await db.collection("users").doc(uid).get();
@@ -129,7 +160,7 @@ export const getName = async (req, res) => {
     }
 }
 
-export const updateFName = async (req, res) => {
+exports.updateFName = async (req, res) => {
     try {
         const data = req.body
         await db.collection("users").doc(data.uid).update({
@@ -141,7 +172,7 @@ export const updateFName = async (req, res) => {
     }
 }
 
-export const updateLName = async (req, res) => {
+exports.updateLName = async (req, res) => {
     try {
         const data = req.body
         await db.collection("users").doc(data.uid).update({
@@ -153,7 +184,7 @@ export const updateLName = async (req, res) => {
     }
 }
 
-export const uploadDocument = async (req, res) => {
+exports.uploadDocument = async (req, res) => {
     try {
         const user = req.currentUser;
         if (user) {
@@ -172,7 +203,7 @@ export const uploadDocument = async (req, res) => {
     }
 }
 
-export const getPermissions = async (req, res) => {
+exports.getPermissions = async (req, res) => {
     const data = req.body;
     const user = await db.collection("users").doc(data.uid).get();
     const userData = user.data();
@@ -187,4 +218,3 @@ export const getPermissions = async (req, res) => {
         res.status(200).send({permissions: permissions});
     }
 }
-

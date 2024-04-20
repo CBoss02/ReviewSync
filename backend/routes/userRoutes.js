@@ -1,26 +1,15 @@
-import express from "express";
-const router = express.Router();
-import {createUser,
-    getCurrentUser,
-    uploadDocument,
-    getName,
-    updateFName,
-    updateLName,
-    getPermissions,
-    getCUpdatedFlag,
-    resetCUpdatedFlag,
-    getRoleUpdatedFlag,
-    resetRoleUpdatedFlag,
-    getDUpdatedFlag,
-    resetDUpdatedFlag,
-    getPUpdatedFlag,
-    resetPUpdatedFlag
-} from "../controllers/userController.js";
-import VerifyToken from "../middleware/verifyToken.js";
+const express = require('express');
+const authMiddleware = require("../middleware/authMiddleware");
+const {getUser, createUser, getName, updateFName,
+    updateLName, getPermissions, getCUpdatedFlag,
+    resetCUpdatedFlag, getRoleUpdatedFlag, resetRoleUpdatedFlag,
+    getDUpdatedFlag, resetDUpdatedFlag, getPUpdatedFlag, resetPUpdatedFlag
+} = require("../controllers/userController");
 
-router.post("/createUser", createUser);
-router.get("/getCurrentUser", VerifyToken, getCurrentUser);
-router.post("/uploadDocument", VerifyToken, uploadDocument);
+const router = express.Router();
+
+router.post('/createUser', createUser);
+router.get('/getUser', authMiddleware, getUser);
 router.post("/getName", getName);
 router.put("/updateFName", updateFName);
 router.put("/updateLName", updateLName);
@@ -34,4 +23,9 @@ router.put("/resetDUpdatedFlag", resetDUpdatedFlag);
 router.post("/getPUpdatedFlag", getPUpdatedFlag);
 router.put("/resetPUpdatedFlag", resetPUpdatedFlag);
 
-export default router;
+router.get('/test', (req, res) => {
+    res.send("Test route");
+});
+
+
+module.exports = router;

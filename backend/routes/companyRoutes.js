@@ -1,20 +1,12 @@
-import express from "express";
+const express = require('express');
+const { createCompany, getCompanyID,
+    addOrUpdateRoles, modifyPendingListAndEditRoles,
+    getEmailsAndRoles, getRoles,
+    getEmployees, addEmployeeToCompany,
+    getCompanyName, getEUpdatedFlag,
+    resetEUpdatedFlag, getRolesUpdatedFlag,
+    resetRolesUpdatedFlag } = require("../controllers/companyController");
 
-import {
-    createCompany,
-    getCompanyID,
-    getCompanyName,
-    modifyPendingListAndEditRoles,
-    addEmployeeToCompany,
-    getRoles,
-    addOrUpdateRoles,
-    getEmailsAndRoles,
-    getEmployees,
-    getEUpdatedFlag,
-    resetEUpdatedFlag,
-    getRolesUpdatedFlag,
-    resetRolesUpdatedFlag
-} from "../controllers/companyController.js";
 const router = express.Router();
 
 router.post("/createCompany", createCompany);
@@ -30,5 +22,4 @@ router.post("/getEUpdatedFlag", getEUpdatedFlag);
 router.put("/resetEUpdatedFlag", resetEUpdatedFlag);
 router.post("/getRUpdatedFlag", getRolesUpdatedFlag);
 router.put("/resetRUpdatedFlag", resetRolesUpdatedFlag);
-
-export default router;
+module.exports = router;

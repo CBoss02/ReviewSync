@@ -1,17 +1,13 @@
-//Configures the firebase cloud
+const admin = require('firebase-admin');
+const serviceAccount = require('./serviceAccountKey.json');
 
-import { initializeApp, cert } from "firebase-admin/app";
-import { getAuth } from "firebase-admin/auth";
-import serviceAccountKey from "./serviceAccountKey.json" assert { type: "json" };
-import {getFirestore, FieldValue} from "firebase-admin/firestore";
-
-
-const app = initializeApp({
-    credential: cert(serviceAccountKey),
+admin.initializeApp({
+    credential: admin.credential.cert(serviceAccount),
+    storageBucket: "gs://reviewsync-39f23.appspot.com"
 });
 
-const auth = getAuth(app);
-const db = getFirestore(app);
+const db = admin.firestore();
+const storage = admin.storage();
 
-export { db, auth , FieldValue };
+module.exports = { db, storage, admin };
 

@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 
 import { useAuth } from "../../contexts/AuthContext";
 import {sendPasswordResetEmail} from "firebase/auth";
-import auth from "../../config/firebase.js";
+import auth from "../../config/firebase-config";
 import axios, {request} from "axios";
 import saveIcon from "../../assets/icons/GreenSave-Icon.png";
 

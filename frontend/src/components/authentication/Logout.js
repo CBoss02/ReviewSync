@@ -15,6 +15,7 @@ export default function Logout({ modal, setModal }) {
         try {
             setError("");
             await logout();
+            localStorage.removeItem("token");
             setModal(false);
             navigate("/login");
         } catch (e) {

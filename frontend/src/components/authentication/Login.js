@@ -1,45 +1,51 @@
-import React, {useEffect} from "react";
+import React, {useEffect, useState} from "react";
 import {useAuth} from "../../contexts/AuthContext";
-import {useNavigate} from "react-router-dom";
+import {Navigate, useNavigate} from "react-router-dom";
+import {signInWithEmailAndPassword} from "firebase/auth";
+import auth from "../../config/firebase-config";
 
 export default function Login() {
-    const navigate = useNavigate();
-    const [formData, setFormData] = React.useState({
-        email: "",
-        password: ""
+    const [formData, setFormData] = useState({
+        email: '',
+        password: ''
     });
-    const [loading, setLoading] = React.useState(false);
 
-    const {currentUser, login, setError} = useAuth();
+    const navigate = useNavigate();
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState('');
 
-    useEffect(() => {
-        if (currentUser) {
-            navigate("/");
+    const signIn = async () => {
+        try {
+            const userCredential = await signInWithEmailAndPassword(auth, formData.email, formData.password);
+            const token = await userCredential.user.getIdToken();
+            localStorage.setItem('token', token);
+        } catch (error) {
+            setError("Failed to log in");
+            console.error(error);
         }
-    }, [currentUser, navigate]);
+    };
 
     const handleFormChange = (e) => {
-        const {name, value} = e.target;
         setFormData({
             ...formData,
-            [name]: value
+            [e.target.name]: e.target.value
         });
-    }
+    };
 
     const handleFormSubmit = async (e) => {
         e.preventDefault();
-
         try {
             setError("");
             setLoading(true);
-            await login(formData.email, formData.password);
+            await signIn();
             navigate("/");
         } catch (error) {
             console.error(error);
             setError("Failed to log in");
         }
         setLoading(false);
-    }
+    };
+
 
     return (
         <>
