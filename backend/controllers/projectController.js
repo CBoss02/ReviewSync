@@ -1,6 +1,7 @@
-import {db, FieldValue} from "../config/firebase-config.js";
+const {db} = require('../config/firebase-config');
+const {FieldValue} = require('firebase-admin').firestore;
 
-export const getProjects = async (req, res) => {
+exports.getProjects = async (req, res) => {
     try {
         const uid = req.body.uid;
         const user = await db.collection("users").doc(uid).get();
@@ -22,7 +23,7 @@ export const getProjects = async (req, res) => {
     }
 }
 
-export const createProject = async (req, res) => {
+exports.createProject = async (req, res) => {
     try {
         const data = req.body;
         db.collection("companies").doc(data.companyID).collection("projects").add({
@@ -45,7 +46,7 @@ export const createProject = async (req, res) => {
     }
 }
 
-export const updateName = async (req, res) => {
+exports.updateName = async (req, res) => {
     try {
         const data = req.body
         const project = await db.collection("companies").doc(data.companyID).collection("projects").doc(data.projectID)
@@ -69,7 +70,7 @@ export const updateName = async (req, res) => {
     }
 }
 
-export const updateEmployee = async (req, res) => {
+exports.updateEmployee = async (req, res) => {
     try {
         const data = req.body;
         const project = await db.collection("companies").doc(data.companyID).collection("projects").doc(data.projectID).get();
@@ -100,7 +101,7 @@ export const updateEmployee = async (req, res) => {
     }
 }
 
-export const getEmployeesOnProject = async (req, res) => {
+exports.getEmployeesOnProject = async (req, res) => {
     try {
         const data = req.body;
         let employees = [];
@@ -124,7 +125,7 @@ export const getEmployeesOnProject = async (req, res) => {
 
 //it makes the most sense to push to the database every time a small thing gets updated
 //deleteProject
-export const deleteProject = async (req, res) => {
+exports.deleteProject = async (req, res) => {
     try {
         const data = req.body
         const project = await db.collection("companies").doc(data.companyID).collection("projects").doc(data.projectID).get();

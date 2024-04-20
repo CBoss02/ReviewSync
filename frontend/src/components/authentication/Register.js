@@ -59,7 +59,7 @@ export default function Register() {
             setLoading(true);
             await register();
             navigate("/");
-            await register(formData.email, formData.password, formData.first_name, formData.last_name);
+            await register(form.email, form.password, form.first_name, form.last_name);
             navigate("/profile");
         } catch (error) {
             console.error(error);

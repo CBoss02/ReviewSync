@@ -1,17 +1,17 @@
 const express = require('express');
-const {createCompany, getCompanyID, addOrUpdateRoles,
-    modifyPendingListAndEditRoles, getEmailsAndRoles, getRoles, addEmployee
-} = require("../controllers/companyController");
+const { createCompany, getCompanyID,
+    addOrUpdateRoles, modifyPendingListAndEditRoles,
+    getEmailsAndRoles, getRoles,
+    getEmployees, addEmployeeToCompany,
+    getCompanyName, getEUpdatedFlag,
+    resetEUpdatedFlag, getRolesUpdatedFlag,
+    resetRolesUpdatedFlag } = require("../controllers/companyController");
 
 const router = express.Router();
 
-router.post('/createCompany', createCompany);
-router.get('/getCompanyID', getCompanyID);
-router.put('/modifyPendingListAndEditRoles', modifyPendingListAndEditRoles);
-router.put('/addEmployee', addEmployee);
-router.get('/getRoles', getRoles);
-router.put('/addOrUpdateRoles', addOrUpdateRoles);
-router.get('/getEmailsAndRoles', getEmailsAndRoles);
+router.post("/createCompany", createCompany);
+router.post("/getCompanyID", getCompanyID);
+router.post("/getCompanyName", getCompanyName);
 router.post("/getEmployees", getEmployees);
 router.put("/modifyPendingListAndEditRoles", modifyPendingListAndEditRoles);
 router.put("/addEmployeeToCompany", addEmployeeToCompany);
@@ -22,5 +22,4 @@ router.post("/getEUpdatedFlag", getEUpdatedFlag);
 router.put("/resetEUpdatedFlag", resetEUpdatedFlag);
 router.post("/getRUpdatedFlag", getRolesUpdatedFlag);
 router.put("/resetRUpdatedFlag", resetRolesUpdatedFlag);
-
 module.exports = router;

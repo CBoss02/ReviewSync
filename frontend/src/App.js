@@ -11,7 +11,6 @@ import Profile from "./pages/account/Profile";
 import Home from "./pages/Home";
 import EditRoles from "./components/company/EditRoles";
 import AddEmployees from "./components/company/AddEmployees";
-import DocumentPage from "./pages/DocumentPage";
 
 function App() {
     return (
@@ -47,20 +46,12 @@ function App() {
                     />
                     <Route path="/verify-email" element={<VerifyEmail/>}/>
                     <Route path="*" element={<h1>Not Found</h1>}/>
-                    <Route path="/dashboard" element={<Dashboard/>}/>
-                            <WithPrivateRoute>
-                                <Profile />
-                            </WithPrivateRoute>
-                    />
                     <Route
                         exact
-                        path="/document"
-                        element={
-                            <WithPrivateRoute>
-                                <DocumentPage />
-                            </WithPrivateRoute>
-                        }
+                        path="/dashboard"
+                        element={<WithPrivateRoute><Dashboard/></WithPrivateRoute>}
                     />
+
                     <Route path="/verify-email" element={<VerifyEmail />}/>
                     <Route path="*" element={<h1>Not Found</h1>}/>
                     <Route path="/dashboard" element={<Dashboard />}/>
