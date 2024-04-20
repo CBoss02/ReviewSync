@@ -7,9 +7,11 @@ import Header from "./components/layouts/Header";
 import WithPrivateRoute from "./utils/WithPrivateRoute";
 import Dashboard from "./pages/Dashboard"
 import VerifyEmail from "./pages/VerifyEmail";
+import Profile from "./pages/account/Profile";
 import Home from "./pages/Home";
 import EditRoles from "./components/company/EditRoles";
 import AddEmployees from "./components/company/AddEmployees";
+import DocumentPage from "./pages/DocumentPage";
 
 function App() {
     return (
@@ -32,6 +34,8 @@ function App() {
 
                     <Route path="/edit-roles" element={<EditRoles/>}/>
                     <Route path="/add-employees" element={<AddEmployees/>}/>
+                    <Route path="/edit-roles" element={<EditRoles />}/>
+                    <Route path="/add-employees" element={<AddEmployees />}/>
                     <Route
                         exact
                         path="/profile"
@@ -44,6 +48,22 @@ function App() {
                     <Route path="/verify-email" element={<VerifyEmail/>}/>
                     <Route path="*" element={<h1>Not Found</h1>}/>
                     <Route path="/dashboard" element={<Dashboard/>}/>
+                            <WithPrivateRoute>
+                                <Profile />
+                            </WithPrivateRoute>
+                    />
+                    <Route
+                        exact
+                        path="/document"
+                        element={
+                            <WithPrivateRoute>
+                                <DocumentPage />
+                            </WithPrivateRoute>
+                        }
+                    />
+                    <Route path="/verify-email" element={<VerifyEmail />}/>
+                    <Route path="*" element={<h1>Not Found</h1>}/>
+                    <Route path="/dashboard" element={<Dashboard />}/>
                 </Routes>
             </Router>
         </AuthProvider>

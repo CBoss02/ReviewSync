@@ -68,19 +68,19 @@ exports.getEmailsAndRoles = async (req, res) => {
 }
 
 exports.addEmployee = async (req, res) => {
-/*    const owner = req.user;
-    const companyId = owner.company;
-    const employee = await db.collection("users").doc(req.body.userEmail).get();
-    const company = await db.collection("companies").doc(companyId).get();
+    /*    const owner = req.user;
+        const companyId = owner.company;
+        const employee = await db.collection("users").doc(req.body.userEmail).get();
+        const company = await db.collection("companies").doc(companyId).get();
 
-    try {
-        // Add the employee to the company's pending list and update the user's company fielld and role
-        const response = await db.collection("companies").doc(companyId).update({
-            pendingList: FieldValue.arrayUnion({uid: employee.id, role: req.body.role})
-        });
-    } catch (error) {
-        res.status(400).send(error.message);
-    }*/
+        try {
+            // Add the employee to the company's pending list and update the user's company fielld and role
+            const response = await db.collection("companies").doc(companyId).update({
+                pendingList: FieldValue.arrayUnion({uid: employee.id, role: req.body.role})
+            });
+        } catch (error) {
+            res.status(400).send(error.message);
+        }*/
 
 
     try {

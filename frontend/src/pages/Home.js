@@ -7,8 +7,7 @@ import axios from 'axios';
 import { useNavigate } from "react-router-dom";
 import api from "../config/axiosConfig";
 import DocumentUpload from "../components/document/DocumentUpload"; // Import useNavigate
-//import auth from "../config/firebase";
-
+import {Link, useNavigate} from "react-router-dom"; // Import useNavigate
 export default function Home() {
 
     //Caleb's code from index.js used to navigate into the /edit-roles page
@@ -17,9 +16,11 @@ export default function Home() {
     const [error, setError] = useState("");
     const auth = useAuth();
     console.log(auth.currentUser.uid);
+    const uid = auth.currentUser.uid;
 
     const [state, setState] = useState(0);
     const [isVisible, setIsVisible] = useState(false); // New state to manage visibility for animation
+
 
     useEffect(() => {
         if (state === 1 || state === 2) {
@@ -28,6 +29,21 @@ export default function Home() {
             setIsVisible(false); // Hide input field
         }
     }, [state]);
+
+    //Gets the user's company if they have one when the page loads
+    useEffect(() => {
+        const fetchCompanyName = async () => {
+            try {
+                const response = await axios.post('/api/companies/getCompanyName', {uid: uid});
+                setCompanyName(response.data.companyName)
+            } catch (error) {
+                console.error('Failed to fetch company name:', error);
+                // Handle error (e.g., show an error message to the user)
+            }//end try catch
+        };//end fetchCompanyName
+
+        fetchCompanyName();
+    }, []);
 
     useEffect(() => {
         const handleClickOutside = (event) => {
@@ -51,6 +67,10 @@ export default function Home() {
                 name: companyName,
             });
             alert('You MIGHT have created a company');
+            await axios.post("/api/companies/createCompany", {
+                owner: uid,
+                name: companyName
+            });
         } catch (error) {
             setError("Failed to create the company");
         }//end try catch
@@ -63,6 +83,9 @@ export default function Home() {
             //Create a company with the name passed
             submitCompany(companyName);
             navigate('/edit-roles', {state: {companyName}}); // Navigate to /edit-roles
+            submitCompany(companyName).then(() => {
+                navigate('/edit-roles', {state: {companyName}});
+            }) // Navigate to /edit-roles
         }//end if
 
     };

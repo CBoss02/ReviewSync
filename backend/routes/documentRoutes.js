@@ -9,5 +9,12 @@ const router = express.Router();
 router.post('/uploadDocument', upload.single('file'), authMiddleware, uploadDocument);
 router.get('/', getDocuments);
 router.get('/testRoute', authMiddleware, testRoute);
+router.post("/addComment", addComment);
+router.delete("/deleteComment", deleteComment);
+router.get("/getComments", getComments);
 
 module.exports = router;
+
+
+
+

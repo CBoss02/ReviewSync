@@ -1,0 +1,116 @@
+import React, {useState, useEffect, useRef} from "react";
+import { useNavigate } from "react-router-dom";
+
+import { useAuth } from "../../contexts/AuthContext";
+import {sendPasswordResetEmail} from "firebase/auth";
+import auth from "../../config/firebase.js";
+import axios, {request} from "axios";
+import saveIcon from "../../assets/icons/GreenSave-Icon.png";
+
+export default function Profile() {
+    const authContext = useAuth();
+    const uid = authContext.currentUser.uid;
+    const [fNameInput, setFNameInput] = useState("");
+    const [lNameInput, setLNameInput] = useState("");
+
+    const handleFNameChange = (event) => {
+        setFNameInput(event.target.value);
+    };
+
+    const handleLNameChange = (event) => {
+        setLNameInput(event.target.value);
+    };
+
+    useEffect(() => {
+        const fetchName = async () => {
+            try {
+                await axios.post("/api/users/getName", {
+                    uid: uid
+                }).then((response) => {
+                    setFNameInput(response.data.first_name);
+                    setLNameInput(response.data.last_name);
+                });
+            } catch (error) {
+                console.error('Failed to fetch name:', error);
+            }
+        }
+        fetchName()
+    }, []);
+
+    const updateFName = async () => {
+        try {
+            await axios.put("/api/users/updateFName", {
+                uid: uid,
+                first_name: fNameInput
+            })
+        } catch (error) {
+            console.error('Failed to fetch name:', error);
+        }
+    }
+
+    const updateLName = async () => {
+        try {
+            await axios.put("/api/users/updateLName", {
+                uid: uid,
+                last_name: lNameInput
+            })
+        } catch (error) {
+            console.error('Failed to fetch name:', error);
+        }
+    }
+
+
+    const inputStates = [fNameInput, lNameInput]
+    const updateNameFunctions = [updateFName, updateLName]
+    const updateInputFunctions = [handleFNameChange, handleLNameChange]
+
+    const renderNameSlot = (index) => {
+        return (
+            <div id="inputContainer"
+                 className={`flex items-center space-x-5 transition-all duration-500`}
+                 style={{marginTop: "5px", marginBottom: "30px"}}>
+                <input
+                    type="text"
+                    className="w-full border-2 border-gray-300 p-2 rounded-full transition-all duration-500"
+                    defaultValue={inputStates[index]}
+                    value={inputStates[index]}
+                    onChange={updateInputFunctions[index]}
+                />
+                <button className="justify-end mx-auto h-8 w-auto px-2"
+                >
+                    <img
+                        className="justify-end mx-auto h-8 w-auto"
+                        onClick={() => updateNameFunctions[index]()}
+                        src={saveIcon}
+                        alt="Save Role">
+                    </img>
+                </button>
+            </div>
+        )
+    }
+
+
+    return (
+        <div
+            style={{marginTop: "60px", marginRight: "450px", marginLeft: "450px"}}>
+            <label>
+                First Name
+            </label>
+            {renderNameSlot(0)}
+            <label>
+                Last Name
+            </label>
+            {renderNameSlot(1)}
+            <button
+                className={`bg-blue-700 hover:bg-blue-500 text-white font-bold py-2 px-4 rounded w-full transition-all duration-500`}
+                style={{marginTop: "10px"}}
+                onClick={() => {
+                    sendPasswordResetEmail(auth, auth.currentUser.email)
+                    alert("We have sent you an email to reset your password. Please check your email.")
+                }}
+            >
+                Change Password
+            </button>
+        </div>
+    );
+}
