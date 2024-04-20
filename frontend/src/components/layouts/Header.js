@@ -8,7 +8,7 @@ import Logout from "../authentication/Logout";
 import ThemeToggler from "./ThemeToggler";
 
 import logo from "../../assets/logos/ReviewSync-Logo.png";
-import auth from "../../config/firebase";
+import auth from "../../config/firebase-config";
 import axios from "axios";
 
 export default function Header() {

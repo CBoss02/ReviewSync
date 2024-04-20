@@ -1,47 +1,64 @@
 import React, {useEffect} from "react";
 import { useAuth } from "../../contexts/AuthContext";
 import { useNavigate} from "react-router-dom";
+import {createUserWithEmailAndPassword} from "firebase/auth";
+import auth from "../../config/firebase-config";
+import api from "../../config/axiosConfig";
+
 
 export default function Register() {
-    const navigate = useNavigate();
-    const {currentUser, register, setError} = useAuth();
-    const [loading, setLoading] = React.useState(false);
-
-    useEffect(() => {
-        if (currentUser) {
-            navigate("/");
-        }
-    }, [currentUser, navigate]);
-
-    const [formData, setFormData] = React.useState({
-        first_name: "",
-        last_name: "",
-        email: "",
-        password: "",
-        verify_password: ""
+    const [form, setForm] = React.useState({
+        first_name: '',
+        last_name: '',
+        email: '',
+        password: '',
+        verify_password: '',
     });
 
+    const navigate = useNavigate();
+    const [loading, setLoading] = React.useState(false);
+    const [error, setError] = React.useState('');
+    const { logout } = useAuth();
+
+    const register = async () => {
+        try {
+            const userCredential = await createUserWithEmailAndPassword(auth, form.email, form.password)
+            if (userCredential) {
+                await api.post("/api/users/createUser", {
+                    first_name: form.first_name,
+                    last_name: form.last_name,
+                    email: form.email,
+                    uid: userCredential.user.uid
+                });
+            } else {
+                setError("Failed to create an account");
+                await logout();
+                localStorage.removeItem('token');
+                await userCredential.user.delete();
+            }
+
+            const token = await userCredential.user.getIdToken();
+            localStorage.setItem('token', token);
+        } catch (error) {
+            setError("Failed to create an account");
+            console.error(error);
+        }
+    }
+
     const handleFormChange = (e) => {
-        const {name, value} = e.target;
-        setFormData({
-            ...formData,
-            [name]: value
+        setForm({
+            ...form,
+            [e.target.name]: e.target.value
         });
-        console.log(formData);
     }
 
     const handleFormSubmit = async (e) => {
         e.preventDefault();
-
-        if (formData.password !== formData.verify_password) {
-            return alert("Passwords do not match");
-        }
-
         try {
             setError("");
             setLoading(true);
-            await register(formData.email, formData.password);
-            navigate("/profile");
+            await register();
+            navigate("/");
         } catch (error) {
             console.error(error);
             setError("Failed to create an account");

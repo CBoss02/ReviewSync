@@ -5,6 +5,8 @@ import {AuthProvider} from "./contexts/AuthContext";
 import ErrorMessage from "./components/layouts/ErrorMessage";
 import Header from "./components/layouts/Header";
 import WithPrivateRoute from "./utils/WithPrivateRoute";
+import Dashboard from "./pages/Dashboard"
+import VerifyEmail from "./pages/VerifyEmail";
 import Home from "./pages/Home";
 import EditRoles from "./components/company/EditRoles";
 import AddEmployees from "./components/company/AddEmployees";
@@ -13,22 +15,35 @@ function App() {
     return (
         <AuthProvider>
             <Router>
-                <Header />
-                <ErrorMessage />
+                <Header/>
+                <ErrorMessage/>
                 <Routes>
-                    <Route path="/register" element={<Register />}/>
-                    <Route path="/login" element={<Login />}/>
+                    <Route path="/register" element={<Register/>}/>
+                    <Route path="/login" element={<Login/>}/>
                     <Route
                         exact
                         path="/"
                         element={
                             <WithPrivateRoute>
-                                <Home />
+                                <Home/>
                             </WithPrivateRoute>
                         }
                     />
-                    <Route path="/edit-roles" element={<EditRoles />}/>
-                    <Route path="/add-employees" element={<AddEmployees />}/>
+
+                    <Route path="/edit-roles" element={<EditRoles/>}/>
+                    <Route path="/add-employees" element={<AddEmployees/>}/>
+                    <Route
+                        exact
+                        path="/profile"
+                        element={
+                            <WithPrivateRoute>
+                                <Home/>
+                            </WithPrivateRoute>
+                        }
+                    />
+                    <Route path="/verify-email" element={<VerifyEmail/>}/>
+                    <Route path="*" element={<h1>Not Found</h1>}/>
+                    <Route path="/dashboard" element={<Dashboard/>}/>
                 </Routes>
             </Router>
         </AuthProvider>
