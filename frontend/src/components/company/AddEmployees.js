@@ -4,6 +4,7 @@ import deleteIcon from "../../assets/icons/RedDelete-Icon.png";
 import saveIcon from "../../assets/icons/GreenSave-Icon.png";
 import {useAuth} from "../../contexts/AuthContext";
 import axios from 'axios';
+import api from "../../config/axiosConfig";
 
 const EmployeeRoles = () => {
     const auth = useAuth();
@@ -12,12 +13,12 @@ const EmployeeRoles = () => {
     const [employees, setEmployees] = useState([{ email: '', role: '' }]);
     const [roles, setRoles] = useState([]);
     const navigate = useNavigate(); // Correctly placed useNavigate call
-    const [companyName, setCompanyName] = useState([]);
+    const [companyName, setCompanyName] = useState("");
 
     useEffect(() => {
         const fetchRoles = async () => {
             try {
-                const response = await axios.post('/api/companies/getRoles', {uid: uid});
+                const response = await api.post('/api/companies/getRoles', {uid: uid});
                 setRoles(response.data.roles)
             } catch (error) {console.error('Failed to fetch roles:', error);
                 // Handle error (e.g., show an error message to the user)
@@ -25,7 +26,7 @@ const EmployeeRoles = () => {
         };//end fetchRoles const
         const fetchEmailsAndRoles = async () => {
             try {
-                const response = await axios.post('/api/companies/getEmailsAndRoles', {uid: uid});
+                const response = await api.post('/api/companies/getEmailsAndRoles', {uid: uid});
                 if(response.data.emailsAndRoles.length !== 0)
                     setEmployees(response.data.emailsAndRoles)
             } catch (error) {console.error('Failed to fetch emails and roles:', error);
@@ -34,7 +35,7 @@ const EmployeeRoles = () => {
         };//end fetchEmailsAndRoles const
         const fetchCompanyName = async () => {
             try {
-                const response = await axios.post('/api/companies/getCompanyName', {uid: uid});
+                const response = await api.post('/api/companies/getCompanyName', {uid: uid});
                 setCompanyName(response.data.companyName)
             } catch (error) {
                 console.error('Failed to fetch company name:', error);
@@ -66,7 +67,7 @@ const EmployeeRoles = () => {
 
     const submitEmployees = async () => {
         try {
-            await axios.put("/api/companies/modifyPendingListAndEditRoles", {uid: uid, employees: employees})
+            await api.put("/api/companies/modifyPendingListAndEditRoles", {uid: uid, employees: employees})
             // Reset the form or redirect the user as necessary
         } catch (error) {
             console.error('Error adding employees:', error);

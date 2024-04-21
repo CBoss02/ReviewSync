@@ -156,7 +156,7 @@ export default function EditRoles() {
         setRoles([...roles, {
             id: currentID, // Used in JSX as a key
             name: 'New Role',
-            permissions: [0,0,0,0,0,0,0],
+            permissions: [false,false,false,false,false,false,false],
         }])
         setActiveRole(currentID);
         setID(currentID + 1);

@@ -8,9 +8,10 @@ const {
     getEmployeesOnProject,
     deleteProject
 } = require("../controllers/projectController");
+const authMiddleware = require("../middleware/authMiddleware");
 const router = express.Router();
 
-router.get("/getProjects", getProjects);
+router.post("/getProjects", getProjects);
 router.post("/createProject", createProject);
 router.put("/updateName", updateName);
 router.put("/updateEmployee", updateEmployee);

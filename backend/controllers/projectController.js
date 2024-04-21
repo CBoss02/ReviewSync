@@ -3,7 +3,7 @@ const {FieldValue} = require('firebase-admin').firestore;
 
 exports.getProjects = async (req, res) => {
     try {
-        const user = await db.collection("users").doc(req.user.uid).get();
+        const user = await db.collection('users').doc(req.body.uid).get();
         const userData = user.data();
         let projects = []
         if(userData.projects.length !== 0)

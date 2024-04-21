@@ -2,8 +2,9 @@ import React, {Fragment, useState, useEffect} from "react";
 import {ArrowRightIcon} from "@heroicons/react/solid";
 import {useAuth} from "../contexts/AuthContext";
 import {Box, Divider} from "@mui/material";
-import {Listbox, Transition} from '@headlessui/react';
+import {Listbox, Transition, Dialog} from '@headlessui/react';
 import {CheckIcon, ChevronDoubleDownIcon} from '@heroicons/react/solid';
+import DocumentUpload from "../components/document/DocumentUpload";
 import api from "../config/axiosConfig";
 
 export default function Dashboard() {
@@ -18,6 +19,7 @@ export default function Dashboard() {
     const [permissions, setPermissions] = useState([]);
     const [employees, setEmployees] = useState([]);
     const [owner, setOwner] = useState(false);
+    const [popupIsOpen, setPopupIsOpen] = useState(false)
     const [eUpdated, setEUpdated] = useState(false); //Indicates if employees in company have changed
     const [rolesUpdated, setRolesUpdated] = useState(false); //Indicates if company roles have changed
     const [cUpdated, setCUpdated] = useState(false); //Indicates if a user has been removed from a company
@@ -207,7 +209,7 @@ export default function Dashboard() {
 
     const fetchProjects = async () => {
         try {
-            await api.get("/api/projects/getProjects").then((response) => {
+            await api.post("/api/projects/getProjects", {uid: uid}).then((response) => {
                 setProjects(response.data.projects)
             });
         } catch (error) {
@@ -358,6 +360,41 @@ const renderDocumentNames = () => {
     ))
 }
 */
+
+    const renderPopup = () => {
+        return (
+            <>
+                <Dialog as="div" className="relative z-10" open={popupIsOpen} onClose={() => setPopupIsOpen(false)}>
+                    <div className="fixed inset-0 overflow-y-auto">
+                        <div className="flex min-h-full items-center justify-center p-4 text-center">
+                            <Dialog.Panel
+                                className="w-full max-w-md transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all">
+                                <Dialog.Title
+                                    as="h3"
+                                    className="text-lg font-medium leading-6 text-black-900"
+                                    style={{marginBottom: "15px"}}
+                                >
+                                    Upload a new document
+                                </Dialog.Title>
+                                <div>
+                                    <input type="file" onChange={() => console.log("ok")}/>
+                                </div>
+                                <div className="mt-4">
+                                    <button
+                                        type="button"
+                                        className="inline-flex justify-center rounded-md border border-transparent bg-green-100 px-4 py-2 text-sm font-medium text-black-900 hover:bg-blue-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+                                        onClick={() => setPopupIsOpen(false)}
+                                    >
+                                        Upload
+                                    </button>
+                                </div>
+                            </Dialog.Panel>
+                        </div>
+                    </div>
+                </Dialog>
+            </>
+        )
+    }
 
 //The prompt to name/rename a project. Appears when a project is initially created
 //and when the user presses the Rename button.
@@ -548,10 +585,10 @@ const renderDocumentNames = () => {
                     <Divider color="#1bc41e" sx={{height: 2, width: '525px'}}></Divider>
 
                     {(initialNamePrompt || rename) && renderNamePrompt()}
-                    {permissions[6] === 1 && (
+                    {permissions[6] && (
                         <button
                             className="bg-blue-700 hover:bg-blue-500 text-white font-bold py-2 px-4 rounded w-full transition-all duration-500"
-                            onClick={() => console.log("ok")}
+                            onClick={() => setPopupIsOpen(true)}
                         >
                             <p>+</p>
                         </button>
@@ -559,6 +596,7 @@ const renderDocumentNames = () => {
 
                 </Box>
             </Box>
+            {popupIsOpen && renderPopup()}
         </div>
     );
 }
