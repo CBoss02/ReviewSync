@@ -10,7 +10,7 @@ const {
 } = require("../controllers/projectController");
 const router = express.Router();
 
-router.post("/getProjects", getProjects);
+router.get("/getProjects", getProjects);
 router.post("/createProject", createProject);
 router.put("/updateName", updateName);
 router.put("/updateEmployee", updateEmployee);

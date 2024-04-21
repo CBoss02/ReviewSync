@@ -78,7 +78,7 @@ const EmployeeRoles = () => {
         <div className="flex flex-col justify-center items-center mb-auto mx-auto">
 
             {companyName && (
-            <h2 className="mt-10 text-center text-2xl font-bold leading-9 tracking-tight text-gray-900">
+            <h2 className="mt-10 text-center text-2xl font-bold leading-9 tracking-tight text-gray-900 dark:text-white">
                 {/*Edit your company's roles*/}
                 Edit {companyName}'s Employees
             </h2>
@@ -88,6 +88,7 @@ const EmployeeRoles = () => {
                 {employees.map((employee, index) => (
                     <div key={index} style={{marginBottom: '10px', display: 'flex'}}>
                         <input
+                            className="dark:ring-indigo-600 dark:ring-2 focus:ring-inset"
                             type="email"
                             value={employee.email}
                             placeholder="Employee's email"
@@ -118,7 +119,9 @@ const EmployeeRoles = () => {
                         </button>
                     </div>
                 ))}
-                <div style={{display: 'flex', justifyContent: 'space-between'}}>
+                <div style={{display: 'flex', justifyContent: 'space-between'}}
+                    className="dark:text-white"
+                    >
                     <button onClick={addEmployee}
                             style={{
                                 width: '100%',
@@ -164,26 +167,8 @@ const EmployeeRoles = () => {
                     </button>
                 </div>
 
-
             </div>
 
-            {/* "Next" button fixed at the bottom right of the page */}
-            {/*
-            <button onClick={() => navigate('/dashboard')} style={{
-                position: 'fixed', // Fixed relative to the viewport
-                bottom: '20px', // 20px from the bottom
-                right: '20px', // 20px from the right
-                backgroundColor: 'green', // Green background
-                color: 'white', // White text
-                fontWeight: 'bold', // Bold text
-                padding: '10px 15px', // Padding
-                borderRadius: '5px', // Rounded corners
-                cursor: 'pointer', // Pointer cursor on hover
-                border: 'none', // No border
-            }}>
-                Next →
-            </button>
-            */}
         </div>
     );
 

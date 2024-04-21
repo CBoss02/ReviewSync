@@ -4,8 +4,8 @@ import {useNavigate} from "react-router-dom";
 import deleteIcon from "../../assets/icons/RedDelete-Icon.png";
 import saveIcon from "../../assets/icons/GreenSave-Icon.png";
 import {useAuth} from "../../contexts/AuthContext";
-import axios from 'axios';
 import {useLocation} from 'react-router-dom';
+import api from "../../config/axiosConfig";
 
 export default function EditRoles() {
     const auth = useAuth();
@@ -72,7 +72,7 @@ export default function EditRoles() {
     useEffect(() => {
         const fetchRoles = async () => {
             try {
-                const response = await axios.post('/api/companies/getRoles', {uid: uid});
+                const response = await api.post('/api/companies/getRoles', {uid: uid});
                 if(response.data.roles.length !== 0)
                 {
                     setRoles(response.data.roles)
@@ -90,7 +90,7 @@ export default function EditRoles() {
         };//end fetchRoles const
         const fetchCompanyName = async () => {
             try {
-                const response = await axios.post('/api/companies/getCompanyName', {uid: uid});
+                const response = await api.post('/api/companies/getCompanyName', {uid: uid});
                 setCompanyName(response.data.companyName)
             } catch (error) {
                 console.error('Failed to fetch company name:', error);
@@ -105,7 +105,7 @@ export default function EditRoles() {
     //Reskinned from addEmployees
     const submitRoles = async () => {
         try {
-            await axios.put('api/companies/addOrUpdateRoles', {
+            await api.put('/api/companies/addOrUpdateRoles', {
                 uid: uid, roles: roles
             }).catch(function (error) {
                 if (error.response) {
@@ -207,6 +207,7 @@ export default function EditRoles() {
     const listPermissions = activeRole?.permissions?.map((perm, index) =>
         <li key={index}>
             <input
+                className="dark:text-white"
                 type="checkbox"
                 id={`checkbox-${index}`}
                 name={getPermFromIndex(index)}
@@ -255,7 +256,7 @@ export default function EditRoles() {
     <div className="flex flex-col justify-center items-center w-full mb-auto mx-auto">
         {/*Create the header for the page */}
         {companyName && (
-        <h2 className="mt-10 text-center text-2xl font-bold leading-9 tracking-tight text-gray-900">
+        <h2 className="mt-10 text-center text-2xl font-bold leading-9 tracking-tight text-gray-900 dark:text-white">
             {/*Edit your company's roles*/}
             Edit {companyName}'s Roles
         </h2>
@@ -278,7 +279,7 @@ export default function EditRoles() {
                     >
                         Add
                     </button>
-                    <h1 className="flex justify-end px-2 mt-1"> Roles: {roles.length}/50 </h1>
+                    <h1 className="flex justify-end px-2 mt-1 dark:text-white"> Roles: {roles.length}/50 </h1>
                 </div>
 
                 {/*Generates the list of roles*/}
@@ -300,8 +301,8 @@ export default function EditRoles() {
                                 value={activeRole.name}
                                 onChange={(e) => handleRename(e.target.value)}
                                 className="block p-2 rounded-md h-8 border-0 min-w-28 text-black shadow-sm ring-1
-                                    ring-inset ring-gray-300 placeholder:text-black focus:ring-2 focus:ring-inset
-                                    focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                                     ring-gray-300 placeholder:text-black focus:ring-2 focus:ring-inset
+                                    focus:ring-indigo-600 sm:text-sm sm:leading-6 px-2 dark:ring-indigo-600 dark:ring-2"
                             />
                         </labeL>
                     </form>
@@ -329,8 +330,8 @@ export default function EditRoles() {
                 </div>
 
                 {/*Create the container for the permissions*/}
-                <div className="flex mt-3 mb-1 justify-start lg: overflow-y">
-                    <ul className="justify-start"> {listPermissions} </ul>
+                <div className="flex mt-3 mb-1 justify-start lg: overflow-y dark:text-white">
+                    <ul className="justify-start dark:text-white"> {listPermissions} </ul>
                 </div>
 
                 <button className="flex ml-auto w-19 justify-center rounded-md bg-green-600 px-3 py-1.5 text-sm

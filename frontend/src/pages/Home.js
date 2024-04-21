@@ -1,22 +1,20 @@
 import { useState, useEffect } from "react";
 import { ArrowRightIcon } from "@heroicons/react/solid";
 import {useAuth} from "../contexts/AuthContext";
-import axios from 'axios';
 
 //Caleb's code from index.js used to navigate into the /edit-roles page
-import { useNavigate } from "react-router-dom";
-import api from "../config/axiosConfig";
-import DocumentUpload from "../components/document/DocumentUpload"; // Import useNavigate
+import {useNavigate} from "react-router-dom";
+import api from "../config/axiosConfig"; // Import useNavigate
+//import auth from "../config/firebase";
+
 export default function Home() {
 
     //Caleb's code from index.js used to navigate into the /edit-roles page
     const navigate = useNavigate(); // Instantiate useNavigate
     const [companyName, setCompanyName] = useState("") ;
     const [companyID, setCompanyID] = useState() ;
-
     const [error, setError] = useState("");
     const auth = useAuth();
-    console.log(auth.currentUser.uid);
     const uid = auth.currentUser.uid;
 
     const [state, setState] = useState(0);
@@ -34,7 +32,7 @@ export default function Home() {
     useEffect(() => {
         const fetchCompanyName = async () => {
             try {
-                const response = await axios.post('/api/companies/getCompanyName', {uid: uid});
+                const response = await api.post('/api/companies/getCompanyName', {uid: uid});
                 setCompanyName(response.data.companyName)
             } catch (error) {
                 console.error('Failed to fetch company name:', error);
@@ -44,7 +42,7 @@ export default function Home() {
 
         const fetchCompanyID = async () => {
             try {
-                const response = await axios.post('/api/companies/getCompanyID', {uid: uid});
+                const response = await api.post('/api/companies/getCompanyID', {uid: uid});
                 setCompanyID(response.data.companyID)
             } catch (error) {
                 console.error('Failed to fetch company id:', error);
@@ -53,20 +51,8 @@ export default function Home() {
         };//end fetchCompanyID
 
         fetchCompanyName();
-        fetchCompanyID()
+        fetchCompanyID();
     }, []);
-
-    const joinCompany = async () => {
-        try {
-            const response = await axios.put('/api/companies/addEmployeeToCompany', {userID: uid, companyName: companyName});
-            console.log(response);
-            navigate('/dashboard');
-        } catch (error) {
-            console.error('Failed to join the company:', error);
-            alert('Failed to join company');
-            // Handle error (e.g., show an error message to the user)
-        }//end try catch
-    };//end joinCompany
 
     useEffect(() => {
         const handleClickOutside = (event) => {
@@ -82,28 +68,34 @@ export default function Home() {
         };
     }, [state]);
 
-    //Caleb's code from index.js used to navigate into the /edit-roles page
+
     const submitCompany = async (companyName) => {
         try {
-            await api.post("/api/users/createCompany", {
-                owner: auth.currentUser.uid,
-                name: companyName,
-            });
-            alert('You MIGHT have created a company');
-            await axios.post("/api/companies/createCompany", {
+            await api.post("/api/companies/createCompany", {
                 owner: uid,
                 name: companyName
             });
         } catch (error) {
-            setError("Failed to create the company");
+            console.error('Failed to join the company:', error);
         }//end try catch
     }
 
+    const joinCompany = async () => {
+        try {
+            const response = await api.put('/api/companies/addEmployeeToCompany', {userID: uid, companyName: companyName});
+            console.log(response);
+            navigate('/dashboard');
+        } catch (error) {
+            console.error('Failed to join the company:', error);
+            alert('Failed to join company');
+            // Handle error (e.g., show an error message to the user)
+        }//end try catch
+    };//end joinCompany
+
     const handleArrowClick = () => {
         if(state === 1){
-            //Search for a company with the name and respond accordingly
             joinCompany();
-
+            //Search for a company with the name and respond accordingly
         }else if(state === 2) {
             //Create a company with the name passed
             submitCompany(companyName).then(() => {
@@ -116,8 +108,8 @@ export default function Home() {
     // Conditional class to apply transition effects
     const transitionClass = isVisible ? "opacity-100 scale-100" : "opacity-0 scale-95";
 
-
     return (
+
         <div className="flex flex-col items-center justify-center h-screen transition-all duration-500">
             {/*If the user doesn't already have a company, allow them to join or create a company*/}
             {!companyID ? (

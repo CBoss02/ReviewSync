@@ -207,9 +207,7 @@ export default function Dashboard() {
 
     const fetchProjects = async () => {
         try {
-            await api.post("/api/projects/getProjects", {
-                uid: uid
-            }).then((response) => {
+            await api.get("/api/projects/getProjects").then((response) => {
                 setProjects(response.data.projects)
             });
         } catch (error) {
@@ -261,6 +259,7 @@ export default function Dashboard() {
                 owner: uid
             }).then(() => {
                 setInitialNamePrompt(false)
+                setPUpdated(true)
             })
         } catch (error) {
             console.error('Failed to add project:', error);
@@ -276,6 +275,7 @@ export default function Dashboard() {
             }).then(() => {
                 setRename(0)
                 setRename(false)
+                setPUpdated(true)
             })
         } catch (error) {
             console.error('Failed to add project:', error);

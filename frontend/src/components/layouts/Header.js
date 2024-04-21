@@ -1,4 +1,3 @@
-
 import { LogoutIcon } from "@heroicons/react/outline";
 import {useEffect, useState} from "react";
 import { Link } from "react-router-dom";

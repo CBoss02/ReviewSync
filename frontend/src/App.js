@@ -34,14 +34,12 @@ function App() {
 
                     <Route path="/edit-roles" element={<EditRoles/>}/>
                     <Route path="/add-employees" element={<AddEmployees/>}/>
-                    <Route path="/edit-roles" element={<EditRoles />}/>
-                    <Route path="/add-employees" element={<AddEmployees />}/>
                     <Route
                         exact
                         path="/profile"
                         element={
                             <WithPrivateRoute>
-                                <Home/>
+                                <Profile/>
                             </WithPrivateRoute>
                         }
                     />
@@ -52,10 +50,6 @@ function App() {
                         path="/dashboard"
                         element={<WithPrivateRoute><Dashboard/></WithPrivateRoute>}
                     />
-
-                    <Route path="/verify-email" element={<VerifyEmail />}/>
-                    <Route path="*" element={<h1>Not Found</h1>}/>
-                    <Route path="/dashboard" element={<Dashboard />}/>
                     <Route path="/documentupload" element={<DocumentUpload />}/>
                 </Routes>
             </Router>
