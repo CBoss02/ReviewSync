@@ -4,6 +4,7 @@ import Login from "./components/authentication/Login";
 import {AuthProvider} from "./contexts/AuthContext";
 import ErrorMessage from "./components/layouts/ErrorMessage";
 import Header from "./components/layouts/Header";
+import DocumentUpload from "./components/document/DocumentUpload"
 import WithPrivateRoute from "./utils/WithPrivateRoute";
 import Dashboard from "./pages/Dashboard"
 import VerifyEmail from "./pages/VerifyEmail";
@@ -55,6 +56,7 @@ function App() {
                     <Route path="/verify-email" element={<VerifyEmail />}/>
                     <Route path="*" element={<h1>Not Found</h1>}/>
                     <Route path="/dashboard" element={<Dashboard />}/>
+                    <Route path="/documentupload" element={<DocumentUpload />}/>
                 </Routes>
             </Router>
         </AuthProvider>

@@ -24,7 +24,9 @@ exports.createCompany = async (req, res) => {
 
 exports.getEUpdatedFlag = async (req, res) => {
     try {
-        const company = await db.collection("companies").doc(req.body.companyID).get();
+        const user = await db.collection("users").doc(req.body.uid).get();
+        const companyID = user.data().company;
+        const company = await db.collection("companies").doc(companyID).get();
         const companyData = company.data();
         res.status(200).send({eUpdated: companyData.eUpdated});
     } catch (error) {
@@ -34,7 +36,9 @@ exports.getEUpdatedFlag = async (req, res) => {
 
 exports.resetEUpdatedFlag = async (req, res) => {
     try {
-        await db.collection("companies").doc(req.body.companyID).update({
+        const user = await db.collection("users").doc(req.body.uid).get();
+        const companyID = user.data().company;
+        await db.collection("companies").doc(companyID).update({
             eUpdated: false
         })
     } catch (error) {
@@ -44,7 +48,9 @@ exports.resetEUpdatedFlag = async (req, res) => {
 
 exports.getRolesUpdatedFlag = async (req, res) => {
     try {
-        const company = await db.collection("companies").doc(req.body.companyID).get();
+        const user = await db.collection("users").doc(req.body.uid).get();
+        const companyID = user.data().company;
+        const company = await db.collection("companies").doc(companyID).get();
         const companyData = company.data();
         res.status(200).send({rolesUpdated: companyData.rolesUpdated});
     } catch (error) {
@@ -54,7 +60,9 @@ exports.getRolesUpdatedFlag = async (req, res) => {
 
 exports.resetRolesUpdatedFlag = async (req, res) => {
     try {
-        await db.collection("companies").doc(req.body.companyID).update({
+        const user = await db.collection("users").doc(req.body.uid).get();
+        const companyID = user.data().company;
+        await db.collection("companies").doc(companyID).update({
             rolesUpdated: false
         })
     } catch (error) {
@@ -77,10 +85,10 @@ exports.getCompanyName = async (req, res) => {
     try {
         const uid = req.body.uid;
         const user = await db.collection("users").doc(uid).get();
-        const userData = user.data();
-        const company = await db.collection("companies").doc(userData.company).get();
-        const companyData = company.data();
-        res.status(200).send({companyName: companyData.name});
+        const companyID = user.data().company;
+        const company = await db.collection("companies").doc(companyID).get();
+        const companyName = company.data().name;
+        res.status(200).send({companyName: companyName});
     } catch (error) {
         res.status(400).send(error.message);
     }
@@ -90,9 +98,9 @@ exports.getEmployees = async (req, res) => {
     try {
         const uid = req.body.uid;
         const user = await db.collection("users").doc(uid).get();
-        const userData = user.data();
+        const companyID = user.data().company;
         let employees = [];
-        const snapshot = await db.collection("users").where("company", "==", userData.company).get();
+        const snapshot = await db.collection("users").where("company", "==", companyID).get();
         if(!snapshot.empty)
         {
             snapshot.forEach(employee => {
@@ -114,11 +122,11 @@ exports.getEmployees = async (req, res) => {
 exports.getEmailsAndRoles = async (req, res) => {
     try {
         const user = await db.collection("users").doc(req.body.uid).get();
-        const userData = user.data();
-        const company = await db.collection("companies").doc(userData.company).get();
+        const companyID = user.data().company;
+        const company = await db.collection("companies").doc(companyID).get();
         const companyData = company.data();
         let emailsAndRoles = companyData.pendingList
-        const qSnapUsers = await db.collection("users").where('company', '==', userData.company).get();
+        const qSnapUsers = await db.collection("users").where('company', '==', companyID).get();
         if(qSnapUsers.docs.length > 1) {
             await qSnapUsers.forEach(user => {
                 if(user.id !== companyData.owner)

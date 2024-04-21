@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import api from "../../config/axiosConfig";
+import axios from 'axios';
 
 function DocumentUpload() {
     const [file, setFile] = useState(null);

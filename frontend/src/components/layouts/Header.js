@@ -10,6 +10,7 @@ import ThemeToggler from "./ThemeToggler";
 import logo from "../../assets/logos/ReviewSync-Logo.png";
 import auth from "../../config/firebase-config";
 import axios from "axios";
+import api from "../../config/axiosConfig";
 
 export default function Header() {
     const [modal, setModal] = useState(false);
@@ -22,7 +23,7 @@ export default function Header() {
         //From Edit-roles
         const fetchCompanyName = async (user) => {
             try {
-                const response = await axios.post('/api/companies/getCompanyName', {uid: user.uid});
+                const response = await api.post('/api/companies/getCompanyName', {uid: user.uid});
                 setCompanyName(response.data.companyName)
             } catch (error) {
                 console.error('Failed to fetch company name:', error);

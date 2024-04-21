@@ -20,6 +20,6 @@ router.put("/addOrUpdateRoles", addOrUpdateRoles);
 router.post("/getEmailsAndRoles", getEmailsAndRoles);
 router.post("/getEUpdatedFlag", getEUpdatedFlag);
 router.put("/resetEUpdatedFlag", resetEUpdatedFlag);
-router.post("/getRUpdatedFlag", getRolesUpdatedFlag);
-router.put("/resetRUpdatedFlag", resetRolesUpdatedFlag);
+router.post("/getRolesUpdatedFlag", getRolesUpdatedFlag);
+router.put("/resetRolesUpdatedFlag", resetRolesUpdatedFlag);
 module.exports = router;
