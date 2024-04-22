@@ -1,7 +1,8 @@
 const {db} = require("../config/firebase-config");
-const sendEmail = require('./mailer'); // Import sendEmail from mailer.js
+const sendEmail = require('./emailController'); // Import sendEmail from mailer.js
 
-exports.createUser = async (req, res) => {exports.createUser = async (req, res) => {
+
+exports.createUser = async (req, res) => {
     try {
         // Creating user document in Firestore
         await db.collection("users").doc(req.body.uid).set({
@@ -216,13 +217,15 @@ exports.getPermissions = async (req, res) => {
     const user = await db.collection("users").doc(data.uid).get();
     const userData = user.data();
     const roleID = userData.role;
-    if(roleID === "owner")
-        res.status(200).send({permissions: [true, true, true, true, true, true, true]})
-    else
-    {
+    if (roleID === "owner") {
+        res.status(200).send({permissions: [true, true, true, true, true, true, true]});
+    } else {
         const role = await db.collection("companies").doc(userData.company).collection("roles").doc(roleID).get();
         const roleData = role.data();
         const permissions = roleData.permissions;
         res.status(200).send({permissions: permissions});
     }
 }
+
+
+

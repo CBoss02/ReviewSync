@@ -3,7 +3,6 @@ import {useLocation, useNavigate} from 'react-router-dom';
 import deleteIcon from "../../assets/icons/RedDelete-Icon.png";
 import saveIcon from "../../assets/icons/GreenSave-Icon.png";
 import {useAuth} from "../../contexts/AuthContext";
-import axios from 'axios';
 import api from "../../config/axiosConfig";
 
 const EmployeeRoles = () => {

@@ -306,12 +306,14 @@ export default function Dashboard() {
     //information has been updated and needs to be re-fetched, such as the
     //documents/projects a user has access to and their role.
 
+    /* Minimize calls to DB when testing to avoid maxing out firebase quota
     useEffect(() => {
         const interval = setInterval(() => {
             fetchFlags()
         }, 5000); //check every 5 seconds
         return () => clearInterval(interval);
     }, []);
+    */
 
     useEffect(() => {
         fetchEmployeesOnProject()
