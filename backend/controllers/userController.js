@@ -1,7 +1,9 @@
 const {db} = require("../config/firebase-config");
+const sendEmail = require('./mailer'); // Import sendEmail from mailer.js
 
-exports.createUser = async (req, res) => {
+exports.createUser = async (req, res) => {exports.createUser = async (req, res) => {
     try {
+        // Creating user document in Firestore
         await db.collection("users").doc(req.body.uid).set({
             first_name: req.body.first_name,
             last_name: req.body.last_name,
@@ -11,8 +13,14 @@ exports.createUser = async (req, res) => {
             documents: [],
             projects: []
         });
-        res.status(200).send();
+
+        // Send welcome email after successful creation
+        await sendEmail(req.body.email, "Welcome to Our Service", "Hello " + req.body.first_name + ", welcome to our service!");
+
+        res.status(200).send("User created successfully and email sent.");
+
     } catch (error) {
+        console.error("Failed to create user or send email", error);
         res.status(400).send(error.message);
     }
 }
