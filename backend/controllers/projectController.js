@@ -3,20 +3,17 @@ const {FieldValue} = require('firebase-admin').firestore;
 
 exports.getProjects = async (req, res) => {
     try {
-        const user = await db.collection('users').doc(req.body.uid).get();
-        const userData = user.data();
-        let projects = []
-        if(userData.projects.length !== 0)
-        {
-            for(let i = 0; i < userData.projects.length; i++)
-            {
-                const project = await db.collection("companies").doc(userData.company).collection("projects").doc(userData.projects[i]).get();
-                const projectData = project.data();
-                projectData.id = userData.projects[i];
-                projects.push(projectData)
-            }
-        }
-        res.status(200).send({projects: projects})
+        const user = await db.collection("users").doc(req.user.uid).get();
+        const company = await db.collection("companies").doc(user.data().company).get();
+
+        const projects = [];
+        const snapshot = await db.collection("companies").doc(company.id).collection("projects").get();
+
+        snapshot.forEach(project => {
+            projects.push(project.data());
+        })
+
+        res.status(200).send(projects);
     } catch (error) {
         res.status(400).send(error.message);
     }

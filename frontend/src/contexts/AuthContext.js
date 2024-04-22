@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect } from "react";
+import {createContext, useContext, useState, useEffect} from "react";
 import {
     createUserWithEmailAndPassword,
     signInWithEmailAndPassword,
@@ -8,7 +8,7 @@ import {
 
 
 import auth from "../config/firebase-config";
-import axios from "axios";
+import api from "../config/axiosConfig";
 
 const AuthContext = createContext();
 
@@ -16,31 +16,46 @@ export function useAuth() {
     return useContext(AuthContext);
 }
 
-export function AuthProvider({ children }) {
+export function AuthProvider({children}) {
     const [currentUser, setCurrentUser] = useState();
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState("");
 
     async function register(email, password, first_name, last_name) {
         try {
-            await createUserWithEmailAndPassword(auth, email, password).then(async (userCredential) => {
-                const user = userCredential.user;
-                await axios.post("/api/users/createUser", {
-                    uid: user.uid,
+            const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+            if (userCredential) {
+                await api.post("/api/users/createUser", {
+                    uid: userCredential.user.uid,
                     first_name: first_name,
                     last_name: last_name,
                     email: email,
                 }).then((response) => {
-                    sendEmailVerification(user);
+                    sendEmailVerification(userCredential.user);
                 });
-            });
+            } else {
+                setError("Failed to create an account");
+                await logout();
+                localStorage.removeItem('token');
+                await userCredential.user.delete();
+            }
+
+            const token = await userCredential.user.getIdToken();
+            localStorage.setItem('token', token);
         } catch (error) {
             setError("Failed to create an account");
         }
     }
 
     function login(email, password) {
-        return signInWithEmailAndPassword(auth, email, password);
+        try {
+            const userCredential = signInWithEmailAndPassword(auth, email, password);
+            const token = userCredential.user.getIdToken();
+            localStorage.setItem('token', token);
+        } catch (error) {
+            setError("Failed to log in");
+            localStorage.removeItem('token');
+        }
     }
 
     function logout() {

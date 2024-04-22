@@ -1,11 +1,10 @@
 import { useState, useEffect } from "react";
 import { ArrowRightIcon } from "@heroicons/react/solid";
 import {useAuth} from "../contexts/AuthContext";
-
-//Caleb's code from index.js used to navigate into the /edit-roles page
-import {useNavigate} from "react-router-dom";
-import api from "../config/axiosConfig"; // Import useNavigate
-//import auth from "../config/firebase";
+import axios from 'axios';
+import { useNavigate } from "react-router-dom";
+import api from "../config/axiosConfig";
+import DocumentUpload from "../components/document/DocumentUpload"; // Import useNavigate
 
 export default function Home() {
 
@@ -51,7 +50,7 @@ export default function Home() {
         };//end fetchCompanyID
 
         fetchCompanyName();
-        fetchCompanyID();
+        fetchCompanyID()
     }, []);
 
     useEffect(() => {
@@ -69,16 +68,37 @@ export default function Home() {
     }, [state]);
 
 
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            const element = document.getElementById("inputContainer");
+            if ((state === 1 || state === 2) && element && !element.contains(event.target)) {
+                setState(0);
+            }
+        };
+
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+        };
+    }, [state]);
+
+    //Caleb's code from index.js used to navigate into the /edit-roles page
     const submitCompany = async (companyName) => {
         try {
-            await api.post("/api/companies/createCompany", {
+            await api.post("/api/users/createCompany", {
+                owner: auth.currentUser.uid,
+                name: companyName,
+            });
+            alert('You MIGHT have created a company');
+            await axios.post("/api/companies/createCompany", {
                 owner: uid,
                 name: companyName
             });
         } catch (error) {
-            console.error('Failed to join the company:', error);
+            setError("Failed to create the company");
         }//end try catch
     }
+
 
     const joinCompany = async () => {
         try {
@@ -94,8 +114,9 @@ export default function Home() {
 
     const handleArrowClick = () => {
         if(state === 1){
-            joinCompany();
             //Search for a company with the name and respond accordingly
+            joinCompany();
+
         }else if(state === 2) {
             //Create a company with the name passed
             submitCompany(companyName).then(() => {
@@ -108,10 +129,10 @@ export default function Home() {
     // Conditional class to apply transition effects
     const transitionClass = isVisible ? "opacity-100 scale-100" : "opacity-0 scale-95";
 
-    return (
 
+    return (
         <div className="flex flex-col items-center justify-center h-screen transition-all duration-500">
-            {/*If the user doesn't already have a company, allow them to join or create a company*/}
+            <DocumentUpload />
             {!companyID ? (
                 <div className="text-center space-y-3 w-1/4">
                     <button

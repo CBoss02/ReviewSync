@@ -12,6 +12,7 @@ import Profile from "./pages/account/Profile";
 import Home from "./pages/Home";
 import EditRoles from "./components/company/EditRoles";
 import AddEmployees from "./components/company/AddEmployees";
+import DocumentPage from "./pages/DocumentPage";
 
 function App() {
     return (
@@ -50,7 +51,19 @@ function App() {
                         path="/dashboard"
                         element={<WithPrivateRoute><Dashboard/></WithPrivateRoute>}
                     />
+                    <Route
+                        exact
+                        path="/document/:documentId"
+                        element={
+                        <WithPrivateRoute>
+                            <DocumentPage />
+                        </WithPrivateRoute>
+                    }/>
+
+                    <Route path="/verify-email" element={<VerifyEmail />}/>
+                    <Route path="/dashboard" element={<Dashboard />}/>
                     <Route path="/documentupload" element={<DocumentUpload />}/>
+                    <Route path="*" element={<h1>Not Found</h1>}/>
                 </Routes>
             </Router>
         </AuthProvider>

@@ -101,11 +101,9 @@ exports.getEmployees = async (req, res) => {
         const companyID = user.data().company;
         let employees = [];
         const snapshot = await db.collection("users").where("company", "==", companyID).get();
-        if(!snapshot.empty)
-        {
+        if (!snapshot.empty) {
             snapshot.forEach(employee => {
-                if(employee.id !== uid)
-                {
+                if (employee.id !== uid) {
                     const employeeData = employee.data();
                     const name = employeeData.first_name.concat(" ").concat(employeeData.last_name);
                     const employeeJson = {id: employee.id, name: name}
@@ -127,10 +125,9 @@ exports.getEmailsAndRoles = async (req, res) => {
         const companyData = company.data();
         let emailsAndRoles = companyData.pendingList
         const qSnapUsers = await db.collection("users").where('company', '==', companyID).get();
-        if(qSnapUsers.docs.length > 1) {
+        if (qSnapUsers.docs.length > 1) {
             await qSnapUsers.forEach(user => {
-                if(user.id !== companyData.owner)
-                {
+                if (user.id !== companyData.owner) {
                     const userData = user.data();
                     let emailAndRole = {}
                     emailAndRole.email = userData.email
@@ -195,12 +192,9 @@ exports.getRoles = async (req, res) => {
         const userData = user.data();
         const collection = await db.collection("companies").doc(userData.company).collection("roles");
         const snapshot = await collection.get();
-        if(snapshot.empty)
-        {
+        if (snapshot.empty) {
             res.status(200).send({roles: []});
-        }
-        else
-        {
+        } else {
             await snapshot.forEach(doc => {
                 const data = doc.data();
                 data.id = doc.id;
@@ -221,21 +215,17 @@ exports.addOrUpdateRoles = async (req, res) => {
         let ids = []; //keeps track of the Firestore ids present in the roles array
         let collection = db.collection('companies').doc(userData.company).collection('roles');
         const snapshot = await collection.get();
-        for(let i = 0; i < roles.length; i++)
-        {
+        for (let i = 0; i < roles.length; i++) {
             ids.push(roles[i].id)
-            for(let j = i + 1; j < roles.length; j++)
-            {
-                if(roles[i].name === roles[j].name)
-                {
+            for (let j = i + 1; j < roles.length; j++) {
+                if (roles[i].name === roles[j].name) {
                     res.status(400).send({message: "Role names must be unique"})
                     return
                 }
             }
         }
         await snapshot.forEach(doc => {
-            if(!ids.includes(doc.id))
-            {
+            if (!ids.includes(doc.id)) {
                 collection.doc(doc.id).delete()
                 db.collection("users").where("role", "==", doc.id).get().then(usersWithRole => {
                     usersWithRole.forEach(userWithRole => {
@@ -247,15 +237,14 @@ exports.addOrUpdateRoles = async (req, res) => {
                 })
             }
         })
-        for(let i = 0; i < roles.length; i++) {
-            if(Number.isInteger(roles[i].id)) //Adding new role
+        for (let i = 0; i < roles.length; i++) {
+            if (Number.isInteger(roles[i].id)) //Adding new role
             {
                 await collection.add({
                     name: roles[i].name,
                     permissions: roles[i].permissions
                 })
-            }
-            else //Updating existing role
+            } else //Updating existing role
             {
                 await collection.doc(roles[i].id).update({
                     name: roles[i].name,
@@ -281,14 +270,13 @@ exports.modifyPendingListAndEditRoles = async (req, res) => {
         const companyID = userData.company;
         const company = db.collection("companies").doc(companyID);
         let joinedCompany = false;
-        for(let i = 0; i < employees.length; i++)
-        {
+        for (let i = 0; i < employees.length; i++) {
             const userSnapshot = await db.collection("users").where('email', '==', employees[i].email).get();
-            if(!userSnapshot.empty) //User is registered
+            if (!userSnapshot.empty) //User is registered
             {
                 await userSnapshot.forEach(user => {
                     const userData = user.data();
-                    if(userData.company === companyID) //User has already joined company, so update their role
+                    if (userData.company === companyID) //User has already joined company, so update their role
                     {
                         joinedCompany = true;
                         const roleCollection = company.collection("roles");
@@ -306,7 +294,7 @@ exports.modifyPendingListAndEditRoles = async (req, res) => {
                     }
                 })
             }
-            if(!joinedCompany) //This also accounts for if a user has not registered yet
+            if (!joinedCompany) //This also accounts for if a user has not registered yet
             {
                 await company.update({
                     pendingList: FieldValue.arrayUnion(employees[i])
@@ -314,22 +302,20 @@ exports.modifyPendingListAndEditRoles = async (req, res) => {
             }
         }
         const employeesOfCompany = await db.collection("users").where('company', '==', companyID).get();
-        if(employeesOfCompany.docs.length > 1) //if there are more employees than the company owner
+        if (employeesOfCompany.docs.length > 1) //if there are more employees than the company owner
         {
             await employeesOfCompany.forEach(employeeOfCompany => {
-                if(employeeOfCompany.id !== uid) //do not remove owner of company
+                if (employeeOfCompany.id !== uid) //do not remove owner of company
                 {
                     const employeeOfCompanyData = employeeOfCompany.data();
                     let found = false;
-                    for(let i = 0; i < employees.length; i++)
-                    {
-                        if(employeeOfCompanyData.email === employees[i].email)
-                        {
+                    for (let i = 0; i < employees.length; i++) {
+                        if (employeeOfCompanyData.email === employees[i].email) {
                             found = true
                             break
                         }
                     }
-                    if(!found) //This user's email wasn't found in the request, so the owner is removing them
+                    if (!found) //This user's email wasn't found in the request, so the owner is removing them
                     {
                         db.collection("users").doc(employeeOfCompany.id).update({
                             company: null,
@@ -347,19 +333,15 @@ exports.modifyPendingListAndEditRoles = async (req, res) => {
         const companySnapshot = await company.get();
         const companyData = companySnapshot.data();
         const pendingList = companyData.pendingList;
-        for(let i = 0; i < pendingList.length; i++)
-        {
+        for (let i = 0; i < pendingList.length; i++) {
             let found = false
-            for(let j = 0; j < employees.length; j++)
-            {
-                if((pendingList[i].email === employees[j].email) && (pendingList[i].role === employees[j].role))
-                {
+            for (let j = 0; j < employees.length; j++) {
+                if ((pendingList[i].email === employees[j].email) && (pendingList[i].role === employees[j].role)) {
                     found = true;
                     break
                 }
             }
-            if(!found)
-            {
+            if (!found) {
                 await company.update({
                     pendingList: FieldValue.arrayRemove(pendingList[i])
                 })
@@ -370,3 +352,31 @@ exports.modifyPendingListAndEditRoles = async (req, res) => {
         res.status(400).send(error.message);
     }
 }
+
+exports.getCompany = async (req, res) => {
+    try {
+        // Fetch user document
+        const userDoc = await db.collection("users").doc(req.user.uid).get();
+        if (!userDoc.exists) {
+            return res.status(404).send('User not found');
+        }
+        const userData = userDoc.data();
+
+        if (!userData.company) {
+            return res.status(404).send('User does not belong to a company');
+        }
+
+        // Fetch company document
+        const companyDoc = await db.collection("companies").doc(userData.company).get();
+        if (!companyDoc.exists) {
+            return res.status(404).send('Company not found');
+        }
+        const companyData = companyDoc.data();
+
+        // Send the company data
+        res.status(200).send(companyData);
+    } catch (error) {
+        console.error('Failed to fetch company:', error);
+        res.status(500).send('Error fetching company data');
+    }
+};

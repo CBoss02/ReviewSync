@@ -11,7 +11,9 @@ const {
 const authMiddleware = require("../middleware/authMiddleware");
 const router = express.Router();
 
-router.post("/getProjects", getProjects);
+router.get("/getProjects", authMiddleware,  getProjects);
+
+
 router.post("/createProject", createProject);
 router.put("/updateName", updateName);
 router.put("/updateEmployee", updateEmployee);

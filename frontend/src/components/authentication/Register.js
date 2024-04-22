@@ -18,32 +18,7 @@ export default function Register() {
     const navigate = useNavigate();
     const [loading, setLoading] = React.useState(false);
     const [error, setError] = React.useState('');
-    const { logout } = useAuth();
-
-    const register = async () => {
-        try {
-            const userCredential = await createUserWithEmailAndPassword(auth, form.email, form.password)
-            if (userCredential) {
-                await api.post("/api/users/createUser", {
-                    first_name: form.first_name,
-                    last_name: form.last_name,
-                    email: form.email,
-                    uid: userCredential.user.uid
-                });
-            } else {
-                setError("Failed to create an account");
-                await logout();
-                localStorage.removeItem('token');
-                await userCredential.user.delete();
-            }
-
-            const token = await userCredential.user.getIdToken();
-            localStorage.setItem('token', token);
-        } catch (error) {
-            setError("Failed to create an account");
-            console.error(error);
-        }
-    }
+    const { register } = useAuth();
 
     const handleFormChange = (e) => {
         setForm({
@@ -57,10 +32,8 @@ export default function Register() {
         try {
             setError("");
             setLoading(true);
-            await register();
-            navigate("/");
             await register(form.email, form.password, form.first_name, form.last_name);
-            navigate("/profile");
+            navigate("/dashboard");
         } catch (error) {
             console.error(error);
             setError("Failed to create an account");

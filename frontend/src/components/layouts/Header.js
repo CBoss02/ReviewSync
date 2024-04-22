@@ -56,7 +56,7 @@ export default function Header() {
 
     return (
         <>
-            <nav className="px- px-2 sm:px-4 py-2.5 bg-gray-50 border-gray-200 dark:bg-gray-800 dark:border-gray-700 text-gray-900 text-sm rounded border dark:text-white">
+            <nav className="px-2 py-2.5 bg-gray-50 border-gray-200 dark:bg-gray-800 dark:border-gray-700 text-gray-900 text-sm rounded border dark:text-white">
                 <div className="container mx-auto flex flex-wrap items-center justify-between">
                     <Link to="/dashboard" className="flex">
             <span className="flex self-center text-lg font-semibold whitespace-nowrap text-gray-900 dark:text-white">
