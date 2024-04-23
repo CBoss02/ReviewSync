@@ -160,10 +160,9 @@ exports.getCurrentUser = async (req, res) => {
 
 exports.getName = async (req, res) => {
     try {
-        const uid = req.body.uid;
+        const uid = req.user.uid;
         const user = await db.collection("users").doc(uid).get();
-        const userData = user.data();
-        res.status(200).send({first_name: userData.first_name, last_name: userData.last_name})
+        res.status(200).send({first_name: user.data().first_name, last_name: user.data().last_name})
     } catch (error) {
         res.status(404).send(error.message);
     }
@@ -171,9 +170,8 @@ exports.getName = async (req, res) => {
 
 exports.updateFName = async (req, res) => {
     try {
-        const data = req.body
-        await db.collection("users").doc(data.uid).update({
-            first_name: data.first_name
+        await db.collection("users").doc(req.user.uid).update({
+            first_name: req.body.first_name
         })
         res.status(200).send()
     } catch (error) {
@@ -183,9 +181,8 @@ exports.updateFName = async (req, res) => {
 
 exports.updateLName = async (req, res) => {
     try {
-        const data = req.body
-        await db.collection("users").doc(data.uid).update({
-            last_name: data.last_name
+        await db.collection("users").doc(req.user.uid).update({
+            last_name: req.body.last_name
         })
         res.status(200).send()
     } catch (error) {

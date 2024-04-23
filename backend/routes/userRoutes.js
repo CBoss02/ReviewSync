@@ -10,9 +10,9 @@ const router = express.Router();
 
 router.post('/createUser', createUser);
 router.get('/getUser', authMiddleware, getUser);
-router.post("/getName", getName);
-router.put("/updateFName", updateFName);
-router.put("/updateLName", updateLName);
+router.get('/getName', authMiddleware, getName);
+router.put("/updateFName", authMiddleware, updateFName);
+router.put("/updateLName", authMiddleware, updateLName);
 router.post("/getPermissions", getPermissions);
 router.post("/getCUpdatedFlag", getCUpdatedFlag);
 router.put("/resetCUpdatedFlag", resetCUpdatedFlag);

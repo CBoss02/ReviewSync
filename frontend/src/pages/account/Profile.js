@@ -1,15 +1,10 @@
 import React, {useState, useEffect, useRef} from "react";
-import { useNavigate } from "react-router-dom";
-
-import { useAuth } from "../../contexts/AuthContext";
 import {sendPasswordResetEmail} from "firebase/auth";
 import auth from "../../config/firebase-config";
-import axios, {request} from "axios";
 import saveIcon from "../../assets/icons/GreenSave-Icon.png";
+import api from "../../config/axiosConfig";
 
 export default function Profile() {
-    const authContext = useAuth();
-    const uid = authContext.currentUser.uid;
     const [fNameInput, setFNameInput] = useState("");
     const [lNameInput, setLNameInput] = useState("");
 
@@ -24,9 +19,7 @@ export default function Profile() {
     useEffect(() => {
         const fetchName = async () => {
             try {
-                await axios.post("/api/users/getName", {
-                    uid: uid
-                }).then((response) => {
+                await api.get("/api/users/getName").then((response) => {
                     setFNameInput(response.data.first_name);
                     setLNameInput(response.data.last_name);
                 });
@@ -39,8 +32,7 @@ export default function Profile() {
 
     const updateFName = async () => {
         try {
-            await axios.put("/api/users/updateFName", {
-                uid: uid,
+            await api.put("/api/users/updateFName", {
                 first_name: fNameInput
             })
         } catch (error) {
@@ -50,15 +42,13 @@ export default function Profile() {
 
     const updateLName = async () => {
         try {
-            await axios.put("/api/users/updateLName", {
-                uid: uid,
+            await api.put("/api/users/updateLName", {
                 last_name: lNameInput
             })
         } catch (error) {
             console.error('Failed to fetch name:', error);
         }
     }
-
 
     const inputStates = [fNameInput, lNameInput]
     const updateNameFunctions = [updateFName, updateLName]
