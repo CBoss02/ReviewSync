@@ -1,7 +1,6 @@
 const {storage, db} = require('../config/firebase-config');
 const {FieldValue} = require('firebase-admin').firestore;
 
-
 exports.uploadDocument = async (req, res) => {
     const user = await db.collection('users').doc(req.user.uid).get();
     const companyId = user.data().company;
@@ -70,28 +69,43 @@ exports.deleteDocument = async (req, res) => {
 
 }
 
-exports.createComment = async (req, res) => {
+exports.addComment = async (req, res) => {
     try {
         const comment = req.body;
-        const collection = await db.collection("companies").doc(comment.companyID).collection("documents").doc(comment.documentID).collection("comments");
-        collection.add({
+        const user = await db.collection('users').doc(req.body.uid).get();
+        const companyID = user.data().company;
+        const collection = await db.collection("companies").doc(companyID).collection("documents").doc(comment.documentID).collection("comments");
+        await collection.add({
             text: comment.text,
-            owner: comment.owner,
+            owner: {
+                id: user.id,
+                name: user.data().first_name + " " + user.data().last_name
+            },
             replies: []
-        }).then((newComment) => {
-            if (comment.reply === true) {
-                collection.doc(comment.parentID).update({
-                    replies: FieldValue.arrayUnion(newComment.id)
-                }).then(() => {
-                    res.status(200).send();
-                }).catch((error) => {
-                    res.status(400).send(error.message);
-                })
-            } else {
-                res.status(200).send();
-            }
-        }).catch((error) => {
-            res.status(400).send(error.message);
+        }).then(() => {
+            res.status(200).send();
+        })
+    } catch (error) {
+        res.status(400).send(error.message);
+    }
+}
+
+exports.addReply = async (req, res) => {
+    try {
+        const reply = req.body;
+        const user = await db.collection('users').doc(req.user.uid).get();
+        const companyID = user.data().company;
+        const collection = await db.collection("companies").doc(companyID).collection("documents").doc(reply.documentID).collection("comments");
+        await collection.doc(reply.parentID).update({
+            replies: FieldValue.arrayUnion({
+                text: reply.text,
+                owner: {
+                    id: user.id,
+                    name: user.data().first_name + " " + user.data().last_name
+                }
+            })
+        }).then(() => {
+            res.status(200).send();
         })
     } catch (error) {
         res.status(400).send(error.message);
@@ -105,27 +119,28 @@ exports.testRoute = async (req, res) => {
 exports.deleteComment = async (req, res) => {
     try {
         const comment = req.body;
-        const collection = await db.collection("companies").doc(comment.companyID).collection("documents").doc(comment.documentID).collection("comments");
-        const parent = await collection.where('replies', 'array-contains', comment.id).get();
-        if (parent.empty) {
-            const doc = await collection.doc(comment.id).get();
-            const data = doc.data();
-            let i = 0;
-            while (i < data.replies.length) {
-                await collection.doc(data.replies[i]).delete();
-                i++;
-            }
-            await collection.doc(comment.id).delete();
+        const user = await db.collection('users').doc(req.user.uid).get();
+        const companyID = user.data().company;
+        const collection = await db.collection("companies").doc(companyID).collection("documents").doc(comment.documentID).collection("comments");
+        await collection.doc(comment.id).delete().then(() => {
             res.status(200).send();
-        } else {
-            await parent.forEach(doc => {
-                collection.doc(doc.id).update({
-                    replies: FieldValue.arrayRemove(comment.id)
-                })
-            })
-            await collection.doc(comment.id).delete();
+        })
+    } catch (error) {
+        res.status(400).send(error.message);
+    }
+}
+
+exports.deleteReply = async (req, res) => {
+    try {
+        const replyData = req.body;
+        const user = await db.collection("users").doc(replyData.reply.owner.id).get();
+        const companyID = user.data().company;
+        const collection = await db.collection("companies").doc(companyID).collection("documents").doc(replyData.documentID).collection("comments");
+        await collection.doc(replyData.parentID).update({
+            replies: FieldValue.arrayRemove(replyData.reply)
+        }).then(() => {
             res.status(200).send();
-        }
+        })
     } catch (error) {
         res.status(400).send(error.message);
     }
@@ -133,14 +148,16 @@ exports.deleteComment = async (req, res) => {
 
 exports.getComments = async (req, res) => {
     try {
-        const data = req.body;
+        const user = await db.collection('users').doc(req.user.uid).get();
+        const companyID = user.data().company;
         const comments = [];
-        const collection = await db.collection("companies").doc(data.companyID).collection("documents").doc(data.documentID).collection("comments");
-        const snapshot = await collection.get();
-        snapshot.forEach(doc => {
-            comments.push(doc.data());
-        });
-        res.status(200).send(comments);
+        const collection = await db.collection("companies").doc(companyID).collection("documents").doc(req.body.documentID).collection("comments").get();
+        await collection.forEach(doc => {
+            const commentData = doc.data();
+            commentData.id = doc.id;
+            comments.push(commentData)
+        })
+        res.status(200).send({comments: comments});
     } catch (error) {
         res.status(400).send(error.message);
     }
