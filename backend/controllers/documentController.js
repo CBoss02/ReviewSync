@@ -72,7 +72,7 @@ exports.deleteDocument = async (req, res) => {
 exports.addComment = async (req, res) => {
     try {
         const comment = req.body;
-        const user = await db.collection('users').doc(req.body.uid).get();
+        const user = await db.collection('users').doc(req.user.uid).get();
         const companyID = user.data().company;
         const collection = await db.collection("companies").doc(companyID).collection("documents").doc(comment.documentID).collection("comments");
         await collection.add({
