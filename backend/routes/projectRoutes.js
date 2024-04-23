@@ -1,7 +1,8 @@
 const express = require("express");
 
 const {
-    getProjects,
+    getProject,
+    getAllProjects,
     createProject,
     updateName,
     updateEmployee,
@@ -11,8 +12,8 @@ const {
 const authMiddleware = require("../middleware/authMiddleware");
 const router = express.Router();
 
-router.get("/getProjects", authMiddleware,  getProjects);
-
+router.get('/getProject/:projectId', authMiddleware, getProject);
+router.get("/getAllProjects", authMiddleware,  getAllProjects);
 
 router.post("/createProject", createProject);
 router.put("/updateName", updateName);

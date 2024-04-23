@@ -1,21 +1,46 @@
 const {db} = require('../config/firebase-config');
 const {FieldValue} = require('firebase-admin').firestore;
 
-exports.getProjects = async (req, res) => {
+
+exports.getProject = async (req, res) => {
+    const user = await db.collection('users').doc(req.user.uid).get();
+
+    if(!user.exists) {
+        return res.status(400).send('User not found');
+    }
+
     try {
-        const user = await db.collection("users").doc(req.user.uid).get();
-        const company = await db.collection("companies").doc(user.data().company).get();
+        const project = await db.collection('companies').doc(user.data().company).collection('projects').doc(req.params.projectId).get();
+        if(!project.exists) {
+            return res.status(404).send('Project not found');
+        }
 
+        res.status(200).send(project.data());
+    } catch (error) {
+        res.status(500).send(error.toString());
+    }
+
+}
+
+exports.getAllProjects = async (req, res) => {
+    const user = await db.collection('users').doc(req.user.uid).get();
+    const companyId = user.data().company;
+
+    if (!user.exists) {
+        return res.status(400).send('User not found');
+    }
+
+    try {
+        // Also send the document ID to the frontend
         const projects = [];
-        const snapshot = await db.collection("companies").doc(company.id).collection("projects").get();
-
-        snapshot.forEach(project => {
-            projects.push(project.data());
-        })
+        const snapshot = await db.collection('companies').doc(companyId).collection('projects').get();
+        snapshot.forEach(doc => {
+            projects.push({id: doc.id, ...doc.data()});
+        });
 
         res.status(200).send(projects);
     } catch (error) {
-        res.status(400).send(error.message);
+        res.status(500).send(error.toString());
     }
 }
 

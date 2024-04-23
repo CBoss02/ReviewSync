@@ -38,7 +38,7 @@ export default function Login() {
             setError("");
             setLoading(true);
             await signIn();
-            navigate("/");
+            navigate("/dashboard");
         } catch (error) {
             console.error(error);
             setError("Failed to log in");

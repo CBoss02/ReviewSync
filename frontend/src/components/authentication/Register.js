@@ -33,7 +33,7 @@ export default function Register() {
             setError("");
             setLoading(true);
             await register(form.email, form.password, form.first_name, form.last_name);
-            navigate("/dashboard");
+            navigate("/");
         } catch (error) {
             console.error(error);
             setError("Failed to create an account");

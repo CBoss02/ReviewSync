@@ -8,17 +8,19 @@ import DocumentUpload from "./components/document/DocumentUpload"
 import WithPrivateRoute from "./utils/WithPrivateRoute";
 import Dashboard from "./pages/Dashboard"
 import VerifyEmail from "./pages/VerifyEmail";
-import Profile from "./pages/account/Profile";
 import Home from "./pages/Home";
 import EditRoles from "./components/company/EditRoles";
 import AddEmployees from "./components/company/AddEmployees";
 import DocumentPage from "./pages/DocumentPage";
+import Profile from "./pages/Profile";
+import AppLayout from "./components/layouts/AppLayout";
+import Footer from "./components/layouts/Footer";
 
 function App() {
     return (
         <AuthProvider>
             <Router>
-                <Header/>
+                <AppLayout>
                 <ErrorMessage/>
                 <Routes>
                     <Route path="/register" element={<Register/>}/>
@@ -40,12 +42,11 @@ function App() {
                         path="/profile"
                         element={
                             <WithPrivateRoute>
-                                <Profile/>
+                                <Profile />
                             </WithPrivateRoute>
                         }
                     />
                     <Route path="/verify-email" element={<VerifyEmail/>}/>
-                    <Route path="*" element={<h1>Not Found</h1>}/>
                     <Route
                         exact
                         path="/dashboard"
@@ -62,9 +63,9 @@ function App() {
 
                     <Route path="/verify-email" element={<VerifyEmail />}/>
                     <Route path="/dashboard" element={<Dashboard />}/>
-                    <Route path="/documentupload" element={<DocumentUpload />}/>
                     <Route path="*" element={<h1>Not Found</h1>}/>
                 </Routes>
+                </AppLayout>
             </Router>
         </AuthProvider>
     );
