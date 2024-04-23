@@ -85,6 +85,8 @@ export default function EditRoles() {
                 }
             } catch (error) {
                 console.error('Failed to fetch roles:', error);
+                setRoles(initialRoles)
+                selectRole(initialRoles[0])
                 // Handle error (e.g., show an error message to the user)
             }//end try catch
         };//end fetchRoles const
@@ -110,13 +112,13 @@ export default function EditRoles() {
             }).catch(function (error) {
                 if (error.response) {
                     alert(error.response.data.message);
-                }
+                }//end if
             });
             // Reset the form or redirect the user as necessary
         } catch (error) {
             console.log(error.message);
-        }
-    }
+        }//end try catch
+    }//end submitRoles()
 
     //Updates the activeRole to the role clicked by the user
     //This object is a role type, not just a number
@@ -130,10 +132,12 @@ export default function EditRoles() {
         }//end for loop
     }//end function
 
+    //Fixes the rename issue
     useEffect(() => {
         // Whenever roles change, update the active role
         selectRole(roles.find(role => role.id === activeRole.id));
     }, [roles]);
+
 
     //Keeps track of the newest ID number for a role to be given
     //This is just a number, not a special type
