@@ -12,6 +12,7 @@ import saveIcon from "../assets/icons/GreenSave-Icon.png";
 export default function Dashboard() {
     const [projects, setProjects] = useState([]);
     const [projectID, setProjectID] = React.useState(0);
+    const [documents, setDocuments] = useState([]);
     const [companyID, setCompanyID] = useState("");
     const [selectedPeople, setSelectedPeople] = useState([]);
     const [initialNamePrompt, setInitialNamePrompt] = useState(false);
@@ -21,7 +22,8 @@ export default function Dashboard() {
     const [permissions, setPermissions] = useState([]);
     const [employees, setEmployees] = useState([]);
     const [owner, setOwner] = useState(false);
-    const [popupIsOpen, setPopupIsOpen] = useState(false)
+    const [popupIsOpen, setPopupIsOpen] = useState(false);
+    const [file, setFile] = useState(null);
     const [eUpdated, setEUpdated] = useState(false); //Indicates if employees in company have changed
     const [rolesUpdated, setRolesUpdated] = useState(false); //Indicates if company roles have changed
     const [cUpdated, setCUpdated] = useState(false); //Indicates if a user has been removed from a company
@@ -218,6 +220,16 @@ export default function Dashboard() {
             console.error('Failed to fetch projects:', error);
         }
     };
+
+    const fetchHomeDocuments = async () => {
+        try {
+            await api.get("/api/documents/getHomeDocuments").then((response) => {
+                setDocuments(response.data.documents)
+            });
+        } catch (error) {
+            console.error('Failed to fetch projects:', error);
+        }
+    };
     const fetchPermissions = async () => {
         try {
             await api.post("/api/users/getPermissions", {
@@ -270,6 +282,23 @@ export default function Dashboard() {
         }
     }
 
+    const handleUpload = async () => {
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('projectID', projectID);
+        try {
+            const response = await api.post('/api/documents/uploadDocument', formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                }
+            });
+            console.log('Upload successful', response.data);
+            setPopupIsOpen(false);
+        } catch (error) {
+            console.error('Upload failed', error);
+        }
+    };
+
     const updateName = async () => {
         try {
             await api.put("/api/projects/updateName", {
@@ -302,6 +331,7 @@ export default function Dashboard() {
         fetchPermissions();
         fetchEmployees();
         fetchProjects();
+        fetchHomeDocuments();
     }, []);
 
     //This function checks every 5 seconds for flags in the database that indicate if certain
@@ -311,7 +341,7 @@ export default function Dashboard() {
     /* Minimize calls to DB when testing to avoid maxing out firebase quota
     useEffect(() => {
         const interval = setInterval(() => {
-            fetchFlags()
+            //fetchFlags()
         }, 5000); //check every 5 seconds
         return () => clearInterval(interval);
     }, []);
@@ -341,6 +371,10 @@ export default function Dashboard() {
         }));//end map
     }//end function
 
+    const handleFileChange = event => {
+        setFile(event.target.files[0]);
+    };
+
     const renderProjectNames = () => {
         return projects.map((data) => (
                 <>
@@ -348,6 +382,7 @@ export default function Dashboard() {
                         className="flex justify-center bg-blue-700 hover:bg-blue-500 text-white font-bold py-2 px-4 rounded min-w-80 transition-all duration-500"
                         onClick={async () => {
                             setProjectID(data.id)
+                            setHome(false)
                             setInputValue(data.name)
                             if(data.owner === uid)
                                 setOwner(true)
@@ -363,19 +398,19 @@ export default function Dashboard() {
         )
     }
 
-/*
-const renderDocumentNames = () => {
-    return documentNames[projectID].map((data) => (
-        <button
-            className="bg-blue-700 hover:bg-blue-500 text-white font-bold py-2 px-4 rounded w-full transition-all duration-500"
-            onClick={() => console.log("ok")}
-        >
-            <p>{data}</p>
-        </button>
-    ))
-}
-*/
 
+    const renderDocumentNames = () => {
+        return documents.map((document) => (
+            <button
+                className="bg-blue-700 hover:bg-blue-500 min-w-80 text-white font-bold py-2 px-4 rounded transition-all duration-500"
+                onClick={() => console.log("ok")}
+            >
+                <p>{document.name}</p>
+            </button>
+        ))
+    }
+
+    //We're probably going to switch to Megh's component for this but I'll leave it here just in case
     const renderPopup = () => {
         return (
             <>
@@ -392,13 +427,13 @@ const renderDocumentNames = () => {
                                     Upload a new document
                                 </Dialog.Title>
                                 <div>
-                                    <input type="file" onChange={() => console.log("ok")}/>
+                                    <input type="file" onChange={handleFileChange}/>
                                 </div>
                                 <div className="mt-4">
                                     <button
                                         type="button"
                                         className="inline-flex justify-center rounded-md border border-transparent bg-green-100 px-4 py-2 text-sm font-medium text-black-900 hover:bg-blue-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
-                                        onClick={() => setPopupIsOpen(false)}
+                                        onClick={handleUpload}
                                     >
                                         Upload
                                     </button>
@@ -624,6 +659,8 @@ const renderDocumentNames = () => {
                         className="flex justify-center bg-blue-700 hover:bg-blue-500 text-white font-bold py-2 px-4 rounded min-w-80 transition-all duration-500"
                         onClick={async () => {
                             setOwner(false)
+                            setHome(true)
+                            setProjectID(0)
                         }}
                     >
                         <p>HOME</p>
@@ -674,6 +711,7 @@ const renderDocumentNames = () => {
                     <Divider color="#1bc41e" sx={{height: 2, width: '525px'}}></Divider>
 
                     {(initialNamePrompt || rename) && renderNamePrompt()}
+                    {home && renderDocumentNames()}
                     {permissions[6] && (
                         <button
                             className="bg-blue-700 hover:bg-blue-500 min-w-80 text-white font-bold py-2 px-4 rounded transition-all duration-500"

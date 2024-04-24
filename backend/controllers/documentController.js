@@ -3,14 +3,14 @@ const {FieldValue} = require('firebase-admin').firestore;
 
 exports.uploadDocument = async (req, res) => {
     const user = await db.collection('users').doc(req.user.uid).get();
-    const companyId = user.data().company;
+    const companyID = user.data().company;
 
     if (!req.file || !user.exists) {
         return res.status(400).send('Missing file or user');
     }
 
     try {
-        const blob = storage.bucket().file(`${companyId}/documents/${req.file.originalname + Date.now()}`);
+        const blob = storage.bucket().file(`${companyID}/documents/${req.file.originalname + Date.now()}`);
         const blobStream = blob.createWriteStream({
             metadata: {
                 contentType: req.file.mimetype,
@@ -24,19 +24,31 @@ exports.uploadDocument = async (req, res) => {
         blobStream.on('finish', async () => {
             await blob.makePublic();
             const publicUrl = `https://storage.googleapis.com/${storage.bucket().name}/${blob.name}`;
-
+            let projectID = req.body.projectID;
+            if(req.body.projectID === '0')
+                projectID = null;
             try {
-                const docRef = await db.collection('companies').doc(companyId).collection('documents').add({
+                const docRef = await db.collection('companies').doc(companyID).collection('documents').add({
                     name: req.file.originalname,
                     url: publicUrl,
                     contentType: req.file.mimetype,
                     createdAt: new Date(),
                     owner: req.user.uid,
+                    projectID: projectID
                 });
 
-                await db.collection('users').doc(req.user.uid).update({
-                    documents: FieldValue.arrayUnion(docRef.id),
-                });
+                if(req.body.projectID === '0')
+                {
+                    await db.collection('users').doc(req.user.uid).update({
+                        documents: FieldValue.arrayUnion(docRef.id),
+                    });
+                }
+                else
+                {
+                    await db.collection("companies").doc(companyID).collection("projects").doc(req.body.projectID).update({
+                        documents: FieldValue.arrayUnion(docRef.id)
+                    })
+                }
 
                 res.status(200).send({ id: docRef.id, url: publicUrl });
             } catch (innerError) {
@@ -51,17 +63,22 @@ exports.uploadDocument = async (req, res) => {
 };
 
 
-exports.getDocuments = async (req, res) => {
+exports.getHomeDocuments = async (req, res) => {
     try {
+        const user = await db.collection("users").doc(req.user.uid).get();
+        const companyID = user.data().company;
+        const documentIDs = user.data().documents;
         const documents = [];
-        const snapshot = await db.collection('documents').get();
+        const snapshot = await db.collection("companies").doc(companyID).collection("documents").get();
         snapshot.forEach(doc => {
-            documents.push({id: doc.id, ...doc.data()});
+            if(documentIDs.includes(doc.id))
+            {
+                documents.push({id: doc.id, ...doc.data()});
+            }
         });
-        res.status(200).json(documents);
+        res.status(200).send({documents: documents});
     } catch (error) {
-        console.error('Failed to retrieve document:', error);
-        res.status(500).json({error: error.message});
+        res.status(400).send(error.message);
     }
 };
 
