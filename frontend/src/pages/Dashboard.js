@@ -6,6 +6,8 @@ import {Listbox, Transition, Dialog} from '@headlessui/react';
 import {CheckIcon, ChevronDoubleDownIcon} from '@heroicons/react/solid';
 import DocumentUpload from "../components/document/DocumentUpload";
 import api from "../config/axiosConfig";
+import deleteIcon from "../assets/icons/RedDelete-Icon.png";
+import saveIcon from "../assets/icons/GreenSave-Icon.png";
 
 export default function Dashboard() {
     const [projects, setProjects] = useState([]);
@@ -329,13 +331,24 @@ export default function Dashboard() {
         api.put("/api/projects/updateEmployee", {employeeID: employeeID, uid: uid, projectID: projectID})
     }
 
+    function handleLocalRename(newName){
+        setProjects(projects.map(project => {
+            if(project.id === projectID) {
+                return {...project, name: newName};
+            }else{
+                return project;
+            }//end if else
+        }));//end map
+    }//end function
+
     const renderProjectNames = () => {
         return projects.map((data) => (
                 <>
                     <button
-                        className="bg-blue-700 hover:bg-blue-500 text-white font-bold py-2 px-4 rounded w-full transition-all duration-500"
+                        className="flex justify-center bg-blue-700 hover:bg-blue-500 text-white font-bold py-2 px-4 rounded min-w-80 transition-all duration-500"
                         onClick={async () => {
                             setProjectID(data.id)
+                            setInputValue(data.name)
                             if(data.owner === uid)
                                 setOwner(true)
                             else
@@ -408,12 +421,12 @@ const renderDocumentNames = () => {
                 <input
                     type="text"
                     placeholder="New project name..."
-                    className="w-full border-2 border-gray-300 p-2 rounded-full transition-all duration-500"
+                    className="min-w-70 border-2 border-gray-300 p-2 rounded-full transition-all duration-500"
                     value={inputValue}
                     onChange={handleInputChange}
                 />
                 <button
-                    className="bg-blue-700 hover:bg-blue-500 text-white font-bold py-2 px-4 rounded-full"
+                    className="flex justify-center py-3 h-10 w-14 bg-blue-700 hover:bg-blue-500 text-white font-bold px-4 rounded-full"
                     onClick={async () => {
                         if(initialNamePrompt)
                         {
@@ -434,9 +447,13 @@ const renderDocumentNames = () => {
     const renderEmployeeList = () => {
         return (
             <Listbox value={selectedPeople} multiple onChange={setSelectedPeople} style={{marginRight: "15px"}}>
-                <div className="relative mt-1">
+                <div className="relative mt-1 pt-2">
                     <Listbox.Button
-                        className="relative w-full cursor-default rounded-lg bg-white py-2 pl-3 pr-10 text-left shadow-md focus:outline-none focus-visible:border-indigo-500 focus-visible:ring-2 focus-visible:ring-white/75 focus-visible:ring-offset-2 focus-visible:ring-offset-orange-300 sm:text-sm">
+                        className="relative w-full h-9 cursor-default rounded-lg bg-white py-2 pl-3 pr-10 text-left
+                        shadow-sm ring-1 ring-gray-300 placeholder:text-black focus:ring-2
+                        focus:ring-inset justify-center focus:ring-indigo-600 sm:leading-6 px-2 dark:ring-indigo-600 dark:ring-2
+                         focus-visible:border-indigo-500 focus-visible:ring-2
+                          focus-visible:ring-white/75 focus-visible:ring-offset-2 focus-visible:ring-offset-orange-300 sm:text-sm">
                         <span className="block truncate">Manage Project Employees</span>
                         <span className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
                             <ChevronDoubleDownIcon
@@ -487,31 +504,90 @@ const renderDocumentNames = () => {
         )
     }
 
-    //The rename and delete buttons.
-    const renderRenameAndDelete = () => {
+    //The rename box.
+    const renderRename = projects.map((project) => {
+        if(project.id===projectID){
+            return (
+                <div className="flex mt-2 mx-4 pt-1">
+                    <input
+                        id={project.id}
+                        type="text"
+                        value={inputValue}
+                        placeholder={project.name}
+                        onChange={handleInputChange}
+                        className="flex align-middle p-2 rounded-md h-9 border-0 min-w-60 text-black shadow-sm ring-1
+                         ring-gray-300 placeholder:text-black justify-center -ml-3
+                        focus:ring-indigo-600 sm:text-sm sm:leading-6 px-2 dark:ring-indigo-600"
+                    />
+
+                    <button className="flex justify-end h-8 w-auto mt-0.5 -ml-9"
+                            onClick={async () => {
+                                await updateName()
+                                setPUpdated(true);
+                                handleLocalRename(inputValue);
+                                //Change the local projects array to reflect the changes
+
+                            }}
+                            >
+                        <img
+                            className="justify-end mx-auto h-8 w-auto"
+                            src={saveIcon}
+                            alt="Save Project Name">
+                        </img>
+                    </button>
+                </div>
+
+            )
+        }//end if
+    });//end renderRename
+
+    //the Delete Box
+    const renderDelete = () => {
         return (
             <div>
-                <button
-                    className="bg-blue-700 hover:bg-blue-500 text-white font-bold py-2 px-4 rounded-full"
-                    style={{marginRight: "15px"}}
-                    onClick={() => setRename(true)}
+                <button className="flex pt-4 pb-0"
+                        onClick={async () => {
+                            await deleteProject()
+                            //If this isn't the first project in the list
+                            if(projects[0].id!==projectID){
+                                //Find the index of the role that we want to delete
+                                for(let project of projects){
+                                    if(project.id === projectID) {
+                                        let index  = projects.indexOf(project);
+
+                                        //swap to the role AFTER the role we are deleting
+                                        setProjectID(projects[index-1].id)
+
+                                        //filter out the role we want to "delete"
+                                        setProjects(projects.filter(project => project !== projects[index]));
+                                    }//end nested if
+                                }//end for
+
+                            // /This is the very first element in the list, set the active project to home
+                            }else{
+                                //update the active project to the following role in the list
+                                setProjectID(0);
+                                setHome(true);
+                                setOwner(false); //Navigate to the Home page
+
+                                //get rid of the first element in the list
+                                setProjects(projects.filter(project => project !== projects[0]));
+                            }//end if else
+                        }}//end onCLick
                 >
-                    Rename
+                    <img
+                        className="h-8 w-8"
+                        src={deleteIcon}
+                        alt="Delete Role">
+                    </img>
                 </button>
-                <button
-                    className="bg-blue-700 hover:bg-blue-500 text-white font-bold py-2 px-4 rounded-full"
-                    onClick={async () => {
-                        await deleteProject()
-                    } }
-                >
-                    Delete
-                </button>
+
             </div>
         )
-    }
+    }//end renderDelete()
 
     return (
-        <div className="App">
+        <div className="App ">
             <Box
                 sx={{
                     height: '100vh',
@@ -523,18 +599,20 @@ const renderDocumentNames = () => {
                     alignContent: 'space-between'
                 }}>
                 <Box
-                    bgcolor="white"
+                    className="flex rounded w-auto min-w-400"
+                    //bgcolor="white"
                     style={{
                         overflowY: "auto",
                         maxHeight: "425px",
                         display: "flex",
-                        flexGrow: 1,
+                        //flexGrow: 1,
                         flexDirection: "column",
                         marginLeft: "25px",
-                        marginRight: "25px"
+                        //marginRight: "25px"
                     }}
-                    height={800}
-                    width={200}
+                    //height={800}
+                    height={425}
+                    //width={400}
                     my={0}
                     display="flex"
                     alignItems="center"
@@ -543,17 +621,22 @@ const renderDocumentNames = () => {
                     sx={{border: '2px solid grey'}}
                 >
                     <button
-                        className="bg-blue-700 hover:bg-blue-500 text-white font-bold py-2 px-4 rounded w-full transition-all duration-500"
+                        className="flex justify-center bg-blue-700 hover:bg-blue-500 text-white font-bold py-2 px-4 rounded min-w-80 transition-all duration-500"
                         onClick={async () => {
                             setOwner(false)
                         }}
                     >
                         <p>HOME</p>
                     </button>
+
+
+                    <Divider className="h-2 min-w-425 w-auto"
+                    color="#1bc41e" sx={{height: 2, width: '320px'}}></Divider>
+
                     {renderProjectNames()}
                     <>
                         <button
-                            className="bg-blue-700 hover:bg-blue-500 text-white font-bold py-2 px-4 rounded w-full transition-all duration-500"
+                            className="bg-blue-700 hover:bg-blue-500 min-w-80 text-white font-bold py-2 px-4 rounded transition-all duration-500"
                             onClick={() => setInitialNamePrompt(true)}
                         >
                             <p>+</p>
@@ -561,35 +644,39 @@ const renderDocumentNames = () => {
                     </>
                 </Box>
                 <Box
+                    className="rounded"
                     bgcolor="white"
                     style={{
                         overflowY: "auto",
                         maxHeight: "425px",
                         display: "column",
-                        flexGrow: 1,
+                        //flexGrow: 1,
                         flexDirection: "column",
                         marginLeft: "25px",
                         marginRight: "25px"
                     }}
-                    height={800}
-                    width={200}
+                    //height={800}
+                    //width={200}
+                    height={425}
+                    width={600}
                     my={0}
                     display="flex"
                     alignItems="center"
                     gap={2}
-                    p={2}
+                    p={1}
                     sx={{border: '2px solid grey'}}
                 >
-                    <Box component="h2" style={{display: "flex", flexDirection: "row"}}>
+                    <Box component="h2" className="justify-center" style={{display: "flex", flexDirection: "row"}}>
+                        {owner === true && renderRename}
                         {owner === true && renderEmployeeList()}
-                        {owner === true && renderRenameAndDelete()}
+                        {owner === true && renderDelete()}
                     </Box>
                     <Divider color="#1bc41e" sx={{height: 2, width: '525px'}}></Divider>
 
                     {(initialNamePrompt || rename) && renderNamePrompt()}
                     {permissions[6] && (
                         <button
-                            className="bg-blue-700 hover:bg-blue-500 text-white font-bold py-2 px-4 rounded w-full transition-all duration-500"
+                            className="bg-blue-700 hover:bg-blue-500 min-w-80 text-white font-bold py-2 px-4 rounded transition-all duration-500"
                             onClick={() => setPopupIsOpen(true)}
                         >
                             <p>+</p>

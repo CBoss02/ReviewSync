@@ -4,7 +4,6 @@ import {useNavigate} from "react-router-dom";
 import deleteIcon from "../../assets/icons/RedDelete-Icon.png";
 import saveIcon from "../../assets/icons/GreenSave-Icon.png";
 import {useAuth} from "../../contexts/AuthContext";
-import {useLocation} from 'react-router-dom';
 import api from "../../config/axiosConfig";
 
 export default function EditRoles() {
@@ -311,9 +310,7 @@ export default function EditRoles() {
                         </labeL>
                     </form>
 
-                    <button className="justify-end mx-auto h-8 w-auto px-2"
-                        //onClick={saveRole}>
-                    >
+                    <button className="justify-end mx-auto h-8 w-auto px-2">
                         <img
                             className="justify-end mx-auto h-8 w-auto"
                             src={saveIcon}
