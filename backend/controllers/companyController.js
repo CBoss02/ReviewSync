@@ -274,99 +274,43 @@ exports.addOrUpdateRoles = async (req, res) => {
 
 exports.modifyPendingListAndEditRoles = async (req, res) => {
     try {
-        const employees = req.body.employees;
-        const uid = req.body.uid;
-        const user = await db.collection("users").doc(uid).get();
-        const userData = user.data();
-        const companyID = userData.company;
-        const company = db.collection("companies").doc(companyID);
-        let joinedCompany = false;
-        for(let i = 0; i < employees.length; i++)
-        {
-            const userSnapshot = await db.collection("users").where('email', '==', employees[i].email).get();
-            if(!userSnapshot.empty) //User is registered
-            {
-                await userSnapshot.forEach(user => {
-                    const userData = user.data();
-                    if(userData.company === companyID) //User has already joined company, so update their role
-                    {
-                        joinedCompany = true;
-                        const roleCollection = company.collection("roles");
-                        roleCollection.where('name', '==', employees[i].role).get().then((roleSnapshot) => {
-                            roleSnapshot.forEach(role => {
-                                db.collection("users").doc(user.id).update({
-                                    role: role.id,
-                                    roleUpdated: true
-                                })
-                                db.collection("companies").doc(companyID).update({
-                                    eUpdated: true
-                                })
-                            })
-                        })
-                    }
-                })
-            }
-            if(!joinedCompany) //This also accounts for if a user has not registered yet
-            {
-                await company.update({
-                    pendingList: FieldValue.arrayUnion(employees[i])
-                })
-            }
-        }
-        const employeesOfCompany = await db.collection("users").where('company', '==', companyID).get();
-        if(employeesOfCompany.docs.length > 1) //if there are more employees than the company owner
-        {
-            await employeesOfCompany.forEach(employeeOfCompany => {
-                if(employeeOfCompany.id !== uid) //do not remove owner of company
-                {
-                    const employeeOfCompanyData = employeeOfCompany.data();
-                    let found = false;
-                    for(let i = 0; i < employees.length; i++)
-                    {
-                        if(employeeOfCompanyData.email === employees[i].email)
-                        {
-                            found = true
-                            break
-                        }
-                    }
-                    if(!found) //This user's email wasn't found in the request, so the owner is removing them
-                    {
-                        db.collection("users").doc(employeeOfCompany.id).update({
-                            company: null,
-                            role: null,
-                            cUpdated: true
-                        })
-                        company.update({
-                            employees: FieldValue.arrayRemove(employeeOfCompany.id),
-                            eUpdated: true
-                        })
-                    }
-                }
-            })
-        }
-        const companySnapshot = await company.get();
-        const companyData = companySnapshot.data();
-        const pendingList = companyData.pendingList;
-        for(let i = 0; i < pendingList.length; i++)
-        {
-            let found = false
-            for(let j = 0; j < employees.length; j++)
-            {
-                if((pendingList[i].email === employees[j].email) && (pendingList[i].role === employees[j].role))
-                {
-                    found = true;
-                    break
-                }
-            }
-            if(!found)
-            {
-                await company.update({
-                    pendingList: FieldValue.arrayRemove(pendingList[i])
-                })
-            }
-        }
-        res.status(200).send();
+        const { employees, uid } = req.body;
+        const userRef = db.collection("users").doc(uid);
+        const userData = (await userRef.get()).data();
+        const companyRef = db.collection("companies").doc(userData.company);
+
+        // Fetch current pending list from the company document
+        const companyDoc = await companyRef.get();
+        const companyData = companyDoc.data();
+        let currentPendingList = companyData.pendingList || [];
+
+        // Determine which employees to add or remove from the pending list
+        const newPendingList = employees.filter(emp => !currentPendingList.some(p => p.email === emp.email));
+        const employeesToRemove = currentPendingList.filter(p => !employees.some(emp => emp.email === p.email));
+
+        // Prepare batch operation
+        const batch = db.batch();
+
+        // Add new pending employees
+        newPendingList.forEach(emp => {
+            batch.update(companyRef, {
+                pendingList: FieldValue.arrayUnion(emp)
+            });
+        });
+
+        // Remove employees no longer pending
+        employeesToRemove.forEach(emp => {
+            batch.update(companyRef, {
+                pendingList: FieldValue.arrayRemove(emp)
+            });
+        });
+
+        // Commit batch operation
+        await batch.commit();
+        res.status(200).send("Pending list updated successfully.");
+
     } catch (error) {
+        console.error("Error updating pending list:", error);
         res.status(400).send(error.message);
     }
 }

@@ -57,10 +57,8 @@ export default function Register() {
         try {
             setError("");
             setLoading(true);
-            await register();
-            navigate("/");
             await register(form.email, form.password, form.first_name, form.last_name);
-            navigate("/profile");
+            navigate("/");
         } catch (error) {
             console.error(error);
             setError("Failed to create an account");
