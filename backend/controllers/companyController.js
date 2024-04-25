@@ -95,23 +95,29 @@ exports.getCompanyName = async (req, res) => {
 }
 
 exports.getEmployees = async (req, res) => {
+    const user = await db.collection("users").doc(req.body.uid).get();
+    const companyID = user.data().company;
+
+    if (!user.exists) {
+        return res.status(404).send('User not found');
+    }
+
     try {
-        const uid = req.body.uid;
-        const user = await db.collection("users").doc(uid).get();
-        const companyID = user.data().company;
-        let employees = [];
-        const snapshot = await db.collection("users").where("company", "==", companyID).get();
-        if (!snapshot.empty) {
-            snapshot.forEach(employee => {
-                if (employee.id !== uid) {
-                    const employeeData = employee.data();
-                    const name = employeeData.first_name.concat(" ").concat(employeeData.last_name);
-                    const employeeJson = {id: employee.id, name: name}
-                    employees.push(employeeJson)
+        const company = await db.collection("companies").doc(companyID).get();
+        const companyData = company.data();
+        const employees = [];
+        const qSnap = await db.collection("users").where('company', '==', companyID).get();
+        if (qSnap.empty) {
+            res.status(200).send({employees: []});
+        } else {
+            await qSnap.forEach(user => {
+                if (user.id !== companyData.owner) {
+                    const userData = user.data();
+                    employees.push(userData);
                 }
-            })
+            });
+            res.status(200).send({employees: employees});
         }
-        res.status(200).send({employees: employees});
     } catch (error) {
         res.status(400).send(error.message);
     }
