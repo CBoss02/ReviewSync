@@ -468,7 +468,10 @@ export default function Dashboard() {
                 <input
                     type="text"
                     placeholder="New project name..."
-                    className="min-w-70 border-2 border-gray-300 p-2 rounded-full transition-all duration-500"
+                    className="relative min-w-70  border-gray-300 transition-all duration-500 rounded-lg
+                                    p-2 h-8 border-2 min-w-28 text-black shadow-sm ring-1
+                                     ring-gray-300 placeholder:text-black focus:ring-2 focus:ring-inset
+                                    focus:ring-indigo-600 sm:text-sm sm:leading-6 px-2 dark:ring-indigo-600 dark:ring-2"
                     value={inputValue}
                     onChange={handleInputChange}
                 />
@@ -499,7 +502,7 @@ export default function Dashboard() {
                         focus:ring-inset justify-center focus:ring-indigo-600 sm:leading-6 px-2 dark:ring-indigo-600 dark:ring-2
                          focus-visible:border-indigo-500 focus-visible:ring-2
                           focus-visible:ring-white/75 focus-visible:ring-offset-2 focus-visible:ring-offset-orange-300 sm:text-sm">
-                        <span className="block truncate">Manage Project Employees</span>
+                        <span className="flex truncate -mt-0.5">Manage Project Employees</span>
                         <span className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
                             <ChevronDoubleDownIcon
                                 className="h-5 w-5 text-gray-400"
@@ -560,9 +563,10 @@ export default function Dashboard() {
                         value={inputValue}
                         placeholder={project.name}
                         onChange={handleInputChange}
-                        className="flex align-middle p-2 rounded-md h-9 border-0 min-w-60 text-black shadow-sm ring-1
-                         ring-gray-300 placeholder:text-black justify-center -ml-3
-                        focus:ring-indigo-600 sm:text-sm sm:leading-6 px-2 dark:ring-indigo-600"
+                        className="flex align-middle p-2 h-9 min-w-60 relative min-w-70  border-gray-300 transition-all duration-500 rounded-lg
+                                    border-2 text-black shadow-sm ring-1
+                                     ring-gray-300 placeholder:text-black focus:ring-2 focus:ring-inset
+                                    focus:ring-indigo-600 sm:text-sm sm:leading-6 px-2 dark:ring-indigo-600 dark:ring-2"
                     />
 
                     <button className="flex justify-end h-8 w-auto mt-0.5 -ml-9"
@@ -625,6 +629,7 @@ export default function Dashboard() {
     return (
         <div className="App ">
             <Box
+                /*The left side box*/
                 sx={{
                     //height: '100vh',
                     overflow: 'auto',
@@ -634,104 +639,125 @@ export default function Dashboard() {
                     marginTop: '30px',
                     alignContent: 'space-between'
                 }}>
-                <Box
-                    className="flex rounded w-auto min-w-400"
-                    //bgcolor="white"
-                    style={{
-                        overflowY: "auto",
-                        maxHeight: "425px",
-                        display: "flex",
-                        //flexGrow: 1,
-                        flexDirection: "column",
-                        marginLeft: "25px",
-                        //marginRight: "25px"
-                    }}
-                    //height={800}
-                    height={425}
-                    //width={400}
-                    my={0}
-                    display="flex"
-                    alignItems="center"
-                    gap={2}
-                    p={2}
-                    sx={{border: '2px solid grey'}}
-                >
-                    <button
-                        className="flex justify-center bg-blue-700 hover:bg-blue-500 text-white font-bold py-2 px-4 rounded min-w-80 transition-all duration-500"
-                        onClick={async () => {
-                            setOwner(false)
-                            setHome(true)
-                            setProjectID(0)
+
+
+                <div className="flex-col align-top">
+
+                    <h2 className="flex mt-4 ml-8 mb-2 justify-center text-2xl font-bold leading-9 tracking-tight text-gray-900 dark:text-white">
+                        Projects
+                    </h2>
+
+                    <Box
+                        className="flex rounded w-auto min-w-400"
+                        //bgcolor="white"
+                        style={{
+                            overflowY: "auto",
+                            maxHeight: "425px",
+                            display: "flex",
+                            //flexGrow: 1,
+                            flexDirection: "column",
+                            marginLeft: "25px",
+                            //marginRight: "25px"
                         }}
+                        //height={800}
+                        height={425}
+                        //width={400}
+                        my={0}
+                        display="flex"
+                        alignItems="center"
+                        gap={2}
+                        p={2}
+                        sx={{border: '2px solid grey'}}
                     >
-                        <p>HOME</p>
-                    </button>
-
-
-                    <Divider className="h-2 min-w-425 w-auto"
-                    color="#1bc41e" sx={{height: 2, width: '320px'}}></Divider>
-
-                    {renderProjectNames()}
-                    <>
                         <button
-                            className="bg-blue-700 hover:bg-blue-500 min-w-80 text-white font-bold py-2 px-4 rounded transition-all duration-500"
-                            onClick={() => setInitialNamePrompt(true)}
+                            className="flex justify-center bg-blue-700 hover:bg-blue-500 text-white font-bold py-2 px-4 rounded min-w-80 transition-all duration-500"
+                            onClick={async () => {
+                                setOwner(false)
+                                setHome(true)
+                                setProjectID(0)
+                            }}
                         >
-                            <p>+</p>
+                            <p>HOME</p>
                         </button>
-                    </>
-                </Box>
-                <Box
-                    className="rounded"
-                    bgcolor="white"
-                    style={{
-                        overflowY: "auto",
-                        maxHeight: "425px",
-                        display: "column",
-                        //flexGrow: 1,
-                        flexDirection: "column",
-                        marginLeft: "25px",
-                        marginRight: "25px"
-                    }}
-                    //height={800}
-                    //width={200}
-                    height={425}
-                    width={600}
-                    my={0}
-                    display="flex"
-                    alignItems="center"
-                    gap={2}
-                    p={1}
-                    sx={{border: '2px solid grey'}}
-                >
-                    {(!initialNamePrompt && !rename) && (
-                        <Box component="h2" className="justify-center" style={{display: "flex", flexDirection: "row"}}>
-                            {owner === true && renderRename}
-                            {owner === true && renderEmployeeList()}
-                            {owner === true && renderDelete()}
-                        </Box>
-                    )}
 
 
-                    {((!initialNamePrompt && !rename) && (owner === true)) && (
-                        <Divider color="#1bc41e" sx={{height: 2, width: '525px'}}/>
-                    )}
+                        <Divider className="h-2 min-w-425 w-auto"
+                                 color="#1bc41e" sx={{height: 2, width: '320px'}}></Divider>
+
+                        {renderProjectNames()}
+                        <>
+                            <button
+                                className="bg-blue-700 hover:bg-blue-500 min-w-80 text-white font-bold py-2 px-4 rounded transition-all duration-500"
+                                onClick={() => setInitialNamePrompt(true)}
+                            >
+                                <p>+</p>
+                            </button>
+                        </>
+                    </Box>
+                </div>
 
 
-                    {(initialNamePrompt || rename) && renderNamePrompt()}
-                    {home && renderDocumentNames()}
-                    {(permissions[6] && (!initialNamePrompt && !rename)) &&(
-                        <button
-                            className="bg-blue-700 hover:bg-blue-500 min-w-80 text-white font-bold py-2 px-4 rounded transition-all duration-500"
-                            onClick={() => setPopupIsOpen(true)}
-                        >
-                            <p>+</p>
-                        </button>
-                    )}
+                <div className="flex-col align-top">
 
-                </Box>
+                    <h2 className="flex mt-4 mb-2 justify-center text-2xl font-bold leading-9 tracking-tight text-gray-900 dark:text-white">
+                        Documents
+                    </h2>
+
+                    <Box
+                        /*The right side box*/
+                        className="rounded flex"
+                        //bgcolor="white"
+                        style={{
+                            overflowY: "auto",
+                            maxHeight: "425px",
+                            display: "column",
+                            //flexGrow: 1,
+                            flexDirection: "column",
+                            marginLeft: "25px",
+                            marginRight: "25px"
+                        }}
+                        //height={800}
+                        //width={200}
+                        height={425}
+                        width={600}
+                        my={0}
+                        display="flex"
+                        alignItems="center"
+                        gap={2}
+                        p={1}
+                        sx={{border: '2px solid grey'}}
+                    >
+                        {(!initialNamePrompt && !rename) && (
+                            <Box component="h2" className="justify-center"
+                                 style={{display: "flex", flexDirection: "row"}}>
+                                {owner === true && renderRename}
+                                {owner === true && renderEmployeeList()}
+                                {owner === true && renderDelete()}
+                            </Box>
+                        )}
+
+
+                        {((!initialNamePrompt && !rename) && (owner === true)) && (
+                            <Divider color="#1bc41e" sx={{height: 2, width: '525px'}}/>
+                        )}
+
+
+                        {(initialNamePrompt || rename) && renderNamePrompt()}
+                        {home && renderDocumentNames()}
+                        {(permissions[6] && (!initialNamePrompt && !rename)) && (
+                            <button
+                                className="bg-blue-700 hover:bg-blue-500 min-w-80 text-white font-bold py-2 px-4 rounded transition-all duration-500"
+                                onClick={() => setPopupIsOpen(true)}
+                            >
+                                <p>+</p>
+                            </button>
+                        )}
+
+                    </Box>
+
+                </div>
             </Box>
             {popupIsOpen && renderPopup()}
         </div>
-    );
+);
 }
