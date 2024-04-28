@@ -274,13 +274,25 @@ export default function Dashboard() {
                 name: inputValue,
                 owner: uid
             }).then(() => {
+                handleLocalNewProject(inputValue, uid)
                 setInitialNamePrompt(false)
                 setPUpdated(true)
+                setHome(true)
+                setOwner(false)
+                setProjectID(0)
             })
         } catch (error) {
             console.error('Failed to add project:', error);
         }
     }
+
+    //Updates the projects array locally to reflect the database change
+    function handleLocalNewProject(newName){
+        setProjects([...projects, {
+            name: newName,
+            owner: uid
+        }])
+    }//end handleLocalNewProject function
 
     const handleUpload = async () => {
         const formData = new FormData();
@@ -318,7 +330,6 @@ export default function Dashboard() {
     const deleteProject = async () => {
         try {
             await api.delete("/api/projects/deleteProject", { data: { uid: uid, projectID: projectID }}).then(() => {
-                setHome(true)
             })
         } catch (error) {
             console.error('Failed to delete project:', error);
@@ -412,6 +423,7 @@ export default function Dashboard() {
 
     //We're probably going to switch to Megh's component for this but I'll leave it here just in case
     const renderPopup = () => {
+
         return (
             <>
                 <Dialog as="div" className="relative z-10" open={popupIsOpen} onClose={() => setPopupIsOpen(false)}>
@@ -452,7 +464,7 @@ export default function Dashboard() {
     const renderNamePrompt = () => {
         return (
             <div id="inputContainer"
-                 className={`flex items-center space-x-5 transition-all duration-500`}>
+                 className={`flex items-center space-x-5 transition-all duration-500 mt-2`}>
                 <input
                     type="text"
                     placeholder="New project name..."
@@ -463,12 +475,10 @@ export default function Dashboard() {
                 <button
                     className="flex justify-center py-3 h-10 w-14 bg-blue-700 hover:bg-blue-500 text-white font-bold px-4 rounded-full"
                     onClick={async () => {
-                        if(initialNamePrompt)
-                        {
+                        if(initialNamePrompt) {
                             await addProject()
                         }
-                        if(rename)
-                        {
+                        if(rename) {
                             await updateName()
                         }
                     }}
@@ -583,31 +593,22 @@ export default function Dashboard() {
                 <button className="flex pt-4 pb-0"
                         onClick={async () => {
                             await deleteProject()
-                            //If this isn't the first project in the list
-                            if(projects[0].id!==projectID){
-                                //Find the index of the role that we want to delete
-                                for(let project of projects){
-                                    if(project.id === projectID) {
-                                        let index  = projects.indexOf(project);
 
-                                        //swap to the role AFTER the role we are deleting
-                                        setProjectID(projects[index-1].id)
+                            //Find the index of the project that we want to delete
+                            for(let project of projects){
+                                if(project.id === projectID) {
+                                    let index  = projects.indexOf(project);
 
-                                        //filter out the role we want to "delete"
-                                        setProjects(projects.filter(project => project !== projects[index]));
-                                    }//end nested if
-                                }//end for
+                                    //filter out the project we want to "delete"
+                                    setProjects(projects.filter(project => project !== projects[index]));
+                                }//end nested if
+                            }//end for
 
-                            // /This is the very first element in the list, set the active project to home
-                            }else{
-                                //update the active project to the following role in the list
-                                setProjectID(0);
-                                setHome(true);
-                                setOwner(false); //Navigate to the Home page
+                            //Set the active project ot the home page
+                            setProjectID(0);
+                            setHome(true);
+                            setOwner(false); //Navigate to the Home page
 
-                                //get rid of the first element in the list
-                                setProjects(projects.filter(project => project !== projects[0]));
-                            }//end if else
                         }}//end onCLick
                 >
                     <img
@@ -625,7 +626,7 @@ export default function Dashboard() {
         <div className="App ">
             <Box
                 sx={{
-                    height: '100vh',
+                    //height: '100vh',
                     overflow: 'auto',
                     justifyContent: "center",
                     display: 'flex',
@@ -703,16 +704,23 @@ export default function Dashboard() {
                     p={1}
                     sx={{border: '2px solid grey'}}
                 >
-                    <Box component="h2" className="justify-center" style={{display: "flex", flexDirection: "row"}}>
-                        {owner === true && renderRename}
-                        {owner === true && renderEmployeeList()}
-                        {owner === true && renderDelete()}
-                    </Box>
-                    <Divider color="#1bc41e" sx={{height: 2, width: '525px'}}></Divider>
+                    {(!initialNamePrompt && !rename) && (
+                        <Box component="h2" className="justify-center" style={{display: "flex", flexDirection: "row"}}>
+                            {owner === true && renderRename}
+                            {owner === true && renderEmployeeList()}
+                            {owner === true && renderDelete()}
+                        </Box>
+                    )}
+
+
+                    {((!initialNamePrompt && !rename) && (owner === true)) && (
+                        <Divider color="#1bc41e" sx={{height: 2, width: '525px'}}/>
+                    )}
+
 
                     {(initialNamePrompt || rename) && renderNamePrompt()}
                     {home && renderDocumentNames()}
-                    {permissions[6] && (
+                    {(permissions[6] && (!initialNamePrompt && !rename)) &&(
                         <button
                             className="bg-blue-700 hover:bg-blue-500 min-w-80 text-white font-bold py-2 px-4 rounded transition-all duration-500"
                             onClick={() => setPopupIsOpen(true)}
