@@ -16,23 +16,8 @@ export default function Header() {
     const { currentUser } = useAuth();
 
     const [companyName, setCompanyName] = useState("");
-    const [companyOwner, setCompanyOwner] = useState(false);
 
     useEffect(() => {
-
-        const fetchCompanyOwner = async (user) => {
-            try {
-                await api.post("/api/companies/getCompanyOwner", {
-                    uid: user.uid
-                }).then((response) => {
-                    if(response.data.owner===user.uid) {
-                        setCompanyOwner(true);
-                    }
-                });
-            } catch (error) {
-                console.error('Failed to fetch company owner:', error);
-            }
-        }//end fetch
 
         //From Edit-roles
         const fetchCompanyName = async (user) => {
@@ -58,7 +43,6 @@ export default function Header() {
                 };
 
                 fetchCompanyName(user);
-                fetchCompanyOwner(user);
 
                 await axios.get("", payloadHeader);
             } catch (e) {
@@ -83,7 +67,7 @@ export default function Header() {
                     <div className="flex md:order-2 ">
 
                         {/*Code to create the company button in the header*/}
-                        {companyOwner && currentUser && (
+                        {companyName && currentUser && (
                             <Link
                                 to="/edit-roles"
                                 className="text-gray-500 dark:text-gray-400 focus:outline-none hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full p-2.5 font-bold my-auto text-lg"

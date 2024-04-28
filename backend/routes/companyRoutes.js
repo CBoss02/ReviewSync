@@ -5,8 +5,7 @@ const { createCompany, getCompanyID,
     getEmployees, addEmployeeToCompany,
     getCompanyName, getEUpdatedFlag,
     resetEUpdatedFlag, getRolesUpdatedFlag,
-    resetRolesUpdatedFlag, getCompanyOwner
-} = require("../controllers/companyController");
+    resetRolesUpdatedFlag } = require("../controllers/companyController");
 
 const router = express.Router();
 
@@ -23,6 +22,4 @@ router.post("/getEUpdatedFlag", getEUpdatedFlag);
 router.put("/resetEUpdatedFlag", resetEUpdatedFlag);
 router.post("/getRolesUpdatedFlag", getRolesUpdatedFlag);
 router.put("/resetRolesUpdatedFlag", resetRolesUpdatedFlag);
-router.post("/getCompanyOwner", getCompanyOwner);
-
 module.exports = router;

@@ -94,20 +94,6 @@ exports.getCompanyName = async (req, res) => {
     }
 }
 
-
-exports.getCompanyOwner = async (req, res) => {
-    try {
-        const uid = req.body.uid;
-        const user = await db.collection("users").doc(uid).get();
-        const companyID = user.data().company;
-        const company = await db.collection("companies").doc(companyID).get();
-        const companyOwner = company.data().owner;
-        res.status(200).send({owner: companyOwner});
-    } catch (error) {
-        res.status(400).send(error.message);
-    }
-}
-
 exports.getEmployees = async (req, res) => {
     try {
         const uid = req.body.uid;
