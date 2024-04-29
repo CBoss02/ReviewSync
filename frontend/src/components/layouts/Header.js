@@ -14,23 +14,27 @@ import api from "../../config/axiosConfig";
 export default function Header() {
     const [modal, setModal] = useState(false);
     const { currentUser } = useAuth();
-
     const [companyName, setCompanyName] = useState("");
+    const [isOwner, setIsOwner] = useState(false);
 
     useEffect(() => {
         if (currentUser) {
-            const fetchCompanyName = async () => {
+            const fetchCompanyNameAndOwner = async () => {
                 try {
-                    const response = await api.post('/api/companies/getCompanyName', { uid: currentUser.uid });
-                    setCompanyName(response.data.companyName);
+                    const companyResponse = await api.get('/api/companies/getCompanyName', { uid: currentUser.uid });
+                    setCompanyName(companyResponse.data.companyName);
+
+                    const ownerResponse = await api.get('/api/companies/getCompanyOwner', { uid: currentUser.uid });
+                    setIsOwner(ownerResponse.data.owner === currentUser.uid);
                 } catch (error) {
-                    console.error('Failed to fetch company name:', error);
+                    console.error('Failed to fetch company details:', error);
                 }
             };
 
-            fetchCompanyName();
+            fetchCompanyNameAndOwner();
         } else {
             setCompanyName(""); // Reset company name when logged out
+            setIsOwner(false); // Reset owner status
         }
     }, [currentUser]); // Depend on currentUser to re-fetch when it changes
 
@@ -48,7 +52,7 @@ export default function Header() {
                     <div className="flex md:order-2 ">
 
                         {/*Code to create the company button in the header*/}
-                        {companyName && currentUser && (
+                        {companyName && isOwner && (
                             <Link
                                 to="/edit-roles"
                                 className="text-gray-500 dark:text-gray-400 focus:outline-none hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full p-2.5 font-bold my-auto text-lg"

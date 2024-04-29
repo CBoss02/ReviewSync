@@ -12,7 +12,7 @@ import Profile from "./pages/account/Profile";
 import Home from "./pages/Home";
 import EditRoles from "./components/company/EditRoles";
 import AddEmployees from "./components/company/AddEmployees";
-import DocumentPage from "./pages/DocumentPage";
+//import DocumentPage from "./pages/DocumentPage";
 
 function App() {
     return (
@@ -52,7 +52,6 @@ function App() {
                         element={<WithPrivateRoute><Dashboard/></WithPrivateRoute>}
                     />
                     <Route path="/documentupload" element={<DocumentUpload />}/>
-                    <Route path="/documentpage" element={<DocumentPage />}/>
                 </Routes>
             </Router>
         </AuthProvider>
