@@ -18,40 +18,21 @@ export default function Header() {
     const [companyName, setCompanyName] = useState("");
 
     useEffect(() => {
-        //From Edit-roles
-        const fetchCompanyName = async () => {
-            try {
-                const response = await api.get('/api/companies/getCompanyName');
-                setCompanyName(response.data.companyName)
-            } catch (error) {
-                console.error('Failed to fetch company name:', error);
-                // Handle error (e.g., show an error message to the user)
-            }//end try catch
-        };//end fetchCompanyName
-
-        const fetchData = async () => {
-            try {
-                const user = auth.currentUser;
-                const token = user && (await user.getIdToken());
-
-                const payloadHeader = {
-                    headers: {
-                        "Content-Type": "application/json",
-                        Authorization: `Bearer ${token}`,
-                    },
-                };
-                if(user)
-                {
-                    fetchCompanyName();
+        if (currentUser) {
+            const fetchCompanyName = async () => {
+                try {
+                    const response = await api.post('/api/companies/getCompanyName', { uid: currentUser.uid });
+                    setCompanyName(response.data.companyName);
+                } catch (error) {
+                    console.error('Failed to fetch company name:', error);
                 }
-                await axios.get("", payloadHeader);
-            } catch (e) {
-                console.log(e);
-            }
-        };
+            };
 
-        fetchData();
-    }, []);
+            fetchCompanyName();
+        } else {
+            setCompanyName(""); // Reset company name when logged out
+        }
+    }, [currentUser]); // Depend on currentUser to re-fetch when it changes
 
 
     return (
