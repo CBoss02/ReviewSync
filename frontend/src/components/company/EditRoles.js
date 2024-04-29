@@ -5,10 +5,14 @@ import deleteIcon from "../../assets/icons/RedDelete-Icon.png";
 import saveIcon from "../../assets/icons/GreenSave-Icon.png";
 import {useAuth} from "../../contexts/AuthContext";
 import api from "../../config/axiosConfig";
+import useIdleTimeout from "../idleTimer/idleTimer"
 
 export default function EditRoles() {
     const auth = useAuth();
     const uid = auth.currentUser.uid;
+
+    useIdleTimeout();
+
 //Default roles object that holds its name, permissions and an id
     let initialRoles = [{
         permissions: [false,true,true,true,true,true,true],
@@ -91,7 +95,7 @@ export default function EditRoles() {
         };//end fetchRoles const
         const fetchCompanyName = async () => {
             try {
-                const response = await api.post('/api/companies/getCompanyName', {uid: uid});
+                const response = await api.get('/api/companies/getCompanyName');
                 setCompanyName(response.data.companyName)
             } catch (error) {
                 console.error('Failed to fetch company name:', error);
@@ -134,7 +138,7 @@ export default function EditRoles() {
     //Fixes the rename issue
     useEffect(() => {
         // Whenever roles change, update the active role
-        selectRole(roles.find(role => role.id === activeRole.id));
+        //selectRole(roles.find(role => role.id === activeRole.id));
     }, [roles]);
 
 

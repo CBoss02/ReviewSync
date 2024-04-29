@@ -6,12 +6,13 @@ const { createCompany, getCompanyID,
     getCompanyName, getEUpdatedFlag,
     resetEUpdatedFlag, getRolesUpdatedFlag,
     resetRolesUpdatedFlag } = require("../controllers/companyController");
+const authMiddleware = require("../middleware/authMiddleware");
 
 const router = express.Router();
 
 router.post("/createCompany", createCompany);
 router.post("/getCompanyID", getCompanyID);
-router.post("/getCompanyName", getCompanyName);
+router.get("/getCompanyName", authMiddleware, getCompanyName);
 router.post("/getEmployees", getEmployees);
 router.put("/modifyPendingListAndEditRoles", modifyPendingListAndEditRoles);
 router.put("/addEmployeeToCompany", addEmployeeToCompany);

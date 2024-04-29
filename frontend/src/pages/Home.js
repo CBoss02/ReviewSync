@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { ArrowRightIcon } from "@heroicons/react/solid";
 import {useAuth} from "../contexts/AuthContext";
+import useIdleTimeout from "../components/idleTimer/idleTimer"
 
 //Caleb's code from index.js used to navigate into the /edit-roles page
 import {useNavigate} from "react-router-dom";
@@ -12,10 +13,12 @@ export default function Home() {
     //Caleb's code from index.js used to navigate into the /edit-roles page
     const navigate = useNavigate(); // Instantiate useNavigate
     const [companyName, setCompanyName] = useState("") ;
-    const [companyID, setCompanyID] = useState() ;
+    const [companyID, setCompanyID] = useState();
     const [error, setError] = useState("");
     const auth = useAuth();
     const uid = auth.currentUser.uid;
+
+    useIdleTimeout();
 
     const [state, setState] = useState(0);
     const [isVisible, setIsVisible] = useState(false); // New state to manage visibility for animation
@@ -32,7 +35,7 @@ export default function Home() {
     useEffect(() => {
         const fetchCompanyName = async () => {
             try {
-                const response = await api.post('/api/companies/getCompanyName', {uid: uid});
+                const response = await api.get('/api/companies/getCompanyName');
                 setCompanyName(response.data.companyName)
             } catch (error) {
                 console.error('Failed to fetch company name:', error);

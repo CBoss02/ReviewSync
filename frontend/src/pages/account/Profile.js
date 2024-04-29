@@ -3,10 +3,13 @@ import {sendPasswordResetEmail} from "firebase/auth";
 import auth from "../../config/firebase-config";
 import saveIcon from "../../assets/icons/GreenSave-Icon.png";
 import api from "../../config/axiosConfig";
+import useIdleTimeout from "../../components/idleTimer/idleTimer"
 
 export default function Profile() {
     const [fNameInput, setFNameInput] = useState("");
     const [lNameInput, setLNameInput] = useState("");
+
+    useIdleTimeout();
 
     const handleFNameChange = (event) => {
         setFNameInput(event.target.value);

@@ -8,22 +8,22 @@ import DocumentUpload from "../components/document/DocumentUpload";
 import api from "../config/axiosConfig";
 import deleteIcon from "../assets/icons/RedDelete-Icon.png";
 import saveIcon from "../assets/icons/GreenSave-Icon.png";
+import useIdleTimeout from "../components/idleTimer/idleTimer";
 
 export default function Dashboard() {
-    const [projects, setProjects] = useState([]);
-    const [projectID, setProjectID] = React.useState(0);
-    const [documents, setDocuments] = useState([]);
-    const [companyID, setCompanyID] = useState("");
-    const [selectedPeople, setSelectedPeople] = useState([]);
-    const [initialNamePrompt, setInitialNamePrompt] = useState(false);
-    const [rename, setRename] = useState(false);
-    const [home, setHome] = useState(true);
-    const [inputValue, setInputValue] = useState("");
-    const [permissions, setPermissions] = useState([]);
-    const [employees, setEmployees] = useState([]);
-    const [owner, setOwner] = useState(false);
-    const [popupIsOpen, setPopupIsOpen] = useState(false);
-    const [file, setFile] = useState(null);
+    const [projects, setProjects] = useState([]); //projects the user has access to
+    const [projectID, setProjectID] = React.useState(0); //current project the user is examining
+    const [homeDocuments, setHomeDocuments] = useState([]); //documents that aren't in a project
+    const [projectDocuments, setProjectDocuments] = useState([]); //current project's documents
+    const [selectedPeople, setSelectedPeople] = useState([]); //used with managing project employees
+    const [initialNamePrompt, setInitialNamePrompt] = useState(false); //are we displaying the prompt to name a new project
+    const [home, setHome] = useState(true); //is the user examining their home directory
+    const [inputValue, setInputValue] = useState(""); //stores value of a project's name
+    const [permissions, setPermissions] = useState([]); //user's permissions, in this case only relevant if they are able to upload documents or not
+    const [employees, setEmployees] = useState([]); //employees in company, for when a user creates a project and needs to add employees to it
+    const [owner, setOwner] = useState(false); //keeps track if user is owner of project currently being examined
+    const [popupIsOpen, setPopupIsOpen] = useState(false); //for document upload
+    const [file, setFile] = useState(null); //for document upload
     const [eUpdated, setEUpdated] = useState(false); //Indicates if employees in company have changed
     const [rolesUpdated, setRolesUpdated] = useState(false); //Indicates if company roles have changed
     const [cUpdated, setCUpdated] = useState(false); //Indicates if a user has been removed from a company
@@ -31,8 +31,12 @@ export default function Dashboard() {
     const [pUpdated, setPUpdated] = useState(false); //Indicates if a user has been added to/removed from a project
     const [roleUpdated, setRoleUpdated] = useState(false); //Indicates if a user's role has changed
 
-    const auth = useAuth();
+    useIdleTimeout(); //starts a timer that will log the user out after 10 minutes of inactivity
+
+    const auth = useAuth(); //we may get rid of this entirely
     const uid = auth.currentUser.uid;
+
+    const { logout } = useAuth(); //called when calling the API tells us that a user's login token has expired
 
     const fetchEUpdatedFlag = async () => {
         try {
@@ -199,37 +203,37 @@ export default function Dashboard() {
         fetchPUpdatedFlag()
     }
 
-    const fetchCompanyID = async () => {
-        try {
-            await api.post("/api/companies/getCompanyID", {
-                uid: uid
-            }).then((response) => {
-                setCompanyID(response.data.companyID)
-            });
-        } catch (error) {
-            console.error('Failed to fetch company ID:', error);
-        }
-    }
-
+    //Fetches the projects this user has access to
     const fetchProjects = async () => {
         try {
-            await api.post("/api/projects/getProjects", {uid: uid}).then((response) => {
+            await api.get("/api/projects/getProjects").then((response) => {
                 setProjects(response.data.projects)
             });
         } catch (error) {
             console.error('Failed to fetch projects:', error);
+            if(error.response.data === 'Invalid token') //if user's login token has expired, log them out
+            {
+                logout();
+            }
         }
     };
 
+    //Fetches the documents a user has access to that are not part of a project
     const fetchHomeDocuments = async () => {
         try {
             await api.get("/api/documents/getHomeDocuments").then((response) => {
-                setDocuments(response.data.documents)
+                setHomeDocuments(response.data.documents)
             });
         } catch (error) {
-            console.error('Failed to fetch projects:', error);
+            console.error('Failed to fetch home documents:', error);
+            if(error.response.data === 'Invalid token')
+            {
+                logout();
+            }
         }
     };
+
+    //Fetches this user's permissions
     const fetchPermissions = async () => {
         try {
             await api.post("/api/users/getPermissions", {
@@ -241,6 +245,8 @@ export default function Dashboard() {
             console.error('Failed to fetch permissions:', error);
         }
     }
+
+    //Fetches the employees of this company
     const fetchEmployees = async () => {
         try {
             await api.post("/api/companies/getEmployees", {
@@ -252,37 +258,59 @@ export default function Dashboard() {
             console.error('Failed to fetch employees:', error);
         }
     }
-    const fetchEmployeesOnProject = async () => {
-        if(!home) //if user is not viewing home page
-        {
-            try {
-                await api.post("/api/projects/getEmployeesOnProject", {
-                    uid: uid,
-                    projectID: projectID
-                }).then((response) => {
-                    setSelectedPeople(response.data.employees)
-                });
-            } catch (error) {
-                console.error('Failed to fetch projects:', error);
+
+    //Called when a user switches to a certain project to get this project's documents
+    const fetchProjectDocuments = async () => {
+        try {
+            await api.post("/api/projects/getProjectDocuments", {
+                projectID: projectID
+            }).then((response) => {
+                setProjectDocuments(response.data.documents)
+            });
+        } catch (error) {
+            console.error('Failed to fetch project documents:', error);
+            if (error.response.data === 'Invalid token') {
+                logout();
             }
         }
     };
 
+    //Called when a user switches to a certain project to get the employees assigned to this project
+    const fetchEmployeesOnProject = async () => {
+        try {
+            await api.post("/api/projects/getEmployeesOnProject", {
+                projectID: projectID
+            }).then((response) => {
+                setSelectedPeople(response.data.employees)
+            });
+        } catch (error) {
+            console.error('Failed to fetch employees on project:', error);
+            if(error.response.data === 'Invalid token')
+            {
+                logout();
+            }
+        }
+    };
+
+    //Creates a new project as soon as the user submits the name for it
     const addProject = async () => {
         try {
             await api.post("/api/projects/createProject", {
-                name: inputValue,
-                owner: uid
+                name: inputValue
             }).then(() => {
                 handleLocalNewProject(inputValue, uid)
                 setInitialNamePrompt(false)
-                setPUpdated(true)
+                setPUpdated(true) //prob will get rid
                 setHome(true)
                 setOwner(false)
                 setProjectID(0)
             })
         } catch (error) {
             console.error('Failed to add project:', error);
+            if(error.response.data === 'Invalid token')
+            {
+                logout();
+            }
         }
     }
 
@@ -294,6 +322,59 @@ export default function Dashboard() {
         }])
     }//end handleLocalNewProject function
 
+    //Updates a project's name in the database
+    const updateName = async () => {
+        try {
+            await api.put("/api/projects/updateName", {
+                name: inputValue,
+                projectID: projectID
+            }).then(() => {
+                setPUpdated(true)
+            })
+        } catch (error) {
+            console.error('Failed to add project:', error);
+            if(error.response.data === 'Invalid token')
+            {
+                logout();
+            }
+        }
+    }
+
+    //Updates an employee on a project (either adds or removes them from the project. The backend checks which one needs to happen)
+    const updateEmployee = async (employeeID) => {
+        try {
+            await api.put("/api/projects/updateEmployee", {
+                employeeID: employeeID,
+                projectID: projectID
+            })
+        } catch (error) {
+            console.error('Failed to update employee:', error);
+            if(error.response.data === 'Invalid token')
+            {
+                alert("Your login token has expired. Please log back in.");
+                logout();
+            }
+        }
+    }
+
+    //Deletes a project
+    const deleteProject = async () => {
+        try {
+            await api.delete("/api/projects/deleteProject",
+                { data:
+                        { projectID: projectID }
+                }).then(() => {
+            })
+        } catch (error) {
+            console.error('Failed to delete project:', error);
+            if(error.response.data === 'Invalid token')
+            {
+                logout();
+            }
+        }
+    }
+
+    //Uploads a document to the database
     const handleUpload = async () => {
         const formData = new FormData();
         formData.append('file', file);
@@ -308,46 +389,20 @@ export default function Dashboard() {
             setPopupIsOpen(false);
         } catch (error) {
             console.error('Upload failed', error);
+            if(error.response.data === 'Invalid token')
+            {
+                logout();
+            }
         }
     };
 
-    const updateName = async () => {
-        try {
-            await api.put("/api/projects/updateName", {
-                name: inputValue,
-                projectID: projectID,
-                uid: uid
-            }).then(() => {
-                setRename(0)
-                setRename(false)
-                setPUpdated(true)
-            })
-        } catch (error) {
-            console.error('Failed to add project:', error);
-        }
-    }
-
-    const deleteProject = async () => {
-        try {
-            await api.delete("/api/projects/deleteProject", { data: { uid: uid, projectID: projectID }}).then(() => {
-            })
-        } catch (error) {
-            console.error('Failed to delete project:', error);
-        }
-    }
-
-    //Happens immediately on render, but only once
+    //Immediately on render, get a user's permissions, projects, home documents, and the employees in the company
     useEffect(() => {
-        fetchCompanyID();
         fetchPermissions();
         fetchEmployees();
         fetchProjects();
         fetchHomeDocuments();
     }, []);
-
-    //This function checks every 5 seconds for flags in the database that indicate if certain
-    //information has been updated and needs to be re-fetched, such as the
-    //documents/projects a user has access to and their role.
 
     /* Minimize calls to DB when testing to avoid maxing out firebase quota
     useEffect(() => {
@@ -358,18 +413,26 @@ export default function Dashboard() {
     }, []);
     */
 
+    //When the project ID changes (when the user clicks on a project), get the documents in this project, and if the user is the owner, get the employees on this project
     useEffect(() => {
-        fetchEmployeesOnProject()
+        if(!home)
+        {
+            fetchProjectDocuments()
+            if(owner)
+            {
+                fetchEmployeesOnProject()
+            }
+        }
     }, [projectID]);
 
-    //Handles a project's name change
+    //Handles a project's name change as the user types it in
     const handleInputChange = (event) => {
         setInputValue(event.target.value);
     };
 
     //Handles an employee being added to/removed from a project
     const handleSelect = (employeeID) => {
-        api.put("/api/projects/updateEmployee", {employeeID: employeeID, uid: uid, projectID: projectID})
+        updateEmployee(employeeID)
     }
 
     function handleLocalRename(newName){
@@ -382,10 +445,12 @@ export default function Dashboard() {
         }));//end map
     }//end function
 
+    //When a file is selected by the user
     const handleFileChange = event => {
         setFile(event.target.files[0]);
     };
 
+    //Displays the projects as a list of buttons
     const renderProjectNames = () => {
         return projects.map((data) => (
                 <>
@@ -394,11 +459,11 @@ export default function Dashboard() {
                         onClick={async () => {
                             setProjectID(data.id)
                             setHome(false)
-                            setInputValue(data.name)
                             if(data.owner === uid)
                                 setOwner(true)
                             else
                                 setOwner(false)
+                            setInputValue(data.name)
                             setInitialNamePrompt(false)
                         }}
                     >
@@ -409,9 +474,20 @@ export default function Dashboard() {
         )
     }
 
+    //Displays documents as a list of buttons
+    const renderHomeDocumentNames = () => {
+        return homeDocuments.map((document) => (
+            <button
+                className="bg-blue-700 hover:bg-blue-500 min-w-80 text-white font-bold py-2 px-4 rounded transition-all duration-500"
+                onClick={() => console.log("ok")}
+            >
+                <p>{document.name}</p>
+            </button>
+        ))
+    }
 
-    const renderDocumentNames = () => {
-        return documents.map((document) => (
+    const renderProjectDocumentNames = () => {
+        return projectDocuments.map((document) => (
             <button
                 className="bg-blue-700 hover:bg-blue-500 min-w-80 text-white font-bold py-2 px-4 rounded transition-all duration-500"
                 onClick={() => console.log("ok")}
@@ -423,7 +499,6 @@ export default function Dashboard() {
 
     //We're probably going to switch to Megh's component for this but I'll leave it here just in case
     const renderPopup = () => {
-
         return (
             <>
                 <Dialog as="div" className="relative z-10" open={popupIsOpen} onClose={() => setPopupIsOpen(false)}>
@@ -458,9 +533,7 @@ export default function Dashboard() {
         )
     }
 
-//The prompt to name/rename a project. Appears when a project is initially created
-//and when the user presses the Rename button.
-
+    //Displays a prompt to name a new project, and calls the function to add the project to the database when they submit it
     const renderNamePrompt = () => {
         return (
             <div id="inputContainer"
@@ -478,12 +551,7 @@ export default function Dashboard() {
                 <button
                     className="flex justify-center py-3 h-10 w-14 bg-blue-700 hover:bg-blue-500 text-white font-bold px-4 rounded-full"
                     onClick={async () => {
-                        if(initialNamePrompt) {
-                            await addProject()
-                        }
-                        if(rename) {
-                            await updateName()
-                        }
+                        await addProject()
                     }}
                 >
                     <ArrowRightIcon className="h-4 w-4"/>
@@ -492,6 +560,8 @@ export default function Dashboard() {
         )
     }
 
+    //A selectable list of company employees to add to a project. Preselects the employees already on the project.
+    //When an employee is selected/deselected, it triggers an API call to add/remove that employee from the project.
     const renderEmployeeList = () => {
         return (
             <Listbox value={selectedPeople} multiple onChange={setSelectedPeople} style={{marginRight: "15px"}}>
@@ -568,14 +638,12 @@ export default function Dashboard() {
                                      ring-gray-300 placeholder:text-black focus:ring-2 focus:ring-inset
                                     focus:ring-indigo-600 sm:text-sm sm:leading-6 px-2 dark:ring-indigo-600 dark:ring-2"
                     />
-
                     <button className="flex justify-end h-8 w-auto mt-0.5 -ml-9"
                             onClick={async () => {
                                 await updateName()
                                 setPUpdated(true);
                                 handleLocalRename(inputValue);
                                 //Change the local projects array to reflect the changes
-
                             }}
                             >
                         <img
@@ -585,34 +653,29 @@ export default function Dashboard() {
                         </img>
                     </button>
                 </div>
-
             )
         }//end if
     });//end renderRename
 
-    //the Delete Box
+    //the Delete Button
     const renderDelete = () => {
         return (
             <div>
                 <button className="flex pt-4 pb-0"
                         onClick={async () => {
                             await deleteProject()
-
                             //Find the index of the project that we want to delete
                             for(let project of projects){
                                 if(project.id === projectID) {
                                     let index  = projects.indexOf(project);
-
                                     //filter out the project we want to "delete"
                                     setProjects(projects.filter(project => project !== projects[index]));
                                 }//end nested if
                             }//end for
-
                             //Set the active project ot the home page
                             setProjectID(0);
                             setHome(true);
                             setOwner(false); //Navigate to the Home page
-
                         }}//end onCLick
                 >
                     <img
@@ -621,17 +684,16 @@ export default function Dashboard() {
                         alt="Delete Role">
                     </img>
                 </button>
-
             </div>
         )
     }//end renderDelete()
 
+    //The actual code for the page
     return (
         <div className="App ">
             <Box
                 /*The left side box*/
                 sx={{
-                    //height: '100vh',
                     overflow: 'auto',
                     justifyContent: "center",
                     display: 'flex',
@@ -639,29 +701,20 @@ export default function Dashboard() {
                     marginTop: '30px',
                     alignContent: 'space-between'
                 }}>
-
-
                 <div className="flex-col align-top">
-
                     <h2 className="flex mt-4 ml-8 mb-2 justify-center text-2xl font-bold leading-9 tracking-tight text-gray-900 dark:text-white">
                         Projects
                     </h2>
-
                     <Box
                         className="flex rounded w-auto min-w-400"
-                        //bgcolor="white"
                         style={{
                             overflowY: "auto",
                             maxHeight: "425px",
                             display: "flex",
-                            //flexGrow: 1,
                             flexDirection: "column",
                             marginLeft: "25px",
-                            //marginRight: "25px"
                         }}
-                        //height={800}
                         height={425}
-                        //width={400}
                         my={0}
                         display="flex"
                         alignItems="center"
@@ -675,49 +728,46 @@ export default function Dashboard() {
                                 setOwner(false)
                                 setHome(true)
                                 setProjectID(0)
+                                setInitialNamePrompt(false)
                             }}
                         >
                             <p>HOME</p>
                         </button>
-
-
                         <Divider className="h-2 min-w-425 w-auto"
-                                 color="#1bc41e" sx={{height: 2, width: '320px'}}></Divider>
-
+                                 color="#1bc41e" sx={{
+                                     height: 2,
+                                     width: '320px'
+                        }}>
+                        </Divider>
                         {renderProjectNames()}
                         <>
                             <button
                                 className="bg-blue-700 hover:bg-blue-500 min-w-80 text-white font-bold py-2 px-4 rounded transition-all duration-500"
-                                onClick={() => setInitialNamePrompt(true)}
+                                onClick={async () => {
+                                    setInitialNamePrompt(true)
+                                    setInputValue("")
+                                }}
                             >
                                 <p>+</p>
                             </button>
                         </>
                     </Box>
                 </div>
-
-
                 <div className="flex-col align-top">
-
                     <h2 className="flex mt-4 mb-2 justify-center text-2xl font-bold leading-9 tracking-tight text-gray-900 dark:text-white">
                         Documents
                     </h2>
-
                     <Box
                         /*The right side box*/
                         className="rounded flex"
-                        //bgcolor="white"
                         style={{
                             overflowY: "auto",
                             maxHeight: "425px",
                             display: "column",
-                            //flexGrow: 1,
                             flexDirection: "column",
                             marginLeft: "25px",
                             marginRight: "25px"
                         }}
-                        //height={800}
-                        //width={200}
                         height={425}
                         width={600}
                         my={0}
@@ -727,24 +777,27 @@ export default function Dashboard() {
                         p={1}
                         sx={{border: '2px solid grey'}}
                     >
-                        {(!initialNamePrompt && !rename) && (
+                        {!initialNamePrompt && (
                             <Box component="h2" className="justify-center"
-                                 style={{display: "flex", flexDirection: "row"}}>
+                                 style={{
+                                     display: "flex",
+                                     flexDirection: "row"}}
+                            >
                                 {owner === true && renderRename}
                                 {owner === true && renderEmployeeList()}
                                 {owner === true && renderDelete()}
                             </Box>
                         )}
-
-
-                        {((!initialNamePrompt && !rename) && (owner === true)) && (
-                            <Divider color="#1bc41e" sx={{height: 2, width: '525px'}}/>
+                        {(!initialNamePrompt && (owner === true)) && (
+                            <Divider color="#1bc41e" sx={{
+                                height: 2,
+                                width: '525px'}}
+                            />
                         )}
-
-
-                        {(initialNamePrompt || rename) && renderNamePrompt()}
-                        {home && renderDocumentNames()}
-                        {(permissions[6] && (!initialNamePrompt && !rename)) && (
+                        {initialNamePrompt && renderNamePrompt()}
+                        {(home && !initialNamePrompt) && renderHomeDocumentNames()}
+                        {(!home && !initialNamePrompt) && renderProjectDocumentNames()}
+                        {(permissions[6] && !initialNamePrompt) && (
                             <button
                                 className="bg-blue-700 hover:bg-blue-500 min-w-80 text-white font-bold py-2 px-4 rounded transition-all duration-500"
                                 onClick={() => setPopupIsOpen(true)}
@@ -752,12 +805,10 @@ export default function Dashboard() {
                                 <p>+</p>
                             </button>
                         )}
-
                     </Box>
-
                 </div>
             </Box>
             {popupIsOpen && renderPopup()}
         </div>
-);
+    );
 }

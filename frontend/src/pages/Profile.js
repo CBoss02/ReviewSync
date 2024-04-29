@@ -14,6 +14,17 @@ export default function Profile() {
     const [fNameInput, setFNameInput] = useState("");
     const [lNameInput, setLNameInput] = useState("");
 
+    const fetchName = async () => {
+        try {
+            await api.post("/api/users/getName", {uid: uid}).then((response) => {
+                setFNameInput(response.data.first_name);
+                setLNameInput(response.data.last_name);
+            });
+        } catch (error) {
+            console.error('Failed to fetch name:', error);
+        }
+    }
+
     const handleFNameChange = (event) => {
         setFNameInput(event.target.value);
     };
@@ -23,18 +34,7 @@ export default function Profile() {
     };
 
     useEffect(() => {
-        const fetchName = async () => {
-            try {
-                await api.post("/api/users/getName", {
-                    uid: uid
-                }).then((response) => {
-                    setFNameInput(response.data.first_name);
-                    setLNameInput(response.data.last_name);
-                });
-            } catch (error) {
-                console.error('Failed to fetch name:', error);
-            }
-        }
+        console.log("here")
         fetchName()
     }, []);
 

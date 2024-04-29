@@ -18,11 +18,10 @@ export default function Header() {
     const [companyName, setCompanyName] = useState("");
 
     useEffect(() => {
-
         //From Edit-roles
-        const fetchCompanyName = async (user) => {
+        const fetchCompanyName = async () => {
             try {
-                const response = await api.post('/api/companies/getCompanyName', {uid: user.uid});
+                const response = await api.get('/api/companies/getCompanyName');
                 setCompanyName(response.data.companyName)
             } catch (error) {
                 console.error('Failed to fetch company name:', error);
@@ -41,9 +40,10 @@ export default function Header() {
                         Authorization: `Bearer ${token}`,
                     },
                 };
-
-                fetchCompanyName(user);
-
+                if(user)
+                {
+                    fetchCompanyName();
+                }
                 await axios.get("", payloadHeader);
             } catch (e) {
                 console.log(e);

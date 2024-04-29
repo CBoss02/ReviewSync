@@ -1,7 +1,6 @@
 const {db} = require("../config/firebase-config");
 const sendEmail = require('./emailController'); // Import sendEmail from mailer.js
 
-
 exports.createUser = async (req, res) => {
     try {
         // Creating user document in Firestore

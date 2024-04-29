@@ -4,6 +4,7 @@ import deleteIcon from "../../assets/icons/RedDelete-Icon.png";
 import saveIcon from "../../assets/icons/GreenSave-Icon.png";
 import {useAuth} from "../../contexts/AuthContext";
 import api from "../../config/axiosConfig";
+import useIdleTimeout from "../idleTimer/idleTimer"
 
 const EmployeeRoles = () => {
     const auth = useAuth();
@@ -13,6 +14,8 @@ const EmployeeRoles = () => {
     const [roles, setRoles] = useState([]);
     const navigate = useNavigate(); // Correctly placed useNavigate call
     const [companyName, setCompanyName] = useState("");
+
+    useIdleTimeout();
 
     useEffect(() => {
         const fetchRoles = async () => {
@@ -34,7 +37,7 @@ const EmployeeRoles = () => {
         };//end fetchEmailsAndRoles const
         const fetchCompanyName = async () => {
             try {
-                const response = await api.post('/api/companies/getCompanyName', {uid: uid});
+                const response = await api.get('/api/companies/getCompanyName');
                 setCompanyName(response.data.companyName)
             } catch (error) {
                 console.error('Failed to fetch company name:', error);

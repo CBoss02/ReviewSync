@@ -6,16 +6,18 @@ const {
     updateName,
     updateEmployee,
     getEmployeesOnProject,
-    deleteProject
+    deleteProject,
+    getProjectDocuments
 } = require("../controllers/projectController");
 const authMiddleware = require("../middleware/authMiddleware");
 const router = express.Router();
 
-router.post("/getProjects", getProjects);
-router.post("/createProject", createProject);
-router.put("/updateName", updateName);
-router.put("/updateEmployee", updateEmployee);
-router.post("/getEmployeesOnProject", getEmployeesOnProject);
-router.delete("/deleteProject", deleteProject);
+router.get("/getProjects", authMiddleware, getProjects);
+router.post("/getProjectDocuments", authMiddleware, getProjectDocuments);
+router.post("/createProject", authMiddleware, createProject);
+router.put("/updateName", authMiddleware, updateName);
+router.put("/updateEmployee", authMiddleware, updateEmployee);
+router.post("/getEmployeesOnProject", authMiddleware, getEmployeesOnProject);
+router.delete("/deleteProject", authMiddleware, deleteProject);
 
 module.exports = router;
