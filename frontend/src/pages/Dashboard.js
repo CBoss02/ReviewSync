@@ -496,13 +496,14 @@ export default function Dashboard() {
     const renderProjectDocumentNames = () => {
         return projectDocuments.map((document) => (
             <button
-                className="bg-blue-700 hover:bg-blue-500 min-w-80 text-white font-bold py-2 px-4 rounded transition-all duration-500"
+                className="bg-blue-700 hover:bg-blue-500 w-11/12 text-white font-bold py-2 px-4 rounded transition-all duration-500"
                 onClick={() => console.log("ok")}
             >
                 <p>{document.name}</p>
             </button>
         ))
     }
+
 
     //We're probably going to switch to Megh's component for this but I'll leave it here just in case
     const renderPopup = () => {
@@ -511,6 +512,7 @@ export default function Dashboard() {
                 <Dialog as="div" className="relative z-10" open={popupIsOpen} onClose={() => setPopupIsOpen(false)}>
                     <div className="fixed inset-0 overflow-y-auto">
                         <div className="flex min-h-full items-center justify-center p-4 text-center">
+
                             <Dialog.Panel
                                 className="w-full max-w-md transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all">
                                 <Dialog.Title
@@ -539,6 +541,7 @@ export default function Dashboard() {
             </>
         )
     }
+    //End renderPopup
 
     //Displays a prompt to name a new project, and calls the function to add the project to the database when they submit it
     const renderNamePrompt = () => {
@@ -809,7 +812,7 @@ export default function Dashboard() {
                         {(!home && !initialNamePrompt) && renderProjectDocumentNames()}
                         {(permissions[6] && !initialNamePrompt) && (
                             <button
-                                className="bg-blue-700 hover:bg-blue-500 min-w-80 text-white font-bold py-2 px-4 rounded transition-all duration-500"
+                                className="bg-blue-700 hover:bg-blue-500 w-11/12 text-white font-bold py-2 px-4 rounded transition-all duration-500"
                                 onClick={() => setPopupIsOpen(true)}
                             >
                                 <p>+</p>

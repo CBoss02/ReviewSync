@@ -68,16 +68,21 @@ const EmployeeRoles = () => {
     };
 
     const submitEmployees = async () => {
-        let incorrectRole = false;
+        let incorrect = false;
         for(let employee of employees){
             if(employee.role===""){
                 alert('You must select a role for every employee!');
                 console.error('You must select a role for ', employee.email, '!');
-                incorrectRole=true;
+                incorrect=true;
+            }//end if
+            if(employee.email===""){
+                alert('You must give an email for every employee!');
+                console.error('You must give an email for ', employee.email, '!');
+                incorrect=true;
             }//end if
         }//end for loop
 
-        if(incorrectRole===false){
+        if(incorrect===false){
             try {
                 await api.put("/api/companies/modifyPendingListAndEditRoles", {uid: uid, employees: employees})
                 // Reset the form or redirect the user as necessary
