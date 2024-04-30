@@ -83,7 +83,7 @@ export default function Register() {
                 <div className="mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
                     <form className="space-y-6" onChange={handleFormChange} onSubmit={handleFormSubmit}>
                         <div>
-                            <label htmlFor="first_name" className="block text-sm font-medium leading-6 text-gray-900 dark:text-white">
+                            <label htmlFor="first_name" className="block text-sm font-medium leading-6 text-gray-900 dark:text-white -mb-1">
                                 First name
                             </label>
                             <div className="mt-2">
@@ -93,12 +93,15 @@ export default function Register() {
                                     type="text"
                                     autoComplete="first_name"
                                     required
-                                    className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6 px-2 dark:ring-indigo-600 dark:ring-2"
+                                    className="block w-full rounded-md border-0 py-1.5 px-2 text-gray-900 shadow-sm  ring-inset
+                                    placeholder:text-gray-400  focus:ring-inset sm:text-sm sm:leading-6 ring-1 ring-gray-300
+                                    focus:ring-indigo-600 focus:ring-2 focus:outline-0
+                                    dark:ring-2 dark:ring-indigo-600 dark:focus:ring-indigo-300"
                                 />
                             </div>
                         </div>
                         <div>
-                            <label htmlFor="last_name" className="block text-sm font-medium leading-6 text-gray-900 dark:text-white">
+                            <label htmlFor="last_name" className="block text-sm font-medium leading-6 text-gray-900 dark:text-white -mb-1">
                                 Last name
                             </label>
                             <div className="mt-2">
@@ -108,12 +111,15 @@ export default function Register() {
                                     type="text"
                                     autoComplete="last_name"
                                     required
-                                    className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6 px-2 dark:ring-indigo-600 dark:ring-2"
+                                    className="block w-full rounded-md border-0 py-1.5 px-2 text-gray-900 shadow-sm  ring-inset
+                                    placeholder:text-gray-400  focus:ring-inset sm:text-sm sm:leading-6 ring-1 ring-gray-300
+                                    focus:ring-indigo-600 focus:ring-2 focus:outline-0
+                                    dark:ring-2 dark:ring-indigo-600 dark:focus:ring-indigo-300"
                                 />
                             </div>
                         </div>
                         <div>
-                            <label htmlFor="email" className="block text-sm font-medium leading-6 text-gray-900 dark:text-white">
+                            <label htmlFor="email" className="block text-sm font-medium leading-6 text-gray-900 dark:text-white -mb-1">
                                 Email address
                             </label>
                             <div className="mt-2">
@@ -123,14 +129,17 @@ export default function Register() {
                                     type="email"
                                     autoComplete="email"
                                     required
-                                    className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6 px-2 dark:ring-indigo-600 dark:ring-2"
+                                    className="block w-full rounded-md border-0 py-1.5 px-2 text-gray-900 shadow-sm  ring-inset
+                                    placeholder:text-gray-400  focus:ring-inset sm:text-sm sm:leading-6 ring-1 ring-gray-300
+                                    focus:ring-indigo-600 focus:ring-2 focus:outline-0
+                                    dark:ring-2 dark:ring-indigo-600 dark:focus:ring-indigo-300"
                                 />
                             </div>
                         </div>
 
                         <div>
                             <div className="flex items-center justify-between">
-                                <label htmlFor="password" className="block text-sm font-medium leading-6 text-gray-900 dark:text-white">
+                                <label htmlFor="password" className="block text-sm font-medium leading-6 text-gray-900 dark:text-white -mb-1">
                                     Password
                                 </label>
                             </div>
@@ -141,14 +150,17 @@ export default function Register() {
                                     type="password"
                                     autoComplete="current-password"
                                     required
-                                    className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6 px-2 dark:ring-indigo-600 dark:ring-2"
+                                    className="block w-full rounded-md border-0 py-1.5 px-2 text-gray-900 shadow-sm  ring-inset
+                                    placeholder:text-gray-400  focus:ring-inset sm:text-sm sm:leading-6 ring-1 ring-gray-300
+                                    focus:ring-indigo-600 focus:ring-2 focus:outline-0
+                                    dark:ring-2 dark:ring-indigo-600 dark:focus:ring-indigo-300"
                                 />
                             </div>
                         </div>
 
                         <div>
                             <div className="flex items-center justify-between">
-                                <label htmlFor="verify_password" className="block text-sm font-medium leading-6 text-gray-900 dark:text-white">
+                                <label htmlFor="verify_password" className="block text-sm font-medium leading-6 text-gray-900 dark:text-white -mb-1">
                                     Verify password
                                 </label>
                             </div>
@@ -158,7 +170,10 @@ export default function Register() {
                                     name="verify_password"
                                     type="password"
                                     required
-                                    className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6 px-2 dark:ring-indigo-600 dark:ring-2"
+                                    className="block w-full rounded-md border-0 py-1.5 px-2 text-gray-900 shadow-sm  ring-inset
+                                    placeholder:text-gray-400  focus:ring-inset sm:text-sm sm:leading-6 ring-1 ring-gray-300
+                                    focus:ring-indigo-600 focus:ring-2 focus:outline-0
+                                    dark:ring-2 dark:ring-indigo-600 dark:focus:ring-indigo-300"
                                 />
                             </div>
                         </div>

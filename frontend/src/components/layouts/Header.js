@@ -44,7 +44,7 @@ export default function Header() {
             <nav className="px- px-2 sm:px-4 py-2.5 bg-gray-50 border-gray-200 dark:bg-gray-800 dark:border-gray-700 text-gray-900 text-sm rounded border dark:text-white">
                 <div className="container mx-auto flex flex-wrap items-center justify-between">
                     <Link to="/dashboard" className="flex">
-            <span className="flex self-center text-lg font-semibold whitespace-nowrap text-gray-900 dark:text-white">
+            <span className="flex self-center text-lg font-semibold whitespace-nowrap text-gray-900 dark:text-white hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg p-2.5">
                 <h1 className="text-2xl font-bold text-gray-700 dark:text-gray-200">Review</h1>
               <img src={logo} alt="ReviewSync" className="h-8" />
             </span>
@@ -55,7 +55,7 @@ export default function Header() {
                         {companyName && isOwner && (
                             <Link
                                 to="/edit-roles"
-                                className="text-gray-500 dark:text-gray-400 focus:outline-none hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full p-2.5 font-bold my-auto text-lg"
+                                className="text-gray-500 dark:text-gray-400 focus:outline-none hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg p-2.5 font-bold my-auto text-lg"
                             >
                                 {companyName}
                             </Link>

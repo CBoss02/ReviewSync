@@ -109,18 +109,29 @@ export default function EditRoles() {
 
     //Reskinned from addEmployees
     const submitRoles = async () => {
-        try {
-            await api.put('/api/companies/addOrUpdateRoles', {
-                uid: uid, roles: roles
-            }).catch(function (error) {
-                if (error.response) {
-                    alert(error.response.data.message);
-                }//end if
-            });
-            // Reset the form or redirect the user as necessary
-        } catch (error) {
-            console.log(error.message);
-        }//end try catch
+        let incorrectRole = false;
+        for(let role of roles){
+            if(role.name===""){
+                alert("Every role must have a name!");
+                incorrectRole = true;
+            }//end if
+        }//end for loop
+
+        if(incorrectRole===false){
+            try {
+                await api.put('/api/companies/addOrUpdateRoles', {
+                    uid: uid, roles: roles
+                }).catch(function (error) {
+                    if (error.response) {
+                        alert(error.response.data.message);
+                    }//end if
+                });
+                // Reset the form or redirect the user as necessary
+            } catch (error) {
+                console.log(error.message);
+            }//end try catch
+        }//end if
+
     }//end submitRoles()
 
     //Updates the activeRole to the role clicked by the user
@@ -135,10 +146,11 @@ export default function EditRoles() {
         }//end for loop
     }//end function
 
-    //Fixes the rename issue
+    //Fixes the rename issue where you can only change 1 char at a time
+    //May be causing a role ID error tho?
     useEffect(() => {
         // Whenever roles change, update the active role
-        //selectRole(roles.find(role => role.id === activeRole.id));
+        selectRole(roles.find(role => role.id === activeRole.id));
     }, [roles]);
 
 
@@ -243,13 +255,13 @@ export default function EditRoles() {
 
     //Translates the index of the permissions array into the actual permission name
     function getPermFromIndex(index){
-        if(index === 0){return "Close Documents"}
-        else if(index === 1){return "Comment on Documents"}
-        else if(index === 2){return "Notify Reviewers"}
-        else if(index === 3){return "Resolve Comments"}
-        else if(index === 4){return "Respond to Comments"}
-        else if(index === 5){return "Upload Revisions to Documents"}
-        else if(index === 6){return "Upload Documents"}
+        if(index === 0){return " Close Documents"}
+        else if(index === 1){return " Comment on Documents"}
+        else if(index === 2){return " Notify Reviewers"}
+        else if(index === 3){return " Resolve Comments"}
+        else if(index === 4){return " Respond to Comments"}
+        else if(index === 5){return " Upload Revisions to Documents"}
+        else if(index === 6){return " Upload Documents"}
         else{return "Permission not found"}
     }//end function
 
@@ -300,18 +312,19 @@ export default function EditRoles() {
                 {/*Create the row container for the Name, save and delete*/}
                 <div className="flex flex-row overflow-y">
                     <form>
-                        <labeL>
-                            <input
-                                id={activeRole.id}
-                                name="roleName"
-                                type="roleName"
-                                value={activeRole.name}
-                                onChange={(e) => handleRename(e.target.value)}
-                                className="block p-2 rounded-md h-8 border-0 min-w-28 text-black shadow-sm ring-1
-                                     ring-gray-300 placeholder:text-black focus:ring-2 focus:ring-inset
-                                    focus:ring-indigo-600 sm:text-sm sm:leading-6 px-2 dark:ring-indigo-600 dark:ring-2"
-                            />
-                        </labeL>
+                        <input
+                            id={activeRole.id}
+                            name="roleName"
+                            type="roleName"
+                            value={activeRole.name}
+                            onChange={(e) => handleRename(e.target.value)}
+                            className="block p-2 rounded-md h-8 border-0 min-w-28 text-black
+                                    transition-all duration-500
+                                    shadow-sm sm:text-sm sm:leading-6 bg-white
+                                    ring-1 ring-gray-300 placeholder:text-gray-500
+                                    focus:ring-indigo-500 focus:ring-2 focus:outline-0
+                                    dark:ring-2 dark:ring-indigo-500 dark:focus:ring-indigo-300"
+                        />
                     </form>
 
                     <button className="justify-end mx-auto h-8 w-auto px-2">

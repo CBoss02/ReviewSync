@@ -1,4 +1,4 @@
-import React, {useState, useEffect, useRef} from "react";
+import React, {useState, useEffect} from "react";
 import {sendPasswordResetEmail} from "firebase/auth";
 import auth from "../../config/firebase-config";
 import saveIcon from "../../assets/icons/GreenSave-Icon.png";
@@ -61,18 +61,22 @@ export default function Profile() {
         return (
             <div id="inputContainer"
                  className={`flex items-center space-x-5 transition-all duration-500`}
-                 style={{marginTop: "5px", marginBottom: "30px"}}>
+                 style={{marginTop: "5px", marginBottom: "20px"}}>
                 <input
                     type="text"
-                    className="w-full border-2 border-gray-300 p-2 rounded-full transition-all duration-500"
+                    className="flex min-w-80 p-2 transition-all duration-500 rounded-lg
+                                    shadow-sm sm:text-md sm:leading-6 bg-white
+                                    ring-1 ring-gray-300 placeholder:text-gray-500
+                                    focus:ring-indigo-500 focus:ring-2 focus:outline-0
+                                    dark:ring-2 dark:ring-indigo-500 dark:focus:ring-indigo-300"
                     defaultValue={inputStates[index]}
                     value={inputStates[index]}
                     onChange={updateInputFunctions[index]}
                 />
-                <button className="justify-end mx-auto h-8 w-auto px-2"
+                <button className="justify-end h-8 w-auto"
                 >
                     <img
-                        className="justify-end mx-auto h-8 w-auto"
+                        className="justify-end h-8 w-auto"
                         onClick={() => updateNameFunctions[index]()}
                         src={saveIcon}
                         alt="Save Role">
@@ -84,18 +88,18 @@ export default function Profile() {
 
 
     return (
-        <div
-            style={{marginTop: "60px", marginRight: "450px", marginLeft: "450px"}}>
-            <label>
+        <div className="flex flex-col justify-center items-center w-full my-10 ">
+            <label className="justify-start w-96 -mr-6 text-md dark:text-white">
                 First Name
             </label>
             {renderNameSlot(0)}
-            <label>
+            <label className="justify-start w-96 -mr-6 text-md dark:text-white">
                 Last Name
             </label>
             {renderNameSlot(1)}
             <button
-                className={`bg-blue-700 hover:bg-blue-500 text-white font-bold py-2 px-4 rounded w-full transition-all duration-500`}
+                className="w-96 h-10
+                bg-blue-700 hover:bg-blue-500 text-white font-bold px-4 rounded transition-all duration-500"
                 style={{marginTop: "10px"}}
                 onClick={() => {
                     sendPasswordResetEmail(auth, auth.currentUser.email)

@@ -541,15 +541,17 @@ export default function Dashboard() {
                 <input
                     type="text"
                     placeholder="New project name..."
-                    className="relative min-w-70  border-gray-300 transition-all duration-500 rounded-lg
-                                    p-2 h-8 border-2 min-w-28 text-black shadow-sm ring-1
-                                     ring-gray-300 placeholder:text-black focus:ring-2 focus:ring-inset
-                                    focus:ring-indigo-600 sm:text-sm sm:leading-6 px-2 dark:ring-indigo-600 dark:ring-2"
+                    className="relative min-w-70 transition-all duration-500 rounded-lg
+                                    p-2 h-9 px-2 min-w-28 text-black
+                                    shadow-sm sm:text-sm sm:leading-6 bg-white
+                                    ring-1 ring-gray-300 placeholder:text-gray-500
+                                    focus:ring-indigo-500 focus:ring-2 focus:outline-0
+                                    dark:ring-2 dark:ring-indigo-500 dark:focus:ring-indigo-300"
                     value={inputValue}
                     onChange={handleInputChange}
                 />
                 <button
-                    className="flex justify-center py-3 h-10 w-14 bg-blue-700 hover:bg-blue-500 text-white font-bold px-4 rounded-full"
+                    className="flex justify-center py-2.5 h-9 w-12 bg-blue-700 hover:bg-blue-500 text-white font-bold px-4 rounded-full"
                     onClick={async () => {
                         await addProject()
                     }}
@@ -567,11 +569,11 @@ export default function Dashboard() {
             <Listbox value={selectedPeople} multiple onChange={setSelectedPeople} style={{marginRight: "15px"}}>
                 <div className="relative mt-1 pt-2">
                     <Listbox.Button
-                        className="relative w-full h-9 cursor-default rounded-lg bg-white py-2 pl-3 pr-10 text-left
-                        shadow-sm ring-1 ring-gray-300 placeholder:text-black focus:ring-2
-                        focus:ring-inset justify-center focus:ring-indigo-600 sm:leading-6 px-2 dark:ring-indigo-600 dark:ring-2
-                         focus-visible:border-indigo-500 focus-visible:ring-2
-                          focus-visible:ring-white/75 focus-visible:ring-offset-2 focus-visible:ring-offset-orange-300 sm:text-sm">
+                        className="flex relative w-full h-9 cursor-default rounded-lg bg-white py-2 pl-3 pr-10 text-left
+                            text-black shadow-sm sm:text-sm sm:leading-6
+                            ring-1 ring-gray-300 placeholder:text-gray-500
+                            focus:ring-indigo-500 focus:ring-2 focus:outline-0
+                            dark:ring-2 dark:ring-indigo-500 dark:focus:ring-indigo-300">
                         <span className="flex truncate -mt-0.5">Manage Project Employees</span>
                         <span className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
                             <ChevronDoubleDownIcon
@@ -626,19 +628,20 @@ export default function Dashboard() {
     const renderRename = projects.map((project) => {
         if(project.id===projectID){
             return (
-                <div className="flex mt-2 mx-4 pt-1">
+                <div className="flex ml-1 mt-2 mx-4 pt-1">
                     <input
                         id={project.id}
                         type="text"
                         value={inputValue}
                         placeholder={project.name}
                         onChange={handleInputChange}
-                        className="flex align-middle p-2 h-9 min-w-60 relative min-w-70  border-gray-300 transition-all duration-500 rounded-lg
-                                    border-2 text-black shadow-sm ring-1
-                                     ring-gray-300 placeholder:text-black focus:ring-2 focus:ring-inset
-                                    focus:ring-indigo-600 sm:text-sm sm:leading-6 px-2 dark:ring-indigo-600 dark:ring-2"
+                        className="flex z-0 align-middle p-2 px-2 pr-10 h-9 min-w-60 relative min-w-70 transition-all duration-500 rounded-lg
+                                    text-black shadow-sm sm:text-sm sm:leading-6 bg-white
+                                    ring-1 ring-gray-300 placeholder:text-gray-500
+                                    focus:ring-indigo-500 focus:ring-2 focus:outline-0
+                                    dark:ring-2 dark:ring-indigo-500 dark:focus:ring-indigo-300"
                     />
-                    <button className="flex justify-end h-8 w-auto mt-0.5 -ml-9"
+                    <button className="flex z-10 justify-end h-8 w-auto mt-0.5 -ml-9 "
                             onClick={async () => {
                                 await updateName()
                                 setPUpdated(true);
@@ -661,7 +664,7 @@ export default function Dashboard() {
     const renderDelete = () => {
         return (
             <div>
-                <button className="flex pt-4 pb-0"
+                <button className="flex pt-4 -ml-1 pb-0"
                         onClick={async () => {
                             await deleteProject()
                             //Find the index of the project that we want to delete
