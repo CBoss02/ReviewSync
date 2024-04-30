@@ -1,15 +1,18 @@
-import React, {useState, useEffect} from "react";
+import React, {useState, useEffect, useRef} from "react";
+import { useNavigate } from "react-router-dom";
+
+import { useAuth } from "../contexts/AuthContext";
 import {sendPasswordResetEmail} from "firebase/auth";
-import auth from "../../config/firebase-config";
-import saveIcon from "../../assets/icons/GreenSave-Icon.png";
-import api from "../../config/axiosConfig";
-import useIdleTimeout from "../../components/idleTimer/idleTimer"
+import auth from "../config/firebase-config.js";
+
+// import saveIcon from "../../assets/icons/GreenSave-Icon.png";
+import api from "../config/axiosConfig";
 
 export default function Profile() {
+    const authContext = useAuth();
+    const uid = authContext.currentUser.uid;
     const [fNameInput, setFNameInput] = useState("");
     const [lNameInput, setLNameInput] = useState("");
-
-    useIdleTimeout();
 
     const handleFNameChange = (event) => {
         setFNameInput(event.target.value);
@@ -22,7 +25,9 @@ export default function Profile() {
     useEffect(() => {
         const fetchName = async () => {
             try {
-                await api.get("/api/users/getName").then((response) => {
+                await api.post("/api/users/getName", {
+                    uid: uid
+                }).then((response) => {
                     setFNameInput(response.data.first_name);
                     setLNameInput(response.data.last_name);
                 });
@@ -36,6 +41,7 @@ export default function Profile() {
     const updateFName = async () => {
         try {
             await api.put("/api/users/updateFName", {
+                uid: uid,
                 first_name: fNameInput
             })
         } catch (error) {
@@ -46,12 +52,14 @@ export default function Profile() {
     const updateLName = async () => {
         try {
             await api.put("/api/users/updateLName", {
+                uid: uid,
                 last_name: lNameInput
             })
         } catch (error) {
             console.error('Failed to fetch name:', error);
         }
     }
+
 
     const inputStates = [fNameInput, lNameInput]
     const updateNameFunctions = [updateFName, updateLName]
@@ -61,24 +69,20 @@ export default function Profile() {
         return (
             <div id="inputContainer"
                  className={`flex items-center space-x-5 transition-all duration-500`}
-                 style={{marginTop: "5px", marginBottom: "20px"}}>
+                 style={{marginTop: "5px", marginBottom: "30px"}}>
                 <input
                     type="text"
-                    className="flex min-w-80 p-2 transition-all duration-500 rounded-lg
-                                    shadow-sm sm:text-md sm:leading-6 bg-white
-                                    ring-1 ring-gray-300 placeholder:text-gray-500
-                                    focus:ring-indigo-500 focus:ring-2 focus:outline-0
-                                    dark:ring-2 dark:ring-indigo-500 dark:focus:ring-indigo-300"
+                    className="w-full border-2 border-gray-300 p-2 rounded-full transition-all duration-500"
                     defaultValue={inputStates[index]}
                     value={inputStates[index]}
                     onChange={updateInputFunctions[index]}
                 />
-                <button className="justify-end h-8 w-auto"
+                <button className="justify-end mx-auto h-8 w-auto px-2"
                 >
                     <img
-                        className="justify-end h-8 w-auto"
+                        className="justify-end mx-auto h-8 w-auto"
                         onClick={() => updateNameFunctions[index]()}
-                        src={saveIcon}
+                       // src={saveIcon}
                         alt="Save Role">
                     </img>
                 </button>
@@ -88,18 +92,19 @@ export default function Profile() {
 
 
     return (
-        <div className="flex flex-col justify-center items-center w-full my-10 mt-24">
-            <label className="justify-start w-96 -mr-6 text-md dark:text-white">
+        <div
+            className="flex flex-col items-center justify-center h-screen transition-all duration-500 mt-16"
+            style={{marginTop: "60px", marginRight: "450px", marginLeft: "450px"}}>
+            <label>
                 First Name
             </label>
             {renderNameSlot(0)}
-            <label className="justify-start w-96 -mr-6 text-md dark:text-white">
+            <label>
                 Last Name
             </label>
             {renderNameSlot(1)}
             <button
-                className="w-96 h-10
-                bg-blue-700 hover:bg-blue-500 text-white font-bold px-4 rounded transition-all duration-500"
+                className={`bg-blue-700 hover:bg-blue-500 text-white font-bold py-2 px-4 rounded w-full transition-all duration-500`}
                 style={{marginTop: "10px"}}
                 onClick={() => {
                     sendPasswordResetEmail(auth, auth.currentUser.email)

@@ -106,98 +106,140 @@ exports.getCompanyOwner = async (req, res) => {
 }
 
 exports.getEmployees = async (req, res) => {
+    const user = await db.collection("users").doc(req.body.uid).get();
+    const companyID = user.data().company;
+
+    if (!user.exists) {
+        return res.status(404).send('User not found');
+    }
+
     try {
-        const uid = req.body.uid;
-        const user = await db.collection("users").doc(uid).get();
-        const companyID = user.data().company;
-        let employees = [];
-        const snapshot = await db.collection("users").where("company", "==", companyID).get();
-        if(!snapshot.empty)
-        {
-            snapshot.forEach(employee => {
-                if(employee.id !== uid)
-                {
-                    const employeeData = employee.data();
-                    const name = employeeData.first_name.concat(" ").concat(employeeData.last_name);
-                    const employeeJson = {id: employee.id, name: name}
-                    employees.push(employeeJson)
+        const company = await db.collection("companies").doc(companyID).get();
+        const companyData = company.data();
+        const employees = [];
+        const qSnap = await db.collection("users").where('company', '==', companyID).get();
+        if (qSnap.empty) {
+            res.status(200).send({employees: []});
+        } else {
+            await qSnap.forEach(user => {
+                if (user.id !== companyData.owner) {
+                    const userData = user.data();
+                    employees.push(userData);
                 }
-            })
+            });
+            res.status(200).send({employees: employees});
         }
-        res.status(200).send({employees: employees});
     } catch (error) {
         res.status(400).send(error.message);
+    }
+}
+
+exports.getAllEmployees = async (req, res) => {
+    const user = await db.collection("users").doc(req.user.uid).get();
+
+    if (!user.exists) {
+        return res.status(404).send('User not found');
+    }
+
+    const companyID = user.data().company;
+    if (!companyID) {
+        return res.status(404).send('User does not belong to a company');
+    }
+
+    try {
+        const companyDoc = await db.collection('companies').doc(companyID).get();
+        if (!companyDoc.exists) {
+            return res.status(404).send('Company not found');
+        }
+
+        const employeeList = companyDoc.data().employees || []; // Check if the employees array exists, otherwise default to an empty array
+
+        const employees = [];
+        for (const employeeId of employeeList) {
+            const employeeDoc = await db.collection('users').doc(employeeId).get();
+            if (employeeDoc.exists && employeeDoc.id !== user.id) {
+                // Include the user ID in the employee data
+                employees.push({
+                    id: employeeDoc.id,
+                    ...employeeDoc.data(),
+                });
+            }
+        }
+
+        res.status(200).send(employees);
+    } catch (error) {
+        console.log('Error fetching company document:', error);
+        res.status(500).send(error.toString());
     }
 }
 
 exports.getEmailsAndRoles = async (req, res) => {
-    try {
-        const user = await db.collection("users").doc(req.body.uid).get();
-        const companyID = user.data().company;
-        const company = await db.collection("companies").doc(companyID).get();
-        const companyData = company.data();
-        let emailsAndRoles = companyData.pendingList
-        const qSnapUsers = await db.collection("users").where('company', '==', companyID).get();
-        if(qSnapUsers.docs.length > 1) {
-            await qSnapUsers.forEach(user => {
-                if(user.id !== companyData.owner)
-                {
-                    const userData = user.data();
-                    let emailAndRole = {}
-                    emailAndRole.email = userData.email
-                    emailAndRole.role = userData.role
-                    emailsAndRoles.push(emailAndRole)
-                }
-            })
-        }
-        res.status(200).send({emailsAndRoles: emailsAndRoles});
-    } catch (error) {
-        res.status(400).send(error.message);
-    }
-}
-
-exports.addEmployeeToCompany = async (req, res) => {
-    try {
-        const data = req.body;
-        const companyCollection = await db.collection("companies");
-        const qSnap = await companyCollection.where('name', '==', data.companyName).get();
-        if (qSnap.empty) {
-            res.status(400).send({message: "No company found with this name. Please check your spelling and/or check with the owner."})
-        } else {
-            const user = await db.collection("users").doc(data.userID).get();
-            const userData = user.data();
-            let userFound = false;
-            qSnap.forEach(companyData => {
-                const company = companyData.data();
-                let i = 0;
-                while (i < company.pendingList.length && !userFound) {
-                    if (company.pendingList[i].email === userData.email) {
-                        userFound = true;
-                        const role = company.pendingList[i].role;
-                        const userCollection = db.collection("users");
-                        companyCollection.doc(companyData.id).update({
-                            employees: FieldValue.arrayUnion(user.id),
-                            pendingList: FieldValue.arrayRemove({email: userData.email, role: role}),
-                            eUpdated: true
-                        })
-                        userCollection.doc(data.userID).update({
-                            company: companyData.id,
-                            role: role
-                        })
-                        res.status(200).send();
+        try {
+            const user = await db.collection("users").doc(req.body.uid).get();
+            const companyID = user.data().company;
+            const company = await db.collection("companies").doc(companyID).get();
+            const companyData = company.data();
+            let emailsAndRoles = companyData.pendingList
+            const qSnapUsers = await db.collection("users").where('company', '==', companyID).get();
+            if (qSnapUsers.docs.length > 1) {
+                await qSnapUsers.forEach(user => {
+                    if (user.id !== companyData.owner) {
+                        const userData = user.data();
+                        let emailAndRole = {}
+                        emailAndRole.email = userData.email
+                        emailAndRole.role = userData.role
+                        emailsAndRoles.push(emailAndRole)
                     }
-                    i++;
-                }
-                if (!userFound) {
-                    res.status(400).send({message: "You have not been invited to join this company. Please contact the owner."});
-                }
-            })
+                })
+            }
+            res.status(200).send({emailsAndRoles: emailsAndRoles});
+        } catch (error) {
+            res.status(400).send(error.message);
         }
-    } catch (error) {
-        res.status(400).send(error.message);
     }
 
-}
+    exports.addEmployeeToCompany = async (req, res) => {
+        try {
+            const data = req.body;
+            const companyCollection = await db.collection("companies");
+            const qSnap = await companyCollection.where('name', '==', data.companyName).get();
+            if (qSnap.empty) {
+                res.status(400).send({message: "No company found with this name. Please check your spelling and/or check with the owner."})
+            } else {
+                const user = await db.collection("users").doc(data.userID).get();
+                const userData = user.data();
+                let userFound = false;
+                qSnap.forEach(companyData => {
+                    const company = companyData.data();
+                    let i = 0;
+                    while (i < company.pendingList.length && !userFound) {
+                        if (company.pendingList[i].email === userData.email) {
+                            userFound = true;
+                            const role = company.pendingList[i].role;
+                            const userCollection = db.collection("users");
+                            companyCollection.doc(companyData.id).update({
+                                employees: FieldValue.arrayUnion(user.id),
+                                pendingList: FieldValue.arrayRemove({email: userData.email, role: role}),
+                                eUpdated: true
+                            })
+                            userCollection.doc(data.userID).update({
+                                company: companyData.id,
+                                role: role
+                            })
+                            res.status(200).send();
+                        }
+                        i++;
+                    }
+                    if (!userFound) {
+                        res.status(400).send({message: "You have not been invited to join this company. Please contact the owner."});
+                    }
+                })
+            }
+        } catch (error) {
+            res.status(400).send(error.message);
+        }
+
+    }
 
 exports.getRoles = async (req, res) => {
     try {
@@ -285,7 +327,7 @@ exports.addOrUpdateRoles = async (req, res) => {
 
 exports.modifyPendingListAndEditRoles = async (req, res) => {
     try {
-        const { employees, uid } = req.body;
+        const {employees, uid} = req.body;
         const userRef = db.collection("users").doc(uid);
         const userData = (await userRef.get()).data();
         const companyRef = db.collection("companies").doc(userData.company);
@@ -299,11 +341,9 @@ exports.modifyPendingListAndEditRoles = async (req, res) => {
         const batch = db.batch();
 
         //Update existing employees' roles
-        for(let i = 0; i < employees.length; i++)
-        {
+        for (let i = 0; i < employees.length; i++) {
             const userSnapshot = await db.collection("users").where('email', '==', employees[i].email).where("company", "==", userData.company).get();
-            if(!userSnapshot.empty)
-            {
+            if (!userSnapshot.empty) {
                 userSnapshot.forEach(user => {
                     const userRef = db.collection("users").doc(user.id);
                     batch.update(userRef, {role: employees[i].role})
@@ -313,16 +353,14 @@ exports.modifyPendingListAndEditRoles = async (req, res) => {
 
         //Remove employees, if any
         let emails = [];
-        for(let i = 0; i < employees.length; i++)
-        {
+        for (let i = 0; i < employees.length; i++) {
             emails.push(employees[i].email)
         }
         const employeesSnapshot = await db.collection("users").where("company", "==", userData.company).get();
-        if(!employeesSnapshot.empty)
-        {
+        if (!employeesSnapshot.empty) {
             employeesSnapshot.forEach(employee => {
                 const employeeEmail = employee.data().email;
-                if((!emails.includes(employeeEmail) && (employee.id !== uid))) //If employee's email was not found in request, AND if employee is not owner, owner is removing them
+                if ((!emails.includes(employeeEmail) && (employee.id !== uid))) //If employee's email was not found in request, AND if employee is not owner, owner is removing them
                 {
                     const employeeRef = db.collection("users").doc(employee.id);
                     batch.update(employeeRef, {company: null, role: null})
@@ -355,5 +393,33 @@ exports.modifyPendingListAndEditRoles = async (req, res) => {
     } catch (error) {
         console.error("Error updating pending list:", error);
         res.status(400).send(error.message);
+    }
+}
+
+exports.getCompany = async (req, res) => {
+    try {
+        // Fetch user document
+        const userDoc = await db.collection("users").doc(req.user.uid).get();
+        if (!userDoc.exists) {
+            return res.status(404).send('User not found');
+        }
+        const userData = userDoc.data();
+
+        if (!userData.company) {
+            return res.status(404).send('User does not belong to a company');
+        }
+
+        // Fetch company document
+        const companyDoc = await db.collection("companies").doc(userData.company).get();
+        if (!companyDoc.exists) {
+            return res.status(404).send('Company not found');
+        }
+        const companyData = companyDoc.data();
+
+        // Send the company data
+        res.status(200).send(companyData);
+    } catch (error) {
+        console.error('Failed to fetch company:', error);
+        res.status(500).send('Error fetching company data');
     }
 }

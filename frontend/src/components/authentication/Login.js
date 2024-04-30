@@ -2,7 +2,7 @@ import React, {useEffect, useState} from "react";
 //import {useAuth} from "../../contexts/AuthContext";
 import {Navigate, useNavigate} from "react-router-dom";
 import {signInWithEmailAndPassword} from "firebase/auth";
-import auth from "../../config/firebase-config";
+import {useAuth} from "../../contexts/AuthContext";
 
 export default function Login() {
     const [formData, setFormData] = useState({
@@ -10,20 +10,10 @@ export default function Login() {
         password: ''
     });
 
+    const { login } = useAuth();
     const navigate = useNavigate();
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
-
-    const signIn = async () => {
-        try {
-            const userCredential = await signInWithEmailAndPassword(auth, formData.email, formData.password);
-            const token = await userCredential.user.getIdToken();
-            localStorage.setItem('token', token);
-        } catch (error) {
-            setError("Failed to log in");
-            console.error(error);
-        }
-    };
 
     const handleFormChange = (e) => {
         setFormData({
@@ -37,8 +27,8 @@ export default function Login() {
         try {
             setError("");
             setLoading(true);
-            await signIn();
-            navigate("/");
+            await login(formData.email, formData.password);
+            navigate("/dashboard");
         } catch (error) {
             console.error(error);
             setError("Failed to log in");

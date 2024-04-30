@@ -1,6 +1,51 @@
 const {db} = require('../config/firebase-config');
 const {FieldValue} = require('firebase-admin').firestore;
 
+exports.getProject = async (req, res) => {
+    const user = await db.collection('users').doc(req.user.uid).get();
+
+    if(!user.exists) {
+        return res.status(400).send('User not found');
+    }
+
+    try {
+        const project = await db.collection('companies').doc(user.data().company).collection('projects').doc(req.params.projectId).get();
+        if(!project.exists) {
+            return res.status(404).send('Project not found');
+        }
+
+        res.status(200).send(project.data());
+    } catch (error) {
+        res.status(500).send(error.toString());
+    }
+
+}
+
+exports.getAllProjects = async (req, res) => {
+    const user = await db.collection('users').doc(req.user.uid).get();
+    const companyId = user.data().company;
+
+    if (!user.exists) {
+        return res.status(400).send('User not found');
+    }
+
+    try {
+        // Also send the document ID to the frontend
+        const projects = [];
+        const snapshot = await db.collection('companies').doc(companyId).collection('projects').get();
+        snapshot.forEach(doc => {
+            // Check if user is in the employees list or is the owner
+            if(doc.data().employees.includes(req.user.uid) || doc.data().owner === req.user.uid){
+                projects.push({id: doc.id, ...doc.data()});
+            }
+        });
+
+        res.status(200).send(projects);
+    } catch (error) {
+        res.status(500).send(error.toString());
+    }
+}
+
 exports.getProjects = async (req, res) => {
     try {
         const user = await db.collection('users').doc(req.user.uid).get();
@@ -21,6 +66,7 @@ exports.getProjects = async (req, res) => {
         res.status(400).send(error.message);
     }
 }
+
 
 exports.createProject = async (req, res) => {
     try {
