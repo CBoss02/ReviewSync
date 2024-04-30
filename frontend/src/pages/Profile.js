@@ -5,7 +5,7 @@ import { useAuth } from "../contexts/AuthContext";
 import {sendPasswordResetEmail} from "firebase/auth";
 import auth from "../config/firebase-config.js";
 
-import saveIcon from "../../assets/icons/GreenSave-Icon.png";
+// import saveIcon from "../../assets/icons/GreenSave-Icon.png";
 import api from "../config/axiosConfig";
 
 export default function Profile() {
@@ -82,7 +82,7 @@ export default function Profile() {
                     <img
                         className="justify-end mx-auto h-8 w-auto"
                         onClick={() => updateNameFunctions[index]()}
-                        src={saveIcon}
+                       // src={saveIcon}
                         alt="Save Role">
                     </img>
                 </button>

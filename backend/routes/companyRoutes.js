@@ -5,7 +5,7 @@ const { createCompany, getCompanyID,
     getEmployees, addEmployeeToCompany,
     getCompanyName, getEUpdatedFlag,
     resetEUpdatedFlag, getRolesUpdatedFlag,
-    resetRolesUpdatedFlag, getCompany
+    resetRolesUpdatedFlag, getCompany, getAllEmployees
 } = require("../controllers/companyController");
 const authMiddleware = require("../middleware/authMiddleware");
 
@@ -15,6 +15,7 @@ router.post("/createCompany", createCompany);
 router.post("/getCompanyID", getCompanyID);
 router.post("/getCompanyName", getCompanyName);
 router.post("/getEmployees", getEmployees);
+router.get("/getAllEmployees", authMiddleware, getAllEmployees);
 router.put("/modifyPendingListAndEditRoles", modifyPendingListAndEditRoles);
 router.put("/addEmployeeToCompany", addEmployeeToCompany);
 router.post("/getRoles", getRoles);

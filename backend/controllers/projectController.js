@@ -35,7 +35,10 @@ exports.getAllProjects = async (req, res) => {
         const projects = [];
         const snapshot = await db.collection('companies').doc(companyId).collection('projects').get();
         snapshot.forEach(doc => {
-            projects.push({id: doc.id, ...doc.data()});
+            // Check if user is in the employees list or is the owner
+            if(doc.data().employees.includes(req.user.uid) || doc.data().owner === req.user.uid){
+                projects.push({id: doc.id, ...doc.data()});
+            }
         });
 
         res.status(200).send(projects);
@@ -43,6 +46,7 @@ exports.getAllProjects = async (req, res) => {
         res.status(500).send(error.toString());
     }
 }
+
 
 exports.createProject = async (req, res) => {
     try {

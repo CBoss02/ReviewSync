@@ -1,16 +1,15 @@
 // Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
 import {getAuth} from "firebase/auth";
-import {getStorage} from "firebase/storage";
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
-    apiKey: "AIzaSyAfsbFJt1CHK99OV7VFU5lsVDH20g7elu0",
-    authDomain: "reviewsync-prod.firebaseapp.com",
-    projectId: "reviewsync-prod",
-    storageBucket: "reviewsync-prod.appspot.com",
-    messagingSenderId: "284679547776",
-    appId: "1:284679547776:web:92935bbdf0153fec0b6f65"
+    apiKey: "AIzaSyDwVvFosAuFaY6N0b51ppHaYAmngb1KY10",
+    authDomain: "reviewsync-39f23.firebaseapp.com",
+    projectId: "reviewsync-39f23",
+    storageBucket: "reviewsync-39f23.appspot.com",
+    messagingSenderId: "647671062896",
+    appId: "1:647671062896:web:ea9cdb4b8900dfe332efb5"
 };
 
 // Initialize Firebase

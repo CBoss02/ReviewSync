@@ -47,10 +47,10 @@ export function AuthProvider({children}) {
         }
     }
 
-    function login(email, password) {
+    async function login(email, password) {
         try {
-            const userCredential = signInWithEmailAndPassword(auth, email, password);
-            const token = userCredential.user.getIdToken();
+            const userCredential = await signInWithEmailAndPassword(auth, email, password);
+            const token = await userCredential.user.getIdToken();
             localStorage.setItem('token', token);
         } catch (error) {
             setError("Failed to log in");

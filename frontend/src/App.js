@@ -1,7 +1,7 @@
-import {BrowserRouter as Router, Routes, Route} from "react-router-dom";
+import {BrowserRouter as Router, Routes, Route, useNavigate} from "react-router-dom";
 import Register from "./components/authentication/Register";
 import Login from "./components/authentication/Login";
-import {AuthProvider} from "./contexts/AuthContext";
+import {AuthProvider, useAuth} from "./contexts/AuthContext";
 import ErrorMessage from "./components/layouts/ErrorMessage";
 import Header from "./components/layouts/Header";
 import DocumentUpload from "./components/document/DocumentUpload"
@@ -14,7 +14,7 @@ import AddEmployees from "./components/company/AddEmployees";
 import DocumentPage from "./pages/DocumentPage";
 import Profile from "./pages/Profile";
 import AppLayout from "./components/layouts/AppLayout";
-import Footer from "./components/layouts/Footer";
+
 
 function App() {
     return (
@@ -30,7 +30,7 @@ function App() {
                         path="/"
                         element={
                             <WithPrivateRoute>
-                                <Home/>
+                                <Home />
                             </WithPrivateRoute>
                         }
                     />

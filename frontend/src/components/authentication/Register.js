@@ -15,10 +15,10 @@ export default function Register() {
         verify_password: '',
     });
 
+    const { register } = useAuth();
     const navigate = useNavigate();
     const [loading, setLoading] = React.useState(false);
     const [error, setError] = React.useState('');
-    const { register } = useAuth();
 
     const handleFormChange = (e) => {
         setForm({

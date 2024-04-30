@@ -10,20 +10,10 @@ export default function Login() {
         password: ''
     });
 
+    const { login } = useAuth();
     const navigate = useNavigate();
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
-
-    const signIn = async () => {
-        try {
-            const userCredential = await signInWithEmailAndPassword(auth, formData.email, formData.password);
-            const token = await userCredential.user.getIdToken();
-            localStorage.setItem('token', token);
-        } catch (error) {
-            setError("Failed to log in");
-            console.error(error);
-        }
-    };
 
     const handleFormChange = (e) => {
         setFormData({
@@ -37,7 +27,7 @@ export default function Login() {
         try {
             setError("");
             setLoading(true);
-            await signIn();
+            await login(formData.email, formData.password);
             navigate("/dashboard");
         } catch (error) {
             console.error(error);
