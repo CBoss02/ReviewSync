@@ -2,7 +2,7 @@ import React, {useEffect, useState} from "react";
 //import {useAuth} from "../../contexts/AuthContext";
 import {Navigate, useNavigate} from "react-router-dom";
 import {signInWithEmailAndPassword} from "firebase/auth";
-import auth from "../../config/firebase-config";
+import {useAuth} from "../../contexts/AuthContext";
 
 export default function Login() {
     const [formData, setFormData] = useState({

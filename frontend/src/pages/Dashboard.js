@@ -9,6 +9,7 @@ import api from "../config/axiosConfig";
 import deleteIcon from "../assets/icons/RedDelete-Icon.png";
 import saveIcon from "../assets/icons/GreenSave-Icon.png";
 import useIdleTimeout from "../components/idleTimer/idleTimer";
+import {useNavigate} from "react-router-dom";
 
 export default function Dashboard() {
     const [projects, setProjects] = useState([]); //projects the user has access to
@@ -30,6 +31,7 @@ export default function Dashboard() {
     const [dUpdated, setDUpdated] = useState(false); //Indicates if a user has been added to/removed from a document
     const [pUpdated, setPUpdated] = useState(false); //Indicates if a user has been added to/removed from a project
     const [roleUpdated, setRoleUpdated] = useState(false); //Indicates if a user's role has changed
+    const navigate = useNavigate();
 
     useIdleTimeout(); //starts a timer that will log the user out after 10 minutes of inactivity
 
@@ -474,12 +476,17 @@ export default function Dashboard() {
         )
     }
 
+
+    const handleDocumentRedirect = (documentId) => {
+        navigate(`/document/${documentId}`);
+    }
+
     //Displays documents as a list of buttons
     const renderHomeDocumentNames = () => {
         return homeDocuments.map((document) => (
             <button
                 className="bg-blue-700 hover:bg-blue-500 min-w-80 text-white font-bold py-2 px-4 rounded transition-all duration-500"
-                onClick={() => console.log("ok")}
+                onClick={() => handleDocumentRedirect(document.id)}
             >
                 <p>{document.name}</p>
             </button>
@@ -693,7 +700,7 @@ export default function Dashboard() {
 
     //The actual code for the page
     return (
-        <div className="App ">
+        <div className="App mt-16">
             <Box
                 /*The left side box*/
                 sx={{

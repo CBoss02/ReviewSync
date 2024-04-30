@@ -327,7 +327,7 @@ exports.addOrUpdateRoles = async (req, res) => {
 
 exports.modifyPendingListAndEditRoles = async (req, res) => {
     try {
-        const { employees, uid } = req.body;
+        const {employees, uid} = req.body;
         const userRef = db.collection("users").doc(uid);
         const userData = (await userRef.get()).data();
         const companyRef = db.collection("companies").doc(userData.company);
@@ -341,11 +341,9 @@ exports.modifyPendingListAndEditRoles = async (req, res) => {
         const batch = db.batch();
 
         //Update existing employees' roles
-        for(let i = 0; i < employees.length; i++)
-        {
+        for (let i = 0; i < employees.length; i++) {
             const userSnapshot = await db.collection("users").where('email', '==', employees[i].email).where("company", "==", userData.company).get();
-            if(!userSnapshot.empty)
-            {
+            if (!userSnapshot.empty) {
                 userSnapshot.forEach(user => {
                     const userRef = db.collection("users").doc(user.id);
                     batch.update(userRef, {role: employees[i].role})
@@ -355,16 +353,14 @@ exports.modifyPendingListAndEditRoles = async (req, res) => {
 
         //Remove employees, if any
         let emails = [];
-        for(let i = 0; i < employees.length; i++)
-        {
+        for (let i = 0; i < employees.length; i++) {
             emails.push(employees[i].email)
         }
         const employeesSnapshot = await db.collection("users").where("company", "==", userData.company).get();
-        if(!employeesSnapshot.empty)
-        {
+        if (!employeesSnapshot.empty) {
             employeesSnapshot.forEach(employee => {
                 const employeeEmail = employee.data().email;
-                if((!emails.includes(employeeEmail) && (employee.id !== uid))) //If employee's email was not found in request, AND if employee is not owner, owner is removing them
+                if ((!emails.includes(employeeEmail) && (employee.id !== uid))) //If employee's email was not found in request, AND if employee is not owner, owner is removing them
                 {
                     const employeeRef = db.collection("users").doc(employee.id);
                     batch.update(employeeRef, {company: null, role: null})
@@ -400,30 +396,30 @@ exports.modifyPendingListAndEditRoles = async (req, res) => {
     }
 }
 
-    exports.getCompany = async (req, res) => {
-        try {
-            // Fetch user document
-            const userDoc = await db.collection("users").doc(req.user.uid).get();
-            if (!userDoc.exists) {
-                return res.status(404).send('User not found');
-            }
-            const userData = userDoc.data();
-
-            if (!userData.company) {
-                return res.status(404).send('User does not belong to a company');
-            }
-
-            // Fetch company document
-            const companyDoc = await db.collection("companies").doc(userData.company).get();
-            if (!companyDoc.exists) {
-                return res.status(404).send('Company not found');
-            }
-            const companyData = companyDoc.data();
-
-            // Send the company data
-            res.status(200).send(companyData);
-        } catch (error) {
-            console.error('Failed to fetch company:', error);
-            res.status(500).send('Error fetching company data');
+exports.getCompany = async (req, res) => {
+    try {
+        // Fetch user document
+        const userDoc = await db.collection("users").doc(req.user.uid).get();
+        if (!userDoc.exists) {
+            return res.status(404).send('User not found');
         }
+        const userData = userDoc.data();
+
+        if (!userData.company) {
+            return res.status(404).send('User does not belong to a company');
+        }
+
+        // Fetch company document
+        const companyDoc = await db.collection("companies").doc(userData.company).get();
+        if (!companyDoc.exists) {
+            return res.status(404).send('Company not found');
+        }
+        const companyData = companyDoc.data();
+
+        // Send the company data
+        res.status(200).send(companyData);
+    } catch (error) {
+        console.error('Failed to fetch company:', error);
+        res.status(500).send('Error fetching company data');
+    }
 }

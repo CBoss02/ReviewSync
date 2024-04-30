@@ -93,6 +93,7 @@ export default function Profile() {
 
     return (
         <div
+            className="flex flex-col items-center justify-center h-screen transition-all duration-500 mt-16"
             style={{marginTop: "60px", marginRight: "450px", marginLeft: "450px"}}>
             <label>
                 First Name

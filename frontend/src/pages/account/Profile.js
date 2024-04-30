@@ -88,7 +88,7 @@ export default function Profile() {
 
 
     return (
-        <div className="flex flex-col justify-center items-center w-full my-10 ">
+        <div className="flex flex-col justify-center items-center w-full my-10 mt-24">
             <label className="justify-start w-96 -mr-6 text-md dark:text-white">
                 First Name
             </label>
