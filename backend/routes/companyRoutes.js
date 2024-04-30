@@ -5,9 +5,10 @@ const { createCompany, getCompanyID,
     getEmployees, addEmployeeToCompany,
     getCompanyName, getEUpdatedFlag,
     resetEUpdatedFlag, getRolesUpdatedFlag,
-    resetRolesUpdatedFlag, getCompany, getAllEmployees
+    resetRolesUpdatedFlag, getCompany, getAllEmployees, getCompanyOwner
 } = require("../controllers/companyController");
 const authMiddleware = require("../middleware/authMiddleware");
+
 
 const router = express.Router();
 
@@ -26,5 +27,6 @@ router.put("/resetEUpdatedFlag", resetEUpdatedFlag);
 router.post("/getRolesUpdatedFlag", getRolesUpdatedFlag);
 router.put("/resetRolesUpdatedFlag", resetRolesUpdatedFlag);
 router.get("/getCompany", authMiddleware, getCompany);
+router.get("/getCompanyOwner", authMiddleware, getCompanyOwner);
 
 module.exports = router;

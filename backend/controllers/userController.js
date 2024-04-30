@@ -1,7 +1,6 @@
 const {db} = require("../config/firebase-config");
 const sendEmail = require('./emailController'); // Import sendEmail from mailer.js
 
-
 exports.createUser = async (req, res) => {
     try {
         // Creating user document in Firestore
@@ -224,6 +223,36 @@ exports.getPermissions = async (req, res) => {
         res.status(200).send({permissions: permissions});
     }
 }
+
+exports.getPermissions = async (req, res) => {
+    try {
+        const { uid } = req.body;
+        // Basic validation
+        if (!uid) {
+            return res.status(400).send({ error: "User ID is required" });
+        }
+        const userRef = db.collection("users").doc(uid);
+        const userDoc = await userRef.get();
+        if (!userDoc.exists) {
+            return res.status(404).send({ error: "User not found" });
+        }
+        const userData = userDoc.data();
+        const { role, company } = userData;
+        if (role === "owner") {
+            return res.status(200).send({ permissions: [true, true, true, true, true, true, true] });
+        }
+        const roleRef = db.collection("companies").doc(company).collection("roles").doc(role);
+        const roleDoc = await roleRef.get();
+        if (!roleDoc.exists) {
+            return res.status(404).send({ error: "Role not found" });
+        }
+        const roleData = roleDoc.data();
+        return res.status(200).send({ permissions: roleData.permissions });
+    } catch (error) {
+        console.error("Error fetching permissions:", error);
+        return res.status(500).send({ error: "Internal Server Error" });
+    }
+};
 
 
 

@@ -1,40 +1,41 @@
-import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
 import { LogoutIcon } from "@heroicons/react/outline";
+import {useEffect, useState} from "react";
+import { Link } from "react-router-dom";
+
 import { useAuth } from "../../contexts/AuthContext";
 import Logout from "../authentication/Logout";
 import ThemeToggler from "./ThemeToggler";
+
 import logo from "../../assets/logos/ReviewSync-Logo.png";
-import auth from "../../config/firebase-config";
 import api from "../../config/axiosConfig";
 
 export default function Header() {
     const [modal, setModal] = useState(false);
     const { currentUser } = useAuth();
     const [companyName, setCompanyName] = useState("");
+    const [isOwner, setIsOwner] = useState(false);
 
     useEffect(() => {
-        const fetchData = async () => {
-            try {
-                const user = auth.currentUser;
-                if (user) {
-                    const token = await user.getIdToken();
-                    const payloadHeader = {
-                        headers: {
-                            "Content-Type": "application/json",
-                            Authorization: `Bearer ${token}`,
-                        },
-                    };
+        if (currentUser) {
+            const fetchCompanyNameAndOwner = async () => {
+                try {
+                    const companyResponse = await api.get('/api/companies/getCompanyName', { uid: currentUser.uid });
+                    setCompanyName(companyResponse.data.companyName);
 
-                    const response = await api.post('/api/companies/getCompanyName', {uid: user.uid}, payloadHeader);
-                    setCompanyName(response.data.companyName);
+                    const ownerResponse = await api.get('/api/companies/getCompanyOwner', { uid: currentUser.uid });
+                    setIsOwner(ownerResponse.data.owner === currentUser.uid);
+                } catch (error) {
+                    console.error('Failed to fetch company details:', error);
                 }
-            } catch (error) {
-                console.error('Failed to fetch company name:', error);
-            }
-        };
-        fetchData();
-    }, []);
+            };
+
+            fetchCompanyNameAndOwner();
+        } else {
+            setCompanyName(""); // Reset company name when logged out
+            setIsOwner(false); // Reset owner status
+        }
+    }, [currentUser]); // Depend on currentUser to re-fetch when it changes
+
 
     return (
         <>

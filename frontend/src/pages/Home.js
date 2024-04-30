@@ -1,20 +1,24 @@
 import { useState, useEffect } from "react";
 import { ArrowRightIcon } from "@heroicons/react/solid";
 import {useAuth} from "../contexts/AuthContext";
-import axios from 'axios';
-import { useNavigate } from "react-router-dom";
-import api from "../config/axiosConfig";
-import DocumentUpload from "../components/document/DocumentUpload"; // Import useNavigate
+import useIdleTimeout from "../components/idleTimer/idleTimer"
+
+//Caleb's code from index.js used to navigate into the /edit-roles page
+import {useNavigate} from "react-router-dom";
+import api from "../config/axiosConfig"; // Import useNavigate
+//import auth from "../config/firebase";
 
 export default function Home() {
 
     //Caleb's code from index.js used to navigate into the /edit-roles page
     const navigate = useNavigate(); // Instantiate useNavigate
     const [companyName, setCompanyName] = useState("") ;
-    const [companyID, setCompanyID] = useState() ;
+    const [companyID, setCompanyID] = useState();
     const [error, setError] = useState("");
     const auth = useAuth();
     const uid = auth.currentUser.uid;
+
+    useIdleTimeout();
 
     const [state, setState] = useState(0);
     const [isVisible, setIsVisible] = useState(false); // New state to manage visibility for animation
@@ -31,7 +35,7 @@ export default function Home() {
     useEffect(() => {
         const fetchCompanyName = async () => {
             try {
-                const response = await api.post('/api/companies/getCompanyName', {uid: uid});
+                const response = await api.get('/api/companies/getCompanyName');
                 setCompanyName(response.data.companyName)
             } catch (error) {
                 console.error('Failed to fetch company name:', error);
@@ -50,7 +54,7 @@ export default function Home() {
         };//end fetchCompanyID
 
         fetchCompanyName();
-        fetchCompanyID()
+        fetchCompanyID();
     }, []);
 
     useEffect(() => {
@@ -68,37 +72,16 @@ export default function Home() {
     }, [state]);
 
 
-    useEffect(() => {
-        const handleClickOutside = (event) => {
-            const element = document.getElementById("inputContainer");
-            if ((state === 1 || state === 2) && element && !element.contains(event.target)) {
-                setState(0);
-            }
-        };
-
-        document.addEventListener("mousedown", handleClickOutside);
-        return () => {
-            document.removeEventListener("mousedown", handleClickOutside);
-        };
-    }, [state]);
-
-    //Caleb's code from index.js used to navigate into the /edit-roles page
     const submitCompany = async (companyName) => {
         try {
-            await api.post("/api/users/createCompany", {
-                owner: auth.currentUser.uid,
-                name: companyName,
-            });
-            alert('You MIGHT have created a company');
-            await axios.post("/api/companies/createCompany", {
+            await api.post("/api/companies/createCompany", {
                 owner: uid,
                 name: companyName
             });
         } catch (error) {
-            setError("Failed to create the company");
+            console.error('Failed to join the company:', error);
         }//end try catch
     }
-
 
     const joinCompany = async () => {
         try {
@@ -114,9 +97,8 @@ export default function Home() {
 
     const handleArrowClick = () => {
         if(state === 1){
-            //Search for a company with the name and respond accordingly
             joinCompany();
-
+            //Search for a company with the name and respond accordingly
         }else if(state === 2) {
             //Create a company with the name passed
             submitCompany(companyName).then(() => {
@@ -131,8 +113,9 @@ export default function Home() {
 
 
     return (
+
         <div className="flex flex-col items-center justify-center h-screen transition-all duration-500">
-            <DocumentUpload />
+            {/*If the user doesn't already have a company, allow them to join or create a company*/}
             {!companyID ? (
                 <div className="text-center space-y-3 w-1/4">
                     <button

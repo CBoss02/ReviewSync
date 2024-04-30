@@ -83,12 +83,23 @@ exports.getCompanyID = async (req, res) => {
 
 exports.getCompanyName = async (req, res) => {
     try {
-        const uid = req.body.uid;
-        const user = await db.collection("users").doc(uid).get();
+        const user = await db.collection("users").doc(req.user.uid).get();
         const companyID = user.data().company;
         const company = await db.collection("companies").doc(companyID).get();
         const companyName = company.data().name;
         res.status(200).send({companyName: companyName});
+    } catch (error) {
+        res.status(400).send(error.message);
+    }
+}
+
+exports.getCompanyOwner = async (req, res) => {
+    try {
+        const user = await db.collection("users").doc(req.user.uid).get();
+        const companyID = user.data().company;
+        const company = await db.collection("companies").doc(companyID).get();
+        const owner = company.data().owner;
+        res.status(200).send({owner: owner});
     } catch (error) {
         res.status(400).send(error.message);
     }
@@ -162,7 +173,7 @@ exports.getAllEmployees = async (req, res) => {
     }
 }
 
-    exports.getEmailsAndRoles = async (req, res) => {
+exports.getEmailsAndRoles = async (req, res) => {
         try {
             const user = await db.collection("users").doc(req.body.uid).get();
             const companyID = user.data().company;
@@ -230,173 +241,164 @@ exports.getAllEmployees = async (req, res) => {
 
     }
 
-    exports.getRoles = async (req, res) => {
-        try {
-            const roles = [];
-            const user = await db.collection("users").doc(req.body.uid).get();
-            const userData = user.data();
-            const collection = await db.collection("companies").doc(userData.company).collection("roles");
-            const snapshot = await collection.get();
-            if (snapshot.empty) {
-                res.status(200).send({roles: []});
-            } else {
-                await snapshot.forEach(doc => {
-                    const data = doc.data();
-                    data.id = doc.id;
-                    roles.push(data);
-                });
-                res.status(200).send({roles: roles});
-            }
-        } catch (error) {
-            res.status(400).send(error.message);
+exports.getRoles = async (req, res) => {
+    try {
+        const roles = [];
+        const user = await db.collection("users").doc(req.body.uid).get();
+        const userData = user.data();
+        const collection = await db.collection("companies").doc(userData.company).collection("roles");
+        const snapshot = await collection.get();
+        if(snapshot.empty)
+        {
+            res.status(200).send({roles: []});
         }
+        else
+        {
+            await snapshot.forEach(doc => {
+                const data = doc.data();
+                data.id = doc.id;
+                roles.push(data);
+            });
+            res.status(200).send({roles: roles});
+        }
+    } catch (error) {
+        res.status(400).send(error.message);
     }
+}
 
-    exports.addOrUpdateRoles = async (req, res) => {
-        try {
-            const roles = req.body.roles; //array of jsons
-            const user = await db.collection("users").doc(req.body.uid).get();
-            const userData = user.data();
-            let ids = []; //keeps track of the Firestore ids present in the roles array
-            let collection = db.collection('companies').doc(userData.company).collection('roles');
-            const snapshot = await collection.get();
-            for (let i = 0; i < roles.length; i++) {
-                ids.push(roles[i].id)
-                for (let j = i + 1; j < roles.length; j++) {
-                    if (roles[i].name === roles[j].name) {
-                        res.status(400).send({message: "Role names must be unique"})
-                        return
-                    }
+exports.addOrUpdateRoles = async (req, res) => {
+    try {
+        const roles = req.body.roles; //array of jsons
+        const user = await db.collection("users").doc(req.body.uid).get();
+        const userData = user.data();
+        let ids = []; //keeps track of the Firestore ids present in the roles array
+        let collection = db.collection('companies').doc(userData.company).collection('roles');
+        const snapshot = await collection.get();
+        for(let i = 0; i < roles.length; i++)
+        {
+            ids.push(roles[i].id)
+            for(let j = i + 1; j < roles.length; j++)
+            {
+                if(roles[i].name === roles[j].name)
+                {
+                    res.status(400).send({message: "Role names must be unique"})
+                    return
                 }
             }
-            await snapshot.forEach(doc => {
-                if (!ids.includes(doc.id)) {
-                    collection.doc(doc.id).delete()
-                    db.collection("users").where("role", "==", doc.id).get().then(usersWithRole => {
-                        usersWithRole.forEach(userWithRole => {
-                            db.collection("users").doc(userWithRole.id).update({
-                                role: null,
-                                roleUpdated: true
-                            })
+        }
+        await snapshot.forEach(doc => {
+            if(!ids.includes(doc.id))
+            {
+                collection.doc(doc.id).delete()
+                db.collection("users").where("role", "==", doc.id).get().then(usersWithRole => {
+                    usersWithRole.forEach(userWithRole => {
+                        db.collection("users").doc(userWithRole.id).update({
+                            role: null,
+                            roleUpdated: true
                         })
                     })
-                }
-            })
-            for (let i = 0; i < roles.length; i++) {
-                if (Number.isInteger(roles[i].id)) //Adding new role
-                {
-                    await collection.add({
-                        name: roles[i].name,
-                        permissions: roles[i].permissions
-                    })
-                } else //Updating existing role
-                {
-                    await collection.doc(roles[i].id).update({
-                        name: roles[i].name,
-                        permissions: roles[i].permissions
-                    })
-                    await db.collection("companies").doc(userData.company).update({
-                        rolesUpdated: true
-                    })
-                }
-            }
-            res.status(200).send();
-        } catch (error) {
-            res.status(400).send(error.message);
-        }
-    }
-
-    exports.modifyPendingListAndEditRoles = async (req, res) => {
-        try {
-            const employees = req.body.employees;
-            const uid = req.body.uid;
-            const user = await db.collection("users").doc(uid).get();
-            const userData = user.data();
-            const companyID = userData.company;
-            const company = db.collection("companies").doc(companyID);
-            let joinedCompany = false;
-            for (let i = 0; i < employees.length; i++) {
-                const userSnapshot = await db.collection("users").where('email', '==', employees[i].email).get();
-                if (!userSnapshot.empty) //User is registered
-                {
-                    await userSnapshot.forEach(user => {
-                        const userData = user.data();
-                        if (userData.company === companyID) //User has already joined company, so update their role
-                        {
-                            joinedCompany = true;
-                            const roleCollection = company.collection("roles");
-                            roleCollection.where('name', '==', employees[i].role).get().then((roleSnapshot) => {
-                                roleSnapshot.forEach(role => {
-                                    db.collection("users").doc(user.id).update({
-                                        role: role.id,
-                                        roleUpdated: true
-                                    })
-                                    db.collection("companies").doc(companyID).update({
-                                        eUpdated: true
-                                    })
-                                })
-                            })
-                        }
-                    })
-                }
-                if (!joinedCompany) //This also accounts for if a user has not registered yet
-                {
-                    await company.update({
-                        pendingList: FieldValue.arrayUnion(employees[i])
-                    })
-                }
-            }
-            const employeesOfCompany = await db.collection("users").where('company', '==', companyID).get();
-            if (employeesOfCompany.docs.length > 1) //if there are more employees than the company owner
-            {
-                await employeesOfCompany.forEach(employeeOfCompany => {
-                    if (employeeOfCompany.id !== uid) //do not remove owner of company
-                    {
-                        const employeeOfCompanyData = employeeOfCompany.data();
-                        let found = false;
-                        for (let i = 0; i < employees.length; i++) {
-                            if (employeeOfCompanyData.email === employees[i].email) {
-                                found = true
-                                break
-                            }
-                        }
-                        if (!found) //This user's email wasn't found in the request, so the owner is removing them
-                        {
-                            db.collection("users").doc(employeeOfCompany.id).update({
-                                company: null,
-                                role: null,
-                                cUpdated: true
-                            })
-                            company.update({
-                                employees: FieldValue.arrayRemove(employeeOfCompany.id),
-                                eUpdated: true
-                            })
-                        }
-                    }
                 })
             }
-            const companySnapshot = await company.get();
-            const companyData = companySnapshot.data();
-            const pendingList = companyData.pendingList;
-            for (let i = 0; i < pendingList.length; i++) {
-                let found = false
-                for (let j = 0; j < employees.length; j++) {
-                    if ((pendingList[i].email === employees[j].email) && (pendingList[i].role === employees[j].role)) {
-                        found = true;
-                        break
-                    }
-                }
-                if (!found) {
-                    await company.update({
-                        pendingList: FieldValue.arrayRemove(pendingList[i])
-                    })
-                }
+        })
+        for(let i = 0; i < roles.length; i++) {
+            if(Number.isInteger(roles[i].id)) //Adding new role
+            {
+                await collection.add({
+                    name: roles[i].name,
+                    permissions: roles[i].permissions
+                })
             }
-            res.status(200).send();
-        } catch (error) {
-            res.status(400).send(error.message);
+            else //Updating existing role
+            {
+                await collection.doc(roles[i].id).update({
+                    name: roles[i].name,
+                    permissions: roles[i].permissions
+                })
+                await db.collection("companies").doc(userData.company).update({
+                    rolesUpdated: true
+                })
+            }
         }
+        res.status(200).send();
+    } catch (error) {
+        res.status(400).send(error.message);
     }
+}
+
+exports.modifyPendingListAndEditRoles = async (req, res) => {
+    try {
+        const { employees, uid } = req.body;
+        const userRef = db.collection("users").doc(uid);
+        const userData = (await userRef.get()).data();
+        const companyRef = db.collection("companies").doc(userData.company);
+
+        // Fetch current pending list from the company document
+        const companyDoc = await companyRef.get();
+        const companyData = companyDoc.data();
+        let currentPendingList = companyData.pendingList || [];
+
+        //Prepare batch operation
+        const batch = db.batch();
+
+        //Update existing employees' roles
+        for(let i = 0; i < employees.length; i++)
+        {
+            const userSnapshot = await db.collection("users").where('email', '==', employees[i].email).where("company", "==", userData.company).get();
+            if(!userSnapshot.empty)
+            {
+                userSnapshot.forEach(user => {
+                    const userRef = db.collection("users").doc(user.id);
+                    batch.update(userRef, {role: employees[i].role})
+                })
+            }
+        }
+
+        //Remove employees, if any
+        let emails = [];
+        for(let i = 0; i < employees.length; i++)
+        {
+            emails.push(employees[i].email)
+        }
+        const employeesSnapshot = await db.collection("users").where("company", "==", userData.company).get();
+        if(!employeesSnapshot.empty)
+        {
+            employeesSnapshot.forEach(employee => {
+                const employeeEmail = employee.data().email;
+                if((!emails.includes(employeeEmail) && (employee.id !== uid))) //If employee's email was not found in request, AND if employee is not owner, owner is removing them
+                {
+                    const employeeRef = db.collection("users").doc(employee.id);
+                    batch.update(employeeRef, {company: null, role: null})
+                }
+            })
+        }
+
+        // Determine which employees to add or remove from the pending list
+        const newPendingList = employees.filter(emp => !currentPendingList.some(p => p.email === emp.email));
+        const employeesToRemove = currentPendingList.filter(p => !employees.some(emp => emp.email === p.email));
+
+        // Add new pending employees
+        newPendingList.forEach(emp => {
+            batch.update(companyRef, {
+                pendingList: FieldValue.arrayUnion(emp)
+            });
+        });
+
+        // Remove employees no longer pending
+        employeesToRemove.forEach(emp => {
+            batch.update(companyRef, {
+                pendingList: FieldValue.arrayRemove(emp)
+            });
+        });
+
+        // Commit batch operation
+        await batch.commit();
+        res.status(200).send();
+
+    } catch (error) {
+        console.error("Error updating pending list:", error);
+        res.status(400).send(error.message);
+    }
+}
 
     exports.getCompany = async (req, res) => {
         try {
@@ -424,4 +426,4 @@ exports.getAllEmployees = async (req, res) => {
             console.error('Failed to fetch company:', error);
             res.status(500).send('Error fetching company data');
         }
-    };
+}
