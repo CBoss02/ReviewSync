@@ -72,10 +72,8 @@ exports.resetRolesUpdatedFlag = async (req, res) => {
 
 exports.getCompanyID = async (req, res) => {
     try {
-        const uid = req.body.uid;
-        const user = await db.collection("users").doc(uid).get();
-        const userData = user.data();
-        res.status(200).send({companyID: userData.company});
+        const user = await db.collection("users").doc(req.user.uid).get();
+        res.status(200).send({companyID: user.data().company});
     } catch (error) {
         res.status(400).send(error.message);
     }
@@ -204,7 +202,7 @@ exports.getEmailsAndRoles = async (req, res) => {
             const companyCollection = await db.collection("companies");
             const qSnap = await companyCollection.where('name', '==', data.companyName).get();
             if (qSnap.empty) {
-                res.status(400).send({message: "No company found with this name. Please check your spelling and/or check with the owner."})
+                res.status(405).send({message: "No company found with this name. Please check your spelling and/or check with the owner."})
             } else {
                 const user = await db.collection("users").doc(data.userID).get();
                 const userData = user.data();
@@ -231,7 +229,7 @@ exports.getEmailsAndRoles = async (req, res) => {
                         i++;
                     }
                     if (!userFound) {
-                        res.status(400).send({message: "You have not been invited to join this company. Please contact the owner."});
+                        res.status(405).send({message: "You have not been invited to join this company. Please contact the owner."});
                     }
                 })
             }

@@ -85,13 +85,17 @@ export default function Home() {
 
     const joinCompany = async () => {
         try {
-            const response = await api.put('/api/companies/addEmployeeToCompany', {userID: uid, companyName: companyName});
-            console.log(response);
-            navigate('/dashboard');
+            await api.put('/api/companies/addEmployeeToCompany', {
+                userID: uid, companyName: companyName
+            }).then(() => {
+                navigate('/dashboard')
+            }).catch(error => {
+                if(error.response.status === 405)
+                    alert(error.response.data.message)
+            })
         } catch (error) {
             console.error('Failed to join the company:', error);
-            alert('Failed to join company');
-            // Handle error (e.g., show an error message to the user)
+            // Handle error
         }//end try catch
     };//end joinCompany
 

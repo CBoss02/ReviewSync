@@ -27,8 +27,11 @@ export default function Login() {
         try {
             setError("");
             setLoading(true);
-            await login(formData.email, formData.password);
-            navigate("/dashboard");
+            const companyID = await login(formData.email, formData.password);
+            if(companyID === null)
+                navigate('/')
+            else
+                navigate('/dashboard')
         } catch (error) {
             console.error(error);
             setError("Failed to log in");

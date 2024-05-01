@@ -52,6 +52,8 @@ export function AuthProvider({children}) {
             const userCredential = await signInWithEmailAndPassword(auth, email, password);
             const token = await userCredential.user.getIdToken();
             localStorage.setItem('token', token);
+            const response = await api.get('api/companies/getCompanyID');
+            return response.data.companyID;
         } catch (error) {
             setError("Failed to log in");
             localStorage.removeItem('token');

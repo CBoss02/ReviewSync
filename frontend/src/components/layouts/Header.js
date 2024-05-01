@@ -19,10 +19,9 @@ export default function Header() {
         if (currentUser) {
             const fetchCompanyNameAndOwner = async () => {
                 try {
-                    const companyResponse = await api.get('/api/companies/getCompanyName', { uid: currentUser.uid });
+                    const companyResponse = await api.get('/api/companies/getCompanyName');
                     setCompanyName(companyResponse.data.companyName);
-
-                    const ownerResponse = await api.get('/api/companies/getCompanyOwner', { uid: currentUser.uid });
+                    const ownerResponse = await api.get('/api/companies/getCompanyOwner');
                     setIsOwner(ownerResponse.data.owner === currentUser.uid);
                 } catch (error) {
                     console.error('Failed to fetch company details:', error);
@@ -48,7 +47,7 @@ export default function Header() {
                         </span>
                     </Link>
                     <div className="flex md:order-2">
-                        {companyName && currentUser && (
+                        {companyName && currentUser && isOwner && (
                             <Link
                                 to="/edit-roles"
                                 className="text-gray-500 dark:text-gray-400 focus:outline-none hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full p-2.5 font-bold my-auto text-lg"
