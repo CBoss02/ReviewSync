@@ -275,7 +275,7 @@ export default function EditRoles() {
     <div className="flex flex-col justify-center items-center w-full mb-auto mx-auto">
         {/*Create the header for the page */}
         {companyName && (
-        <h2 className="mt-10 text-center text-2xl font-bold leading-9 tracking-tight text-gray-900 dark:text-white">
+        <h2 className="mt-24 text-center text-2xl font-bold leading-9 tracking-tight text-gray-900 dark:text-white">
             {/*Edit your company's roles*/}
             Edit {companyName}'s Roles
         </h2>

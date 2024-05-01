@@ -97,7 +97,7 @@ const EmployeeRoles = () => {
         <div className="flex flex-col justify-center items-center mb-auto mx-auto">
 
             {companyName && (
-            <h2 className="mt-10 mb-4 text-center text-2xl font-bold leading-9 tracking-tight text-gray-900 dark:text-white">
+            <h2 className="mt-24 mb-4 text-center text-2xl font-bold leading-9 tracking-tight text-gray-900 dark:text-white">
                 {/*Edit your company's roles*/}
                 Edit {companyName}'s Employees
             </h2>
