@@ -1,7 +1,7 @@
 import React, {useEffect, useState} from "react";
 //import {useAuth} from "../../contexts/AuthContext";
 import {Navigate, useNavigate} from "react-router-dom";
-import {signInWithEmailAndPassword} from "firebase/auth";
+import {signInWithEmailAndPassword, sendPasswordResetEmail, getAuth} from "firebase/auth";
 import {useAuth} from "../../contexts/AuthContext";
 
 export default function Login() {
@@ -10,6 +10,7 @@ export default function Login() {
         password: ''
     });
 
+    const auth = getAuth();
     const { login } = useAuth();
     const navigate = useNavigate();
     const [loading, setLoading] = useState(false);
@@ -27,8 +28,11 @@ export default function Login() {
         try {
             setError("");
             setLoading(true);
-            await login(formData.email, formData.password);
-            navigate("/dashboard");
+            const companyID = await login(formData.email, formData.password);
+            if(companyID === null)
+                navigate('/')
+            else
+                navigate('/dashboard')
         } catch (error) {
             console.error(error);
             setError("Failed to log in");
@@ -36,6 +40,19 @@ export default function Login() {
         setLoading(false);
     };
 
+    const handleForgotPassword = async (e) => {
+        e.preventDefault();
+        if(formData.email === "")
+            alert("Please enter an email address so we can send you a password reset email.");
+        else
+        {
+            sendPasswordResetEmail(auth, formData.email).then(() => {
+                alert("If your email matches an existing account, we have sent you a password reset email.");
+            }).catch(error => {
+                alert("Please enter a valid email address.");
+            })
+        }
+    };
 
     return (
         <>
@@ -78,7 +95,7 @@ export default function Login() {
                                     Password
                                 </label>
                                 <div className="text-sm">
-                                    <a href="#" className="font-semibold text-indigo-600 hover:text-indigo-500">
+                                    <a href="#" className="font-semibold text-indigo-600 hover:text-indigo-500" onClick={handleForgotPassword}>
                                         Forgot password?
                                     </a>
                                 </div>

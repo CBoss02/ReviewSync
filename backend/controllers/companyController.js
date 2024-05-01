@@ -72,10 +72,8 @@ exports.resetRolesUpdatedFlag = async (req, res) => {
 
 exports.getCompanyID = async (req, res) => {
     try {
-        const uid = req.body.uid;
-        const user = await db.collection("users").doc(uid).get();
-        const userData = user.data();
-        res.status(200).send({companyID: userData.company});
+        const user = await db.collection("users").doc(req.user.uid).get();
+        res.status(200).send({companyID: user.data().company});
     } catch (error) {
         res.status(400).send(error.message);
     }
@@ -204,7 +202,7 @@ exports.getEmailsAndRoles = async (req, res) => {
             const companyCollection = await db.collection("companies");
             const qSnap = await companyCollection.where('name', '==', data.companyName).get();
             if (qSnap.empty) {
-                res.status(400).send({message: "No company found with this name. Please check your spelling and/or check with the owner."})
+                res.status(405).send({message: "No company found with this name. Please check your spelling and/or check with the owner."})
             } else {
                 const user = await db.collection("users").doc(data.userID).get();
                 const userData = user.data();
@@ -231,7 +229,7 @@ exports.getEmailsAndRoles = async (req, res) => {
                         i++;
                     }
                     if (!userFound) {
-                        res.status(400).send({message: "You have not been invited to join this company. Please contact the owner."});
+                        res.status(405).send({message: "You have not been invited to join this company. Please contact the owner."});
                     }
                 })
             }
@@ -336,57 +334,62 @@ exports.modifyPendingListAndEditRoles = async (req, res) => {
         const companyDoc = await companyRef.get();
         const companyData = companyDoc.data();
         let currentPendingList = companyData.pendingList || [];
+        let currentEmployees = [];
+        let newPendingList = [];
+
+        //Separate request input into current employees and pending list employees
+        for(let i = 0; i < employees.length; i++)
+        {
+            const snap = await db.collection("users").where("email", "==", employees[i].email).where("company", "==", userData.company).get();
+            if(snap.empty)
+                newPendingList.push(employees[i])
+            else
+                currentEmployees.push(employees[i])
+        }
 
         //Prepare batch operation
         const batch = db.batch();
 
-        //Update existing employees' roles
-        for (let i = 0; i < employees.length; i++) {
-            const userSnapshot = await db.collection("users").where('email', '==', employees[i].email).where("company", "==", userData.company).get();
-            if (!userSnapshot.empty) {
-                userSnapshot.forEach(user => {
-                    const userRef = db.collection("users").doc(user.id);
-                    batch.update(userRef, {role: employees[i].role})
-                })
-            }
+        //Update existing employees' roles and keep track of their emails to remove employees next
+        let currentEmployeeEmails = [];
+        for(let i = 0; i < currentEmployees.length; i++)
+        {
+            const userSnap = await db.collection("users").where("email", "==", currentEmployees[i].email).get();
+            userSnap.forEach(user => {
+                const userRef = db.collection("users").doc(user.id);
+                batch.update(userRef, {role: currentEmployees[i].role})
+            })
+            currentEmployeeEmails.push(currentEmployees[i].email)
         }
 
-        //Remove employees, if any
-        let emails = [];
-        for (let i = 0; i < employees.length; i++) {
-            emails.push(employees[i].email)
-        }
-        const employeesSnapshot = await db.collection("users").where("company", "==", userData.company).get();
-        if (!employeesSnapshot.empty) {
-            employeesSnapshot.forEach(employee => {
+        const allEmployeesSnapshot = await db.collection("users").where("company", "==", userData.company).get();
+        if(!allEmployeesSnapshot.empty) {
+            allEmployeesSnapshot.forEach(employee => {
                 const employeeEmail = employee.data().email;
-                if ((!emails.includes(employeeEmail) && (employee.id !== uid))) //If employee's email was not found in request, AND if employee is not owner, owner is removing them
+                if ((!currentEmployeeEmails.includes(employeeEmail)) && (employee.id !== uid)) //If employee's email was not found in request, AND if employee is not owner making the request, owner is removing them
                 {
-                    const employeeRef = db.collection("users").doc(employee.id);
-                    batch.update(employeeRef, {company: null, role: null})
+                    const userRef = db.collection("users").doc(employee.id);
+                    batch.update(userRef, {company: null, role: null})
+                    batch.update(companyRef, {employees: FieldValue.arrayRemove(employee.id)})
                 }
             })
         }
 
-        // Determine which employees to add or remove from the pending list
-        const newPendingList = employees.filter(emp => !currentPendingList.some(p => p.email === emp.email));
-        const employeesToRemove = currentPendingList.filter(p => !employees.some(emp => emp.email === p.email));
-
-        // Add new pending employees
-        newPendingList.forEach(emp => {
-            batch.update(companyRef, {
-                pendingList: FieldValue.arrayUnion(emp)
-            });
-        });
-
-        // Remove employees no longer pending
-        employeesToRemove.forEach(emp => {
+        //Empty pending list
+        currentPendingList.forEach(emp => {
             batch.update(companyRef, {
                 pendingList: FieldValue.arrayRemove(emp)
             });
         });
 
-        // Commit batch operation
+        //Add the employees in the new pending list
+        newPendingList.forEach(emp => {
+            batch.update(companyRef, {
+                pendingList: FieldValue.arrayUnion(emp)
+            })
+        })
+
+        //Commit batch operation
         await batch.commit();
         res.status(200).send();
 

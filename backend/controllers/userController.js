@@ -213,46 +213,13 @@ exports.getPermissions = async (req, res) => {
     const user = await db.collection("users").doc(data.uid).get();
     const userData = user.data();
     const roleID = userData.role;
-    if (roleID === "owner") {
+    if (roleID === null)
+        res.status(200).send({permissions: [false, false, false, false, false, false, false]});
+    else if (roleID === "owner")
         res.status(200).send({permissions: [true, true, true, true, true, true, true]});
-    } else {
-      //  const role = await db.collection("companies").doc(userData.company).collection("roles").doc(roleID).get();
-        const role = {data: () => ({permissions: [true, true, true, true, true, true, true]})};
-        const roleData = role.data();
-        const permissions = roleData.permissions;
-        res.status(200).send({permissions: permissions});
+    else
+    {
+        const role = await db.collection("companies").doc(userData.company).collection("roles").doc(roleID).get();
+        res.status(200).send({permissions: role.data().permissions});
     }
 }
-
-exports.getPermissions = async (req, res) => {
-    try {
-        const { uid } = req.body;
-        // Basic validation
-        if (!uid) {
-            return res.status(400).send({ error: "User ID is required" });
-        }
-        const userRef = db.collection("users").doc(uid);
-        const userDoc = await userRef.get();
-        if (!userDoc.exists) {
-            return res.status(404).send({ error: "User not found" });
-        }
-        const userData = userDoc.data();
-        const { role, company } = userData;
-        if (role === "owner") {
-            return res.status(200).send({ permissions: [true, true, true, true, true, true, true] });
-        }
-        const roleRef = db.collection("companies").doc(company).collection("roles").doc(role);
-        const roleDoc = await roleRef.get();
-        if (!roleDoc.exists) {
-            return res.status(404).send({ error: "Role not found" });
-        }
-        const roleData = roleDoc.data();
-        return res.status(200).send({ permissions: roleData.permissions });
-    } catch (error) {
-        console.error("Error fetching permissions:", error);
-        return res.status(500).send({ error: "Internal Server Error" });
-    }
-};
-
-
-
