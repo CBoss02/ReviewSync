@@ -14,7 +14,7 @@ const router = express.Router();
 
 router.post("/createCompany", createCompany);
 router.post("/getCompanyID", getCompanyID);
-router.post("/getCompanyName", getCompanyName);
+router.get("/getCompanyName", authMiddleware, getCompanyName);
 router.post("/getEmployees", getEmployees);
 router.get("/getAllEmployees", authMiddleware, getAllEmployees);
 router.put("/modifyPendingListAndEditRoles", modifyPendingListAndEditRoles);
