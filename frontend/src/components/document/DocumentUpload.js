@@ -17,7 +17,6 @@ function DocumentUpload({ projectId }) {
         const fetchAllEmployees = async () => {
             try {
                 const response = await api.get('/api/companies/getAllEmployees');
-                console.log('Fetched employees:', response.data);
                 setEmployees(response.data);
             } catch (error) {
                 console.error('Failed to fetch employees:', error);

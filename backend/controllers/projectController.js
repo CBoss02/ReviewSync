@@ -74,15 +74,14 @@ exports.createProject = async (req, res) => {
         const uid = req.user.uid;
         const user = await db.collection("users").doc(uid).get();
         const companyID = user.data().company;
-        db.collection("companies").doc(companyID).collection("projects").add({
+        await db.collection("companies").doc(companyID).collection("projects").add({
             name: name,
             owner: uid,
             employees: [],
             documents: [],
         }).then((project) => {
             db.collection("users").doc(uid).update({
-                projects: FieldValue.arrayUnion(project.id),
-                pUpdated: true
+                projects: FieldValue.arrayUnion(project.id)
             })
         }).catch((error) => {
             console.log(error)
@@ -118,7 +117,7 @@ exports.getProjectDocuments = async (req, res) => {
 exports.updateName = async (req, res) => {
     try {
         const data = req.body
-        const uid = req.body.uid
+        const uid = req.user.uid
         const user = await db.collection("users").doc(uid).get();
         const companyID = user.data().company;
         const project = await db.collection("companies").doc(companyID).collection("projects").doc(data.projectID);

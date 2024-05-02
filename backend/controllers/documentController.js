@@ -53,7 +53,7 @@ exports.uploadDocument = async (req, res) => {
             });
 
             // Check if project ID is provided and add document to project
-            if (req.params.projectId != null || req.params.projectId !== undefined) {
+            if ((req.params.projectId !== undefined) && (req.params.projectID !== null)) {
                 await db.collection('companies').doc(companyId).collection('projects').doc(req.params.projectId).update({
                     documents: FieldValue.arrayUnion(docRef.id),
                 });
@@ -201,6 +201,61 @@ exports.getDocument = async (req, res) => {
         res.status(500).send(error.toString());
     }
 };
+
+exports.getEmployeesOnDocument = async (req, res) => {
+    try {
+        const uid = req.user.uid;
+        const user = await db.collection("users").doc(uid).get();
+        const companyID = user.data().company;
+        let employees = [];
+        const snapshot = await db.collection("users").where("company", "==", companyID).get();
+        if(!snapshot.empty)
+        {
+            snapshot.forEach(employee => {
+                const employeeData = employee.data();
+                if(employee.id !== uid && employeeData.documents.includes(req.params.documentId))
+                {
+                    const name = employeeData.first_name.concat(" ").concat(employeeData.last_name)
+                    employees.push(name)
+                }
+            })
+        }
+        res.status(200).send({employees: employees});
+    } catch (error) {
+        res.status(400).send(error.message);
+    }
+}
+
+exports.updateEmployee = async (req, res) => {
+    try {
+        const data = req.body;
+        const user = await db.collection("users").doc(req.user.uid).get();
+        const companyID = user.data().company;
+        const document = await db.collection("companies").doc(companyID).collection("documents").doc(req.params.documentId).get();
+        const documentData = document.data();
+        if(documentData.reviewers.includes(data.employeeID))
+        {
+            await db.collection("companies").doc(companyID).collection("documents").doc(req.params.documentId).update({
+                reviewers: FieldValue.arrayRemove(data.employeeID)
+            })
+            await db.collection("users").doc(data.employeeID).update({
+                documents: FieldValue.arrayRemove(req.params.documentId),
+            })
+        }
+        else
+        {
+            await db.collection("companies").doc(companyID).collection("documents").doc(req.params.documentId).update({
+                reviewers: FieldValue.arrayUnion(data.employeeID)
+            })
+            await db.collection("users").doc(data.employeeID).update({
+                documents: FieldValue.arrayUnion(req.params.documentId),
+            })
+        }
+        res.status(200).send();
+    } catch (error) {
+        res.status(400).send(error.message);
+    }
+}
 
 exports.deleteDocument = async (req, res) => {
 

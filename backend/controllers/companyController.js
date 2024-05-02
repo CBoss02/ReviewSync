@@ -104,7 +104,7 @@ exports.getCompanyOwner = async (req, res) => {
 }
 
 exports.getEmployees = async (req, res) => {
-    const user = await db.collection("users").doc(req.body.uid).get();
+    const user = await db.collection("users").doc(req.user.uid).get();
     const companyID = user.data().company;
 
     if (!user.exists) {
@@ -120,9 +120,12 @@ exports.getEmployees = async (req, res) => {
             res.status(200).send({employees: []});
         } else {
             await qSnap.forEach(user => {
-                if (user.id !== companyData.owner) {
+                if ((user.id !== companyData.owner) && (user.id !== req.user.uid)) {
                     const userData = user.data();
-                    employees.push(userData);
+                    let nameAndID = {}
+                    nameAndID.id = user.id;
+                    nameAndID.name = userData.first_name + " " + userData.last_name;
+                    employees.push(nameAndID);
                 }
             });
             res.status(200).send({employees: employees});

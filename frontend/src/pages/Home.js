@@ -45,7 +45,7 @@ export default function Home() {
 
         const fetchCompanyID = async () => {
             try {
-                const response = await api.post('/api/companies/getCompanyID', {uid: uid});
+                const response = await api.get('/api/companies/getCompanyID');
                 setCompanyID(response.data.companyID)
             } catch (error) {
                 console.error('Failed to fetch company id:', error);

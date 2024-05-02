@@ -2,6 +2,8 @@ const express = require('express');
 const { uploadDocument, getDocuments,  getHomeDocuments, deleteComment, deleteReply, addComment, addReply, getComments, getAllDocuments, getDocument,
     resolveComment,
     uploadRevision,
+    getEmployeesOnDocument,
+    updateEmployee,
     closeReview,
     resolveAllComments
 } = require('../controllers/documentController');
@@ -13,7 +15,8 @@ const router = express.Router();
 
 router.post('/uploadDocument/:projectId?', upload.single('file'), authMiddleware, uploadDocument);
 router.post('/uploadRevision/:documentId', upload.single('file'), authMiddleware, uploadRevision);
-
+router.get('/getEmployeesOnDocument/:documentId', authMiddleware, getEmployeesOnDocument);
+router.put('/updateEmployee/:documentId', authMiddleware, updateEmployee);
 router.get('/getDocument/:documentId', authMiddleware, getDocument)
 router.get('/getAllDocuments/:projectId?',authMiddleware, getAllDocuments);
 router.delete("/deleteComment", deleteComment);

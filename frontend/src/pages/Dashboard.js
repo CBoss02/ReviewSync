@@ -13,7 +13,7 @@ import {useNavigate} from "react-router-dom";
 
 export default function Dashboard() {
     const [projects, setProjects] = useState([]); //projects the user has access to
-    const [projectID, setProjectID] = React.useState(0); //current project the user is examining
+    const [projectID, setProjectID] = React.useState(null); //current project the user is examining
     const [homeDocuments, setHomeDocuments] = useState([]); //documents that aren't in a project
     const [projectDocuments, setProjectDocuments] = useState([]); //current project's documents
     const [selectedPeople, setSelectedPeople] = useState([]); //used with managing project employees
@@ -251,9 +251,7 @@ export default function Dashboard() {
     //Fetches the employees of this company
     const fetchEmployees = async () => {
         try {
-            await api.post("/api/companies/getEmployees", {
-                uid: uid
-            }).then((response) => {
+            await api.get("/api/companies/getEmployees").then((response) => {
                 setEmployees(response.data.employees)
             });
         } catch (error) {
@@ -305,7 +303,7 @@ export default function Dashboard() {
                 setPUpdated(true) //prob will get rid
                 setHome(true)
                 setOwner(false)
-                setProjectID(0)
+                setProjectID(null)
             })
         } catch (error) {
             console.error('Failed to add project:', error);
@@ -353,7 +351,6 @@ export default function Dashboard() {
             console.error('Failed to update employee:', error);
             if(error.response.data === 'Invalid token')
             {
-                alert("Your login token has expired. Please log back in.");
                 logout();
             }
         }
@@ -496,14 +493,13 @@ export default function Dashboard() {
     const renderProjectDocumentNames = () => {
         return projectDocuments.map((document) => (
             <button
-                className="bg-blue-700 hover:bg-blue-500 w-11/12 text-white font-bold py-2 px-4 rounded transition-all duration-500"
+                className="bg-blue-700 hover:bg-blue-500 min-w-80 text-white font-bold py-2 px-4 rounded transition-all duration-500"
                 onClick={() => console.log("ok")}
             >
                 <p>{document.name}</p>
             </button>
         ))
     }
-
 
     //We're probably going to switch to Megh's component for this but I'll leave it here just in case
     const renderPopup = () => {
@@ -512,7 +508,6 @@ export default function Dashboard() {
                 <Dialog as="div" className="relative z-10" open={popupIsOpen} onClose={() => setPopupIsOpen(false)}>
                     <div className="fixed inset-0 overflow-y-auto">
                         <div className="flex min-h-full items-center justify-center p-4 text-center">
-
                             <Dialog.Panel
                                 className="w-full max-w-md transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all">
                                 <Dialog.Title
@@ -541,7 +536,6 @@ export default function Dashboard() {
             </>
         )
     }
-    //End renderPopup
 
     //Displays a prompt to name a new project, and calls the function to add the project to the database when they submit it
     const renderNamePrompt = () => {
@@ -686,7 +680,7 @@ export default function Dashboard() {
                                 }//end nested if
                             }//end for
                             //Set the active project ot the home page
-                            setProjectID(0);
+                            setProjectID(null);
                             setHome(true);
                             setOwner(false); //Navigate to the Home page
                         }}//end onCLick
@@ -740,7 +734,7 @@ export default function Dashboard() {
                             onClick={async () => {
                                 setOwner(false)
                                 setHome(true)
-                                setProjectID(0)
+                                setProjectID(null)
                                 setInitialNamePrompt(false)
                             }}
                         >
@@ -811,17 +805,11 @@ export default function Dashboard() {
                         {(home && !initialNamePrompt) && renderHomeDocumentNames()}
                         {(!home && !initialNamePrompt) && renderProjectDocumentNames()}
                         {(permissions[6] && !initialNamePrompt) && (
-                            <button
-                                className="bg-blue-700 hover:bg-blue-500 w-11/12 text-white font-bold py-2 px-4 rounded transition-all duration-500"
-                                onClick={() => setPopupIsOpen(true)}
-                            >
-                                <p>+</p>
-                            </button>
+                            <DocumentUpload projectId={projectID}/>
                         )}
                     </Box>
                 </div>
             </Box>
-            {popupIsOpen && renderPopup()}
         </div>
     );
 }
