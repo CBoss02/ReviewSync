@@ -8,6 +8,9 @@ import useIdleTimeout from "../../components/idleTimer/idleTimer"
 export default function Profile() {
     const [fNameInput, setFNameInput] = useState("");
     const [lNameInput, setLNameInput] = useState("");
+    const [email, setEmail] = useState("");
+    const [companyName, setCompanyName] = useState("");
+    const [role, setRole] = useState("");
 
     useIdleTimeout();
 
@@ -20,17 +23,32 @@ export default function Profile() {
     };
 
     useEffect(() => {
-        const fetchName = async () => {
+
+        const fetchUser = async () => {
             try {
-                await api.get("/api/users/getName").then((response) => {
+                await api.get("/api/users/getUser").then((response) => {
                     setFNameInput(response.data.first_name);
                     setLNameInput(response.data.last_name);
+                    setEmail(response.data.email);
+                    setRole(response.data.role);
                 });
             } catch (error) {
-                console.error('Failed to fetch name:', error);
+                console.error('Failed to fetch user:', error);
             }
         }
-        fetchName()
+
+        const fetchCompanyName = async () => {
+            try {
+                const response = await api.get('/api/companies/getCompanyName');
+                setCompanyName(response.data.companyName)
+            } catch (error) {
+                console.error('Failed to fetch company name:', error);
+                // Handle error (e.g., show an error message to the user)
+            }//end try catch
+        };//end fetchCompanyName
+
+        fetchUser();
+        fetchCompanyName();
     }, []);
 
     const updateFName = async () => {
@@ -97,6 +115,15 @@ export default function Profile() {
                 Last Name
             </label>
             {renderNameSlot(1)}
+            <h1 className="justify-start w-96 -mr-6 my-2 text-md dark:text-white">
+                Company: {companyName}
+            </h1>
+            <h1 className="justify-start w-96 -mr-6 my-2 text-md dark:text-white">
+                Role: {role}
+            </h1>
+            <h1 className="justify-start w-96 -mr-6 my-2 pb-2 text-md dark:text-white">
+                Email: {email}
+            </h1>
             <button
                 className="w-96 h-10
                 bg-blue-700 hover:bg-blue-500 text-white font-bold px-4 rounded transition-all duration-500"

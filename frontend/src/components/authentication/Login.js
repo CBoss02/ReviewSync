@@ -34,7 +34,7 @@ export default function Login() {
             else
                 navigate('/dashboard')
         } catch (error) {
-            console.error(error);
+            console.error("Failed to login:", error);
             setError("Failed to log in");
         }
         setLoading(false);

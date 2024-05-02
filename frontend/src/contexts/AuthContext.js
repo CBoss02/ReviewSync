@@ -1,4 +1,4 @@
-import {createContext, useContext, useState, useEffect} from "react";
+import {createContext, useContext, useState, useEffect, Fragment, useRef} from "react";
 import {
     createUserWithEmailAndPassword,
     signInWithEmailAndPassword,
@@ -9,6 +9,8 @@ import {
 
 import auth from "../config/firebase-config";
 import api from "../config/axiosConfig";
+import {Dialog, Transition} from "@headlessui/react";
+import {ExclamationIcon} from "@heroicons/react/outline";
 
 const AuthContext = createContext();
 
@@ -55,6 +57,8 @@ export function AuthProvider({children}) {
             const response = await api.get('api/companies/getCompanyID');
             return response.data.companyID;
         } catch (error) {
+            alert("Failed to log in.");
+            console.log("Failed to log in:", error)
             setError("Failed to log in");
             localStorage.removeItem('token');
         }
