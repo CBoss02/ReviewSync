@@ -257,9 +257,9 @@ export default function EditRoles() {
     function getPermFromIndex(index){
         if(index === 0){return " Close Documents"}
         else if(index === 1){return " Comment on Documents"}
-        else if(index === 2){return " Notify Reviewers"}
-        else if(index === 3){return " Resolve Comments"}
-        else if(index === 4){return " Respond to Comments"}
+        else if(index === 2){return " Resolve Comments"}
+        else if(index === 3){return " Respond to Comments"}
+        else if(index === 4){return " Select and Notify Reviewers"}
         else if(index === 5){return " Upload Revisions to Documents"}
         else if(index === 6){return " Upload Documents"}
         else{return "Permission not found"}
