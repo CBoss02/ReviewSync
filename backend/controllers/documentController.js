@@ -31,8 +31,13 @@ exports.uploadDocument = async (req, res) => {
             }
         });
 
+
         // Get a signed URL for reading the file
-        const downloadUrl = await getDownloadURL(file);
+        const downloadUrl = await storageRef.file(filePath).getSignedUrl({
+            action: 'read',
+            expires: '03-09-2491'
+        });
+
 
         let reviewers = [];
         if (req.body.reviewers === null || req.body.reviewers === undefined) {

@@ -1,5 +1,5 @@
-import React, { useMemo } from 'react';
-import DocViewer, {DocViewerRenderers} from "@cyntler/react-doc-viewer";
+import React, {useEffect, useMemo} from 'react';
+import DocViewer, {DocViewerRenderers, DocRenderer} from "@cyntler/react-doc-viewer";
 
 const DocumentFrame = React.memo(({ document }) => {
     return (
