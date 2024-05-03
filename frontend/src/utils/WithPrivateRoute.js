@@ -10,7 +10,6 @@ const WithPrivateRoute = ({ children }) => {
         return <Navigate to="/verify-email" />;
     }
 
-
     // Otherwise redirect to the login route
     return <Navigate to="/login" />;
 };
