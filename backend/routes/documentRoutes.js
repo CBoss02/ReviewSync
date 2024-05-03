@@ -5,7 +5,7 @@ const { uploadDocument, getDocuments,  getHomeDocuments, deleteComment, deleteRe
     getEmployeesOnDocument,
     updateEmployee,
     closeReview,
-    resolveAllComments
+    resolveAllComments,
 } = require('../controllers/documentController');
 const multer = require('multer');
 const authMiddleware = require("../middleware/authMiddleware");

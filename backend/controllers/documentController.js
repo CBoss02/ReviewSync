@@ -3,6 +3,7 @@ const express = require("express");
 const {getDownloadURL} = require("firebase-admin/storage");
 const {FieldValue} = require('firebase-admin').firestore;
 
+
 exports.uploadDocument = async (req, res) => {
     const user = await db.collection('users').doc(req.user.uid).get();
     if (!user.exists || !req.file) {
@@ -133,8 +134,6 @@ exports.getAllDocuments = async (req, res) => {
         const documents = [];
         if (req.params.projectId != null || req.params.projectId !== undefined) {
             const snapshot = await db.collection('companies').doc(companyId).collection('projects').doc(req.params.projectId).get();
-
-
         } else {
             const snapshot = await db.collection('companies').doc(companyId).collection('documents').get();
             snapshot.forEach(doc => {
@@ -157,6 +156,7 @@ exports.getHomeDocuments = async (req, res) => {
         const documentIDs = user.data().documents;
         const documents = [];
         const snapshot = await db.collection("companies").doc(companyID).collection("documents").get();
+
         snapshot.forEach(doc => {
             if (documentIDs.includes(doc.id)) {
                 documents.push({id: doc.id, ...doc.data()});
@@ -167,7 +167,6 @@ exports.getHomeDocuments = async (req, res) => {
         res.status(400).send(error.message);
     }
 };
-
 
 exports.getDocuments = async (req, res) => {
     try {
@@ -299,7 +298,6 @@ exports.addComment = async (req, res) => {
             state: 'open',
             isReply: false
         });
-
         res.status(200).send({id: commentRef.id});
     } catch (error) {
         res.status(400).send(error.message);
@@ -330,6 +328,7 @@ exports.addReply = async (req, res) => {
     try {
         const reply = {
             text: comment,
+            parentId: req.params.commentId,
             owner: {
                 uid: req.user.uid,
                 name: user.data().first_name + " " + user.data().last_name,

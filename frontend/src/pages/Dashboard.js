@@ -238,9 +238,8 @@ export default function Dashboard() {
     //Fetches this user's permissions
     const fetchPermissions = async () => {
         try {
-            await api.post("/api/users/getPermissions", {
-                uid: uid
-            }).then((response) => {
+            await api.get("/api/users/getPermissions").then((response) => {
+                console.log('Permissions:', response.data.permissions)
                 setPermissions(response.data.permissions)
             });
         } catch (error) {
@@ -695,7 +694,6 @@ export default function Dashboard() {
         )
     }//end renderDelete()
 
-    //The actual code for the page
     return (
         <div className="App mt-16">
             <Box

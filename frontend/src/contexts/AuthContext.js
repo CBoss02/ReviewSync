@@ -66,6 +66,7 @@ export function AuthProvider({children}) {
 
     function logout() {
         try {
+            localStorage.removeItem('token');
             return signOut(auth);
         } catch (e) {
             setError("Failed to log out");

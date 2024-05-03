@@ -3,8 +3,6 @@ import Register from "./components/authentication/Register";
 import Login from "./components/authentication/Login";
 import {AuthProvider} from "./contexts/AuthContext";
 import ErrorMessage from "./components/layouts/ErrorMessage";
-import Header from "./components/layouts/Header";
-import DocumentUpload from "./components/document/DocumentUpload"
 import WithPrivateRoute from "./utils/WithPrivateRoute";
 import Dashboard from "./pages/Dashboard"
 import VerifyEmail from "./pages/VerifyEmail";
@@ -14,7 +12,6 @@ import EditRoles from "./components/company/EditRoles";
 import AddEmployees from "./components/company/AddEmployees";
 import DocumentPage from "./pages/DocumentPage";
 import AppLayout from "./components/layouts/AppLayout";
-
 
 function App() {
     return (
