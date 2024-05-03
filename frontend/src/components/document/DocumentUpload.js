@@ -4,7 +4,7 @@ import { UploadIcon, XIcon } from "@heroicons/react/solid";
 import {useAuth} from "../../contexts/AuthContext";
 import {useNavigate} from "react-router-dom";
 
-function DocumentUpload({ projectId, canSelect }) {
+function DocumentUpload({ projectId, canSelect, socket }) {
     const [file, setFile] = useState(null);
     const [showUpload, setShowUpload] = useState(false);
     const [dragging, setDragging] = useState(false);
@@ -102,7 +102,9 @@ function DocumentUpload({ projectId, canSelect }) {
                     },
                 });
             }
-
+            if(socket) {
+                socket.emit('new-document');
+            }
             console.log('Upload successful: ', response.data);
             setShowUpload(false);
             setFile(null);

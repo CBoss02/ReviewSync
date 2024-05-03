@@ -22,18 +22,32 @@ function App() {
                 <Routes>
                     <Route path="/register" element={<Register/>}/>
                     <Route path="/login" element={<Login/>}/>
-                    <Route
-                        exact
-                        path="/"
+                    <Route path="/verify-email" element={<VerifyEmail />}/>
+                    <Route path="/home" element={<Home/>}/>
+                    <Route path="/"
                         element={
                             <WithPrivateRoute>
-                                <Home />
+                                <Dashboard/>
+                            </WithPrivateRoute>
+                        }
+                    />
+                    <Route
+                        path="/edit-roles"
+                        element={
+                            <WithPrivateRoute>
+                                <EditRoles/>
+                            </WithPrivateRoute>
+                        }
+                    />
+                    <Route
+                        path="/add-employees"
+                        element={
+                            <WithPrivateRoute>
+                                <AddEmployees/>
                             </WithPrivateRoute>
                         }
                     />
 
-                    <Route path="/edit-roles" element={<EditRoles/>}/>
-                    <Route path="/add-employees" element={<AddEmployees/>}/>
                     <Route
                         exact
                         path="/profile"
@@ -43,11 +57,13 @@ function App() {
                             </WithPrivateRoute>
                         }
                     />
-                    <Route path="/verify-email" element={<VerifyEmail/>}/>
                     <Route
                         exact
                         path="/dashboard"
-                        element={<WithPrivateRoute><Dashboard/></WithPrivateRoute>}
+                        element={
+                        <WithPrivateRoute>
+                            <Dashboard/>
+                        </WithPrivateRoute>}
                     />
                     <Route
                         exact
@@ -57,9 +73,6 @@ function App() {
                             <DocumentPage />
                         </WithPrivateRoute>
                     }/>
-
-                    <Route path="/verify-email" element={<VerifyEmail />}/>
-                    <Route path="/dashboard" element={<Dashboard />}/>
                     <Route path="*" element={<h1>Not Found</h1>}/>
                 </Routes>
                 </AppLayout>

@@ -1,5 +1,5 @@
 import React, {Fragment, useState, useEffect} from "react";
-import {ArrowRightIcon} from "@heroicons/react/solid";
+import {ArrowRightIcon, HomeIcon} from "@heroicons/react/solid";
 import {useAuth} from "../contexts/AuthContext";
 import {Box, Divider} from "@mui/material";
 import {Listbox, Transition} from '@headlessui/react';
@@ -10,6 +10,11 @@ import deleteIcon from "../assets/icons/RedDelete-Icon.png";
 import saveIcon from "../assets/icons/GreenSave-Icon.png";
 import useIdleTimeout from "../components/idleTimer/idleTimer";
 import {useNavigate} from "react-router-dom";
+import DocumentCard from "../components/document/DocumentCard";
+import io from "socket.io-client";
+
+const ENDPOINT = 'http://localhost:3001';
+let socket;
 
 export default function Dashboard() {
     const [projects, setProjects] = useState([]); //projects the user has access to
@@ -23,14 +28,36 @@ export default function Dashboard() {
     const [permissions, setPermissions] = useState([]); //user's permissions, in this case only relevant if they are able to upload documents or not
     const [employees, setEmployees] = useState([]); //employees in company, for when a user creates a project and needs to add employees to it
     const [owner, setOwner] = useState(false); //keeps track if user is owner of project currently being examined
+    const [projectName, setProjectName] = useState(""); //name of the project currently being examined
     const navigate = useNavigate();
+    const [isCreatingProject, setIsCreatingProject] = useState(false); //is the user currently creating a project
 
     useIdleTimeout(); //starts a timer that will log the user out after 10 minutes of inactivity
 
     const auth = useAuth();
     const uid = auth.currentUser.uid;
 
-    const { logout } = useAuth();
+    const {logout} = useAuth();
+
+    useEffect(() => {
+        socket = io(ENDPOINT, { transports: ['websocket'] });
+        socket.on('connect', () => {
+            socket.emit('setup', socket.id);
+        });
+
+        socket.on('new-document', () => {
+            fetchHomeDocuments();
+            fetchProjects();
+            fetchProjectDocuments();
+        });
+
+        return () => {
+            socket.off('connect');
+            socket.off('new-document');
+            socket.disconnect();
+        };
+    }, []);
+
 
     //Fetches the projects this user has access to
     const fetchProjects = async () => {
@@ -40,7 +67,7 @@ export default function Dashboard() {
             });
         } catch (error) {
             console.error('Failed to fetch projects:', error);
-            if(error.response.data === 'Invalid token') //if user's login token has expired, log them out
+            if (error.response.data === 'Invalid token') //if user's login token has expired, log them out
             {
                 logout();
                 navigate("/login");
@@ -56,8 +83,7 @@ export default function Dashboard() {
             });
         } catch (error) {
             console.error('Failed to fetch home documents:', error);
-            if(error.response.data === 'Invalid token')
-            {
+            if (error.response.data === 'Invalid token') {
                 logout();
                 navigate("/login");
             }
@@ -71,8 +97,7 @@ export default function Dashboard() {
             setPermissions(response.data.permissions)
         } catch (error) {
             console.error('Failed to fetch permissions:', error);
-            if(error.response.data === 'Invalid token')
-            {
+            if (error.response.data === 'Invalid token') {
                 logout();
                 navigate("/login");
             }
@@ -87,8 +112,7 @@ export default function Dashboard() {
             });
         } catch (error) {
             console.error('Failed to fetch employees:', error);
-            if(error.response.data === 'Invalid token')
-            {
+            if (error.response.data === 'Invalid token') {
                 logout();
                 navigate("/login");
             }
@@ -105,8 +129,7 @@ export default function Dashboard() {
             });
         } catch (error) {
             console.error('Failed to fetch project documents:', error);
-            if (error.response.data === 'Invalid token')
-            {
+            if (error.response.data === 'Invalid token') {
                 logout();
                 navigate("/login");
             }
@@ -124,8 +147,7 @@ export default function Dashboard() {
             });
         } catch (error) {
             console.error('Failed to fetch employees on project:', error);
-            if(error.response.data === 'Invalid token')
-            {
+            if (error.response.data === 'Invalid token') {
                 logout();
                 navigate("/login");
             }
@@ -146,8 +168,7 @@ export default function Dashboard() {
             })
         } catch (error) {
             console.error('Failed to add project:', error);
-            if(error.response.data === 'Invalid token')
-            {
+            if (error.response.data === 'Invalid token') {
                 logout();
                 navigate("/login");
             }
@@ -155,7 +176,7 @@ export default function Dashboard() {
     }
 
     //Updates the projects array locally to reflect the database change
-    function handleLocalNewProject(newName){
+    function handleLocalNewProject(newName) {
         setProjects([...projects, {
             name: newName,
             owner: uid
@@ -171,8 +192,7 @@ export default function Dashboard() {
             });
         } catch (error) {
             console.error('Failed to add project:', error);
-            if(error.response.data === 'Invalid token')
-            {
+            if (error.response.data === 'Invalid token') {
                 logout();
                 navigate("/login");
             }
@@ -188,8 +208,7 @@ export default function Dashboard() {
             })
         } catch (error) {
             console.error('Failed to update employee:', error);
-            if(error.response.data === 'Invalid token')
-            {
+            if (error.response.data === 'Invalid token') {
                 logout();
                 navigate("/login");
             }
@@ -200,13 +219,14 @@ export default function Dashboard() {
     const deleteProject = async () => {
         try {
             await api.delete("/api/projects/deleteProject",
-                { data:
-                        { projectID: projectID }
+                {
+                    data:
+                        {projectID: projectID}
                 }).then(() => {
                 //Find the index of the project that we want to delete
-                for(let project of projects){
-                    if(project.id === projectID) {
-                        let index  = projects.indexOf(project);
+                for (let project of projects) {
+                    if (project.id === projectID) {
+                        let index = projects.indexOf(project);
                         //filter out the project we want to "delete"
                         setProjects(projects.filter(project => project !== projects[index]));
                     }//end nested if
@@ -218,12 +238,11 @@ export default function Dashboard() {
             })
         } catch (error) {
             console.error('Failed to delete project:', error);
-            if(error.response.data === 'Invalid token')
-            {
+            if (error.response.data === 'Invalid token') {
                 logout();
                 navigate("/login");
             }
-            if(error.response.status === 405)
+            if (error.response.status === 405)
                 alert(error.response.data.message)
         }
     }
@@ -238,11 +257,9 @@ export default function Dashboard() {
 
     //When the project ID changes (when the user clicks on a project), get the documents in this project, and if the user is the owner, get the employees on this project
     useEffect(() => {
-        if(!home)
-        {
+        if (!home) {
             fetchProjectDocuments()
-            if(owner)
-            {
+            if (owner) {
                 fetchEmployeesOnProject()
             }
         }
@@ -258,11 +275,11 @@ export default function Dashboard() {
         updateEmployee(employeeID)
     }
 
-    function handleLocalRename(newName){
+    function handleLocalRename(newName) {
         setProjects(projects.map(project => {
-            if(project.id === projectID) {
+            if (project.id === projectID) {
                 return {...project, name: newName};
-            }else{
+            } else {
                 return project;
             }//end if else
         }));//end map
@@ -273,11 +290,12 @@ export default function Dashboard() {
         return projects.map((data) => (
                 <>
                     <button
-                        className="flex justify-center bg-indigo-700 hover:bg-indigo-500 text-white font-bold py-2 px-4 rounded min-w-80 transition-all duration-500"
+                        className="flex justify-center bg-indigo-700 hover:bg-indigo-500 text-white font-bold py-2 px-4 rounded w-full transition-all duration-500"
                         onClick={async () => {
+                            setProjectName(data.name)
                             setProjectID(data.id)
                             setHome(false)
-                            if(data.owner === uid)
+                            if (data.owner === uid)
                                 setOwner(true)
                             else
                                 setOwner(false)
@@ -299,23 +317,25 @@ export default function Dashboard() {
     //Displays documents as a list of buttons
     const renderHomeDocumentNames = () => {
         return homeDocuments.map((document) => (
-            <button
+            <DocumentCard document={document} handleDocumentRedirect={handleDocumentRedirect}/>
+            /*<button
                 className="bg-indigo-700 hover:bg-indigo-500 min-w-80 text-white font-bold py-2 px-4 rounded transition-all duration-500"
                 onClick={() => handleDocumentRedirect(document.id)}
             >
                 <p>{document.name}</p>
-            </button>
+            </button>*/
         ))
     }
 
     const renderProjectDocumentNames = () => {
         return projectDocuments.map((document) => (
-            <button
+            <DocumentCard document={document} handleDocumentRedirect={handleDocumentRedirect}/>
+            /*<button
                 className="bg-indigo-700 hover:bg-indigo-500 min-w-80 text-white font-bold py-2 px-4 rounded transition-all duration-500"
                 onClick={() => handleDocumentRedirect(document.id)}
             >
                 <p>{document.name}</p>
-            </button>
+            </button>*/
         ))
     }
 
@@ -323,12 +343,12 @@ export default function Dashboard() {
     const renderNamePrompt = () => {
         return (
             <div id="inputContainer"
-                 className={`flex items-center space-x-5 transition-all duration-500 mt-2`}>
+                 className={`flex flex-col items-center space-x-5 transition-all duration-500 mt-2 w-full`}>
                 <input
                     type="text"
                     placeholder="New project name..."
-                    className="relative min-w-70 transition-all duration-500 rounded-lg
-                                    p-2 h-9 px-2 min-w-28 text-black
+                    className="relative w-full transition-all duration-500 rounded-lg
+                                    p-2  px-2 text-black
                                     shadow-sm sm:text-sm sm:leading-6 bg-white
                                     ring-1 ring-gray-300 placeholder:text-gray-500
                                     focus:ring-indigo-500 focus:ring-2 focus:outline-0
@@ -336,14 +356,17 @@ export default function Dashboard() {
                     value={inputValue}
                     onChange={handleInputChange}
                 />
-                <button
-                    className="flex justify-center py-2.5 h-9 w-12 bg-indigo-700 hover:bg-indigo-500 text-white font-bold px-4 rounded-full"
-                    onClick={async () => {
-                        await addProject()
-                    }}
-                >
-                    <ArrowRightIcon className="h-4 w-4"/>
-                </button>
+                <div className="flex flex-row items-start justify-center w-full mt-1">
+                    <button
+                        className="flex bg-indigo-700 hover:bg-indigo-500 text-white font-semibold text-sm py-2 px-4 rounded transition-all duration-500"
+                        onClick={async () => {
+                            await addProject()
+                        }}
+                    >
+                        Create Project
+                        <ArrowRightIcon className="h-5 w-5 ml-1"/>
+                    </button>
+                </div>
             </div>
         )
     }
@@ -374,10 +397,11 @@ export default function Dashboard() {
                         leaveFrom="opacity-100"
                         leaveTo="opacity-0"
                     >
-                        <Listbox.Options className="absolute mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black/5 focus:outline-none sm:text-sm">
+                        <Listbox.Options
+                            className="absolute mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black/5 focus:outline-none sm:text-sm">
                             {employees.map((employee) => (
                                 <Listbox.Option
-                                    className={({ active }) =>
+                                    className={({active}) =>
                                         `relative cursor-default select-none py-2 pl-10 pr-4 ${
                                             active ? 'bg-green-100 text-green-900' : 'text-gray-900'
                                         }`
@@ -385,7 +409,7 @@ export default function Dashboard() {
                                     value={employee.name}
                                     onClick={() => handleSelect(employee.id)}
                                 >
-                                    {({ selected }) => (
+                                    {({selected}) => (
                                         <>
                                             <span
                                                 className={`block truncate ${
@@ -395,8 +419,9 @@ export default function Dashboard() {
                                                 {employee.name}
                                             </span>
                                             {selected ? (
-                                                <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-green-600">
-                                                    <CheckIcon className="h-5 w-5" aria-hidden="true" />
+                                                <span
+                                                    className="absolute inset-y-0 left-0 flex items-center pl-3 text-green-600">
+                                                    <CheckIcon className="h-5 w-5" aria-hidden="true"/>
                                                 </span>
                                             ) : null}
                                         </>
@@ -412,7 +437,7 @@ export default function Dashboard() {
 
     //The rename box.
     const renderRename = projects.map((project) => {
-        if(project.id===projectID){
+        if (project.id === projectID) {
             return (
                 <div className="flex ml-1 mt-2 mx-4 pt-1">
                     <input
@@ -433,7 +458,7 @@ export default function Dashboard() {
                                 handleLocalRename(inputValue);
                                 //Change the local projects array to reflect the changes
                             }}
-                            >
+                    >
                         <img
                             className="justify-end mx-auto h-8 w-auto"
                             src={saveIcon}
@@ -465,40 +490,16 @@ export default function Dashboard() {
     }//end renderDelete()
 
     return (
-        <div className="App mt-16">
-            <Box
-                /*The left side box*/
-                sx={{
-                    overflow: 'auto',
-                    justifyContent: "center",
-                    display: 'flex',
-                    flexWrap: 'wrap',
-                    marginTop: '30px',
-                    alignContent: 'space-between'
-                }}>
-                <div className="flex-col align-top">
-                    <h2 className="flex mt-4 ml-8 mb-2 justify-center text-2xl font-bold leading-9 tracking-tight text-gray-900 dark:text-white">
-                        Projects
-                    </h2>
-                    <Box
-                        className="flex rounded w-auto min-w-400"
-                        style={{
-                            overflowY: "auto",
-                            maxHeight: "425px",
-                            display: "flex",
-                            flexDirection: "column",
-                            marginLeft: "25px",
-                        }}
-                        height={425}
-                        my={0}
-                        display="flex"
-                        alignItems="center"
-                        gap={2}
-                        p={2}
-                        sx={{border: '2px solid grey'}}
-                    >
+        <div className="App mt-20 w-full h-[calc(100vh-5rem)] overflow-hidden">
+            <header
+                className="flex-shrink-0 dark:border-gray-700 border-b-2 px-14 py-1 flex justify-between items-center">
+                <h1 className="text-3xl font-bold text-gray-500">Dashboard</h1>
+            </header>
+            <div className="flex flex-row items-start m-2 gap-4">
+                <div className="flex-col w-1/3 items-center h-[calc(100vh-8rem)] overflow-y-scroll">
+                    <div className="flex-col w-full space-y-2 p-3">
                         <button
-                            className="flex justify-center bg-indigo-700 hover:bg-indigo-500 text-white font-bold py-2 px-4 rounded min-w-80 transition-all duration-500"
+                            className="flex justify-center bg-indigo-700 hover:bg-indigo-500 text-white font-bold py-2 px-4 rounded w-full transition-all duration-500"
                             onClick={async () => {
                                 setOwner(false)
                                 setHome(true)
@@ -508,76 +509,62 @@ export default function Dashboard() {
                         >
                             <p>HOME</p>
                         </button>
-                        <Divider className="h-2 min-w-425 w-auto"
-                                 color="#1bc41e" sx={{
-                                     height: 2,
-                                     width: '320px'
-                        }}>
-                        </Divider>
+
+                        <h2 className="flex mt-4 ml-6 mb-2 justify-center text-2xl font-bold leading-9 tracking-tight text-gray-900 dark:text-white border-b-2">
+                            Projects
+                        </h2>
+
                         {renderProjectNames()}
                         <>
                             <button
-                                className="bg-indigo-700 hover:bg-indigo-500 min-w-80 text-white font-bold py-2 px-4 rounded transition-all duration-500"
+                                className="bg-indigo-700 hover:bg-indigo-500 w-full text-white font-bold py-2 px-4 rounded transition-all duration-500"
                                 onClick={async () => {
                                     setInitialNamePrompt(true)
+                                    setProjectName("")
                                     setInputValue("")
                                 }}
                             >
-                                <p>+</p>
+                                <p>Add Project +</p>
                             </button>
+                            {initialNamePrompt && renderNamePrompt()}
+
                         </>
-                    </Box>
+                    </div>
                 </div>
-                <div className="flex-col align-top">
-                    <h2 className="flex mt-4 mb-2 justify-center text-2xl font-bold leading-9 tracking-tight text-gray-900 dark:text-white">
-                        Documents
-                    </h2>
-                    <Box
-                        /*The right side box*/
-                        className="rounded flex"
-                        style={{
-                            overflowY: "auto",
-                            maxHeight: "425px",
-                            display: "column",
-                            flexDirection: "column",
-                            marginLeft: "25px",
-                            marginRight: "25px"
-                        }}
-                        height={425}
-                        width={600}
-                        my={0}
-                        display="flex"
-                        alignItems="center"
-                        gap={2}
-                        p={1}
-                        sx={{border: '2px solid grey'}}
-                    >
-                        {!initialNamePrompt && (
-                            <Box component="h2" className="justify-center"
-                                 style={{
-                                     display: "flex",
-                                     flexDirection: "row"}}
-                            >
-                                {owner === true && renderRename}
-                                {owner === true && renderEmployeeList()}
-                                {owner === true && renderDelete()}
-                            </Box>
-                        )}
-                        {(!initialNamePrompt && (owner === true)) && (
-                            <Divider color="#1bc41e" sx={{
-                                height: 2,
-                                width: '525px'}}
-                            />
-                        )}
-                        {initialNamePrompt && renderNamePrompt()}
+                <vr className="border-r-2 h-[calc(100vh-8rem)]"/>
+                <div className="flex-col w-full items-center h-[calc(100vh-8rem)]">
+                    <div className="flex  justify-between border-b-2 p-2">
+                        <h2 className="flex justify-start text-2xl font-bold text-gray-900 dark:text-white">
+                            {(home && !initialNamePrompt) ? "Home" : `${projectName}` }
+                            {initialNamePrompt ? "Creating new project" : ""}
+                        </h2>
+                        <div className="flex items-center justify-center space-x-5">
+                            {!initialNamePrompt && (
+                                <Box component="h2" className="justify-center items-center"
+                                     style={{
+                                         display: "flex",
+                                         flexDirection: "row"
+                                     }}
+                                >
+                                    {owner === true && renderRename}
+                                    {owner === true && renderEmployeeList()}
+                                    {owner === true && renderDelete()}
+                                </Box>
+                            )}
+                            {(permissions[6] && !initialNamePrompt) && (
+                                <DocumentUpload projectId={projectID} canSelect={permissions[4]} socket={socket}  />
+                            )}
+                        </div>
+                    </div>
+                    <div
+                        className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5
+                        gap-4 p-2 overflow-y-scroll h-[calc(100vh-12rem)]">
                         {(home && !initialNamePrompt) && renderHomeDocumentNames()}
                         {(!home && !initialNamePrompt) && renderProjectDocumentNames()}
-                        {(permissions[6] && !initialNamePrompt) && (
-                            <DocumentUpload projectId={projectID} canSelect={permissions[4]}/>
-                        )}
-                    </Box>
+                    </div>
                 </div>
-            </Box>
+            </div>
+
         </div>
     );
 }
