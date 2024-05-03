@@ -3,7 +3,7 @@ const serviceAccount = require('./serviceAccountKey.json');
 
 admin.initializeApp({
     credential: admin.credential.cert(serviceAccount),
-    storageBucket: "gs://reviewsync-prod.appspot.com"
+    storageBucket: "gs://reviewsync-39f23.appspot.com"
 });
 
 const db = admin.firestore();
