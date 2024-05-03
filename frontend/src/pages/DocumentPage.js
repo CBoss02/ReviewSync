@@ -149,8 +149,8 @@ const DocumentPage = () => {
     const handleCloseReview = async () => {
         if (window.confirm('Are you sure you want to close the review?')) {
             try {
-                await api.post(`/api/documents/closeReview/${documentId}`);
-                navigate('/dashboard');
+              await api.post(`/api/documents/closeReview/${documentId}`);
+               navigate('/dashboard');
             } catch (error) {
                 console.error('Failed to close review:', error);
             }
@@ -396,7 +396,6 @@ const DocumentPage = () => {
                                     </Menu.Item>
                                     )}
                                     {permissions[0] && (
-                                    <form method="POST" action="#">
                                         <Menu.Item>
                                             {({active}) => (
                                                 <button
@@ -411,7 +410,6 @@ const DocumentPage = () => {
                                                 </button>
                                             )}
                                         </Menu.Item>
-                                    </form>
                                     )}
                                 </div>
                             </Menu.Items>
