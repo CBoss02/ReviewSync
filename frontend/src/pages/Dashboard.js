@@ -67,11 +67,8 @@ export default function Dashboard() {
     //Fetches this user's permissions
     const fetchPermissions = async () => {
         try {
-            await api.post("/api/users/getPermissions", {
-                uid: uid
-            }).then((response) => {
-                setPermissions(response.data.permissions)
-            });
+            const response = await api.get("/api/users/getPermissions");
+            setPermissions(response.data.permissions)
         } catch (error) {
             console.error('Failed to fetch permissions:', error);
         }
