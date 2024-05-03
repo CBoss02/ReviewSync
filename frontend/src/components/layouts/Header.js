@@ -1,5 +1,5 @@
 import { LogoutIcon } from "@heroicons/react/outline";
-import {useEffect, useState} from "react";
+import {useEffect, useRef, useState} from "react";
 import { Link } from "react-router-dom";
 
 import { useAuth } from "../../contexts/AuthContext";
@@ -35,7 +35,6 @@ export default function Header() {
         }
     }, [currentUser]); // Depend on currentUser to re-fetch when it changes
 
-
     return (
         <>
             <nav className="fixed top-0 left-0 w-full z-10 px-2 py-2.5 bg-gray-50 border-gray-200 dark:bg-gray-800 dark:border-gray-700 text-gray-900 text-sm rounded border dark:text-white">
@@ -55,9 +54,7 @@ export default function Header() {
                                 {companyName}
                             </Link>
                         )}
-
                         <ThemeToggler/>
-
                         {currentUser && (
                             <>
                                 <button

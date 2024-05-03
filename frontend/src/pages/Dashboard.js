@@ -466,7 +466,6 @@ export default function Dashboard() {
         )
     }//end renderDelete()
 
-    //The actual code for the page
     return (
         <div className="App mt-16">
             <Box

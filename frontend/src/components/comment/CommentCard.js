@@ -5,7 +5,7 @@ import {Menu, Transition} from "@headlessui/react";
 import {useAuth} from "../../contexts/AuthContext";
 import api from "../../config/axiosConfig";
 
-function CommentCard({comment, documentId, document, isReplyActive, setReplyActive, permissions}) {
+function CommentCard({comment, documentId, document, isReplyActive, setReplyActive, permissions, socket}) {
     const [viewReplies, setViewReplies] = useState(false);
 
     const auth = useAuth();
@@ -14,22 +14,15 @@ function CommentCard({comment, documentId, document, isReplyActive, setReplyActi
         setViewReplies(!viewReplies);
     }
 
-    const handleRevisionUpload = async () => {
-
-    }
-
-    const handleResolveAllComments = async () => {
-
-    }
-
-    const handleEditReviewers = async () => {
-
-    }
-
-
     const handleCommentResolve = async (commentId) => {
         try {
             await api.post(`/api/documents/resolveComment/${documentId}/${commentId}`);
+            if(socket) {
+                socket.emit('comment', {
+                    document: documentId,
+                    comment: comment.text
+                });
+            }
         } catch (error) {
             console.error('Failed to resolve comment:', error);
         }
@@ -38,18 +31,17 @@ function CommentCard({comment, documentId, document, isReplyActive, setReplyActi
     const handleCommentDelete = async (commentId) => {
         try {
             await api.delete(`/api/documents/deleteComment/${documentId}/${commentId}`);
+            if (socket) {
+                socket.emit('comment', {
+                    document: documentId,
+                    comment: comment.text
+                });
+            }
         } catch (error) {
             console.error('Failed to delete comment:', error);
         }
     }
 
-    const handleDeleteReply = async (commentId, replyId) => {
-        try {
-            await api.delete(`/api/documents/deleteReply/${documentId}/${commentId}/${replyId}`);
-        } catch (error) {
-            console.error('Failed to delete reply:', error);
-        }
-    }
 
     const classNames = (...classes) => {
         return classes.filter(Boolean).join(' ')
@@ -150,7 +142,7 @@ function CommentCard({comment, documentId, document, isReplyActive, setReplyActi
                     }
                 </div>
             </div>
-            {isReplyActive && <CommentInput documentId={documentId} commentId={comment.id}/>}
+            {isReplyActive && <CommentInput documentId={documentId} commentId={comment.id} socket={socket}/>}
             {viewReplies && comment.replies.map(reply => (
                 <>
                     <div className="flex flex-col items-center p-2 rounded-b-lg bg-gray-300 dark:bg-gray-700 mr-2 ml-4">

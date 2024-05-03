@@ -94,7 +94,7 @@ const EmployeeRoles = () => {
 
     return (
 
-        <div className="flex flex-col justify-center items-center mb-auto mx-auto">
+        <div className="flex flex-col justify-center items-center mb-auto mx-auto mt-24">
 
             {companyName && (
             <h2 className="mt-24 mb-4 text-center text-2xl font-bold leading-9 tracking-tight text-gray-900 dark:text-white">

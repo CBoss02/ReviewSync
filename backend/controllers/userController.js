@@ -23,10 +23,13 @@ exports.createUser = async (req, res) => {
             projects: []
         });
 
-        res.status(200).send("User created successfully.");
+        // Send welcome email after successful creation
+        await sendEmail(req.body.email, "Welcome to Our Service", "Hello " + req.body.first_name + ", welcome to our service!");
+
+        res.status(200).send("User created successfully and email sent.");
 
     } catch (error) {
-        console.error("Failed to create user", error);
+        console.error("Failed to create user or send email", error);
         res.status(400).send(error.message);
     }
 }

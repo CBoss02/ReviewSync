@@ -1,36 +1,33 @@
 // src/components/DocumentViewer.js
-import React, {useEffect, useRef, useState} from 'react';
-import {useNavigate, useParams} from "react-router-dom";
-import api from '../config/axiosConfig'; // Make sure this path matches your Axios configuration
-import DocumentFrame from '../components/document/DocumentFrame'; // Make sure this path matches your DocumentFrame component
-import CommentSection from '../components/comment/CommentSection';
-import {
-    CheckIcon,
-    ChevronDoubleDownIcon,
-    ChevronDownIcon,
-    DotsHorizontalIcon,
-    MenuIcon,
-    UploadIcon,
-    XIcon
-} from "@heroicons/react/solid";
-import {Listbox, Menu, Transition} from "@headlessui/react"; // Make sure this path matches your CommentSection component
-import {Fragment} from "react";
+import React, { useEffect, useState } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
+import api from '../config/axiosConfig'; // Axios configuration path
+import DocumentFrame from '../components/document/DocumentFrame'; // Path to DocumentFrame component
+import CommentSection from '../components/comment/CommentSection'; // Path to CommentSection component
+import {CheckIcon, ChevronDoubleDownIcon, DotsHorizontalIcon, UploadIcon, XIcon} from '@heroicons/react/solid';
+import {Listbox, Menu, Transition} from '@headlessui/react';
+import { Fragment } from 'react';
+import io from 'socket.io-client';
 import {useAuth} from "../contexts/AuthContext";
-import DocumentUpload from "../components/document/DocumentUpload";
 
+// Server endpoint for socket connection
+const ENDPOINT = 'http://localhost:3001';
+let socket;
 
+// Utility function to combine CSS classes
 function classNames(...classes) {
     return classes.filter(Boolean).join(' ')
 }
 
 const DocumentPage = () => {
-    const {documentId} = useParams();
+    const { documentId } = useParams();
     const [document, setDocument] = useState({});
-    const [permissions, setPermissions] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [showUpload, setShowUpload] = useState(false);
     const [file, setFile] = useState(null);
     const [dragging, setDragging] = useState(false);
+    const [permissions, setPermissions] = useState([]);
+    const [comments, setComments] = useState([]);
     const [searchTerm, setSearchTerm] = useState('');
     const [dropdownOpen, setDropdownOpen] = useState(false);
     const [employees, setEmployees] = useState([]);
@@ -38,17 +35,73 @@ const DocumentPage = () => {
     const [error, setError] = useState('');
     const [filteredEmployees, setFilteredEmployees] = useState([]);
 
-    const navigate = useNavigate();
-
     const { logout } = useAuth();
 
+    // Fetches comments for the document
+    const fetchComments = async () => {
+        try {
+            const response = await api.get(`/api/documents/getComments/${documentId}`);
+            setComments(response.data);
+        } catch (error) {
+            console.error('Failed to fetch comments', error);
+        }
+    }
+
+    // Fetches the document details
+    const fetchDocument = async () => {
+        try {
+            const response = await api.get(`/api/documents/getDocument/${documentId}`);
+            setDocument(response.data);
+            setIsLoading(false);
+        } catch (error) {
+            console.error('Failed to fetch document', error);
+        }
+    }
+
+    // Initial data fetching
+    useEffect(() => {
+        fetchDocument();
+        fetchComments();
+    }, [documentId]);
+
+    // Socket connection setup
+    useEffect(() => {
+        socket = io(ENDPOINT, { transports: ['websocket'] });
+        socket.on('connect', () => {
+            socket.emit('setup', documentId);
+        });
+        socket.on('revision', () => {
+            window.location.reload();
+        });
+        socket.on('comment', () => {
+            fetchComments();
+        });
+        return () => {
+            socket.off('connect');
+            socket.off('comment');
+            socket.disconnect();
+        };
+    }, [documentId]);
+
+    // Fetches user permissions
+    useEffect(() => {
+        const fetchPermissions = async () => {
+            const response = await api.get("/api/users/getPermissions");
+            setPermissions(response.data.permissions);
+        }
+        fetchPermissions();
+    }, []);
+
+    const navigate = useNavigate();
+
+    // File upload handlers
     const handleFileChange = event => {
         setFile(event.target.files[0]);
     }
 
     const handleDragOver = event => {
         event.preventDefault();
-        if (!dragging) setDragging(true);
+        setDragging(true);
     }
 
     const handleDragEnter = event => {
@@ -64,36 +117,59 @@ const DocumentPage = () => {
     const handleDrop = event => {
         event.preventDefault();
         setDragging(false);
-        if (event.dataTransfer.files && event.dataTransfer.files.length > 0) {
+        if (event.dataTransfer.files.length > 0) {
             setFile(event.dataTransfer.files[0]);
         }
     }
 
-    const auth = useAuth();
+    // Uploads a new document revision
+    const handleRevisionUpload = async () => {
+        if(!file) {
+            alert('Please select a file to upload');
+            return;
+        }
 
-    // Fetches user permissions
-    useEffect(() => {
-        const fetchPermissions = async () => {
+        const formData = new FormData();
+        formData.append('file', file);
+        try {
+            await api.post(`/api/documents/uploadRevision/${documentId}`, formData, {
+                headers: { 'Content-Type': 'multipart/form-data' }
+            });
+            if (socket) {
+                socket.emit('revision', { document: documentId });
+            }
+            setShowUpload(false);
+            setFile(null);
+        } catch (error) {
+            console.error('Failed to upload revision:', error);
+        }
+    }
+
+    // Closes the document review
+    const handleCloseReview = async () => {
+        if (window.confirm('Are you sure you want to close the review?')) {
             try {
-                const response = await api.get("/api/users/getPermissions");
-                setPermissions(response.data.permissions);
+              await api.post(`/api/documents/closeReview/${documentId}`);
+               navigate('/dashboard');
             } catch (error) {
-                console.log(error)
+                console.error('Failed to close review:', error);
             }
         }
-        fetchPermissions();
-    }, []);
+    }
 
-    const fetchDocument = async () => {
-        try {
-            const response = await api.get(`/api/documents/getDocument/${documentId}`);
-            setDocument(response.data);
-            console.log(response.data);
-            setIsLoading(false);
-        } catch (error) {
-            console.error('Failed to fetch document', error);
+    // Resolves all comments on the document
+    const handleResolveAllComments = async () => {
+        if (window.confirm('Are you sure you want to resolve all comments?')) {
+            try {
+                await api.post(`/api/documents/resolveAllComments/${documentId}`);
+                if (socket) {
+                    socket.emit('comment', { document: documentId });
+                }
+            } catch (error) {
+                console.error('Failed to resolve comments:', error);
+            }
         }
-    };
+    }
 
     const fetchEmployees = async () => {
         try {
@@ -125,59 +201,10 @@ const DocumentPage = () => {
 
     useEffect(() => {
         fetchEmployees().then(() => {
-            fetchEmployeesOnDocument().then(() => {
-                fetchDocument()
-            })
+            fetchEmployeesOnDocument();
         });
     }, []);
-    const handleRevisionUpload = async () => {
-        if(!file) {
-            alert('Please select a file to upload');
-            return;
-        }
 
-        const formData = new FormData();
-        formData.append('file', file);
-        try {
-            await api.post(`/api/documents/uploadRevision/${documentId}`, formData, {
-                headers: {
-                    'Content-Type': 'multipart/form-data'
-                }
-            });
-            setShowUpload(false);
-            setFile(null);
-        } catch (error) {
-            console.error('Failed to upload revision:', error);
-        }
-    }
-
-    const handleCloseReview = async () => {
-        const confirmClose = window.confirm('Are you sure you want to close the review?');
-        if (confirmClose) {
-            try {
-                await api.post(`/api/documents/closeReview/${documentId}`).then(
-                    navigate('/dashboard')
-                )
-            } catch (error) {
-                console.error('Failed to close review:', error);
-            }
-        }
-    }
-
-    const handleResolveAllComments = async () => {
-        const confirmResolve = window.confirm('Are you sure you want to resolve all comments?');
-        if (confirmResolve) {
-            try {
-                await api.post(`/api/documents/resolveAllComments/${documentId}`);
-            } catch (error) {
-                console.error('Failed to resolve comments:', error);
-            }
-        }
-    }
-
-    const handleEditReviewers = async () => {
-        console.log('Editing reviewers...');
-    }
 
     if (isLoading) {
         return <div>Loading document...</div>;}
@@ -369,7 +396,6 @@ const DocumentPage = () => {
                                     </Menu.Item>
                                     )}
                                     {permissions[0] && (
-                                    <form method="POST" action="#">
                                         <Menu.Item>
                                             {({active}) => (
                                                 <button
@@ -384,7 +410,6 @@ const DocumentPage = () => {
                                                 </button>
                                             )}
                                         </Menu.Item>
-                                    </form>
                                     )}
                                 </div>
                             </Menu.Items>
@@ -395,7 +420,8 @@ const DocumentPage = () => {
             </header>
             <div className="flex w-full justify-center gap-2 h-[calc(100vh-11rem)]">
                 <DocumentFrame document={document}/>
-                <CommentSection documentId={documentId} document={document} permissions={permissions}/>
+                <CommentSection documentId={documentId} document={document} permissions={permissions}
+                                comments={comments} socket={socket}/>
             </div>
         </div>
     );

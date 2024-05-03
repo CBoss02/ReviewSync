@@ -1,8 +1,9 @@
-import React from 'react';
+import React, {useEffect} from 'react';
 import Header from "./Header";
 import Footer from "./Footer";
 
 const AppLayout = ({ children }) => {
+
     return (
         <div className="flex flex-col h-screen">
             <Header />

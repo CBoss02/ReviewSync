@@ -1,5 +1,5 @@
 // src/components/comment/CommentInput.js
-import React, { useState } from 'react';
+import React, {useEffect, useState} from 'react';
 import api from "../../config/axiosConfig";
 
 const CommentInput = (props) => {
@@ -20,8 +20,14 @@ const CommentInput = (props) => {
                 await api.post(`/api/documents/addComment/${props.documentId}`, {
                     comment: newComment
                 });
-                setNewComment('');
             }
+            if(props.socket) {
+                props.socket.emit('comment', {
+                    document: props.documentId,
+                    comment: newComment
+                });
+            }
+            setNewComment('');
         }
     }
 
@@ -32,8 +38,8 @@ const CommentInput = (props) => {
                         <textarea
                             id="chat"
                             rows="3"
-                            value={newComment}  // Link state to the textarea
-                            onChange={handleChange}  // Handle changes in textarea
+                            value={newComment}
+                            onChange={handleChange}
                             className="block mx-2 p-2.5 w-full text-sm text-gray-900 bg-white rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-800 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
                             placeholder="Your comment..."
                         />
