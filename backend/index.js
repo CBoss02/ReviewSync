@@ -55,6 +55,11 @@ io.on('connection', (socket) => {
         console.log(`Revision on document ${data.document}`);
     });
 
+    socket.on('new-document', (data) => {
+        io.emit('new-document', data);
+        console.log(`New document created: ${data}`);
+    });
+
     socket.on('disconnect', () => {
         console.log(`Socket ${socket.id} disconnected`);
     });

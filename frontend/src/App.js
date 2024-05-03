@@ -24,7 +24,13 @@ function App() {
                     <Route path="/login" element={<Login/>}/>
                     <Route path="/verify-email" element={<VerifyEmail />}/>
                     <Route path="/home" element={<Home/>}/>
-
+                    <Route path="/"
+                        element={
+                            <WithPrivateRoute>
+                                <Dashboard/>
+                            </WithPrivateRoute>
+                        }
+                    />
                     <Route
                         path="/edit-roles"
                         element={

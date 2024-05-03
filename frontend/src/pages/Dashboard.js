@@ -11,6 +11,10 @@ import saveIcon from "../assets/icons/GreenSave-Icon.png";
 import useIdleTimeout from "../components/idleTimer/idleTimer";
 import {useNavigate} from "react-router-dom";
 import DocumentCard from "../components/document/DocumentCard";
+import io from "socket.io-client";
+
+const ENDPOINT = 'http://localhost:3001';
+let socket;
 
 export default function Dashboard() {
     const [projects, setProjects] = useState([]); //projects the user has access to
@@ -26,6 +30,7 @@ export default function Dashboard() {
     const [owner, setOwner] = useState(false); //keeps track if user is owner of project currently being examined
     const [projectName, setProjectName] = useState(""); //name of the project currently being examined
     const navigate = useNavigate();
+    const [isCreatingProject, setIsCreatingProject] = useState(false); //is the user currently creating a project
 
     useIdleTimeout(); //starts a timer that will log the user out after 10 minutes of inactivity
 
@@ -33,6 +38,26 @@ export default function Dashboard() {
     const uid = auth.currentUser.uid;
 
     const {logout} = useAuth();
+
+    useEffect(() => {
+        socket = io(ENDPOINT, { transports: ['websocket'] });
+        socket.on('connect', () => {
+            socket.emit('setup', socket.id);
+        });
+
+        socket.on('new-document', () => {
+            fetchHomeDocuments();
+            fetchProjects();
+            fetchProjectDocuments();
+        });
+
+        return () => {
+            socket.off('connect');
+            socket.off('new-document');
+            socket.disconnect();
+        };
+    }, []);
+
 
     //Fetches the projects this user has access to
     const fetchProjects = async () => {
@@ -318,7 +343,7 @@ export default function Dashboard() {
     const renderNamePrompt = () => {
         return (
             <div id="inputContainer"
-                 className={`flex items-center space-x-5 transition-all duration-500 mt-2 w-full`}>
+                 className={`flex flex-col items-center space-x-5 transition-all duration-500 mt-2 w-full`}>
                 <input
                     type="text"
                     placeholder="New project name..."
@@ -331,14 +356,17 @@ export default function Dashboard() {
                     value={inputValue}
                     onChange={handleInputChange}
                 />
-                <button
-                    className="flex justify-center py-2.5 h-9 w-12 bg-indigo-700 hover:bg-indigo-500 text-white font-bold px-4 rounded-full"
-                    onClick={async () => {
-                        await addProject()
-                    }}
-                >
-                    <ArrowRightIcon className="h-4 w-4"/>
-                </button>
+                <div className="flex flex-row items-start justify-center w-full mt-1">
+                    <button
+                        className="flex bg-indigo-700 hover:bg-indigo-500 text-white font-semibold text-sm py-2 px-4 rounded transition-all duration-500"
+                        onClick={async () => {
+                            await addProject()
+                        }}
+                    >
+                        Create Project
+                        <ArrowRightIcon className="h-5 w-5 ml-1"/>
+                    </button>
+                </div>
             </div>
         )
     }
@@ -492,11 +520,14 @@ export default function Dashboard() {
                                 className="bg-indigo-700 hover:bg-indigo-500 w-full text-white font-bold py-2 px-4 rounded transition-all duration-500"
                                 onClick={async () => {
                                     setInitialNamePrompt(true)
+                                    setProjectName("")
                                     setInputValue("")
                                 }}
                             >
                                 <p>Add Project +</p>
                             </button>
+                            {initialNamePrompt && renderNamePrompt()}
+
                         </>
                     </div>
                 </div>
@@ -504,7 +535,8 @@ export default function Dashboard() {
                 <div className="flex-col w-full items-center h-[calc(100vh-8rem)]">
                     <div className="flex  justify-between border-b-2 p-2">
                         <h2 className="flex justify-start text-2xl font-bold text-gray-900 dark:text-white">
-                            {home ? "Home /Documents" : `${projectName} /Documents`}
+                            {(home && !initialNamePrompt) ? "Home" : `${projectName}` }
+                            {initialNamePrompt ? "Creating new project" : ""}
                         </h2>
                         <div className="flex items-center justify-center space-x-5">
                             {!initialNamePrompt && (
@@ -520,14 +552,13 @@ export default function Dashboard() {
                                 </Box>
                             )}
                             {(permissions[6] && !initialNamePrompt) && (
-                                <DocumentUpload projectId={projectID} canSelect={permissions[4]}/>
+                                <DocumentUpload projectId={projectID} canSelect={permissions[4]} socket={socket}  />
                             )}
                         </div>
                     </div>
                     <div
                         className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5
                         gap-4 p-2 overflow-y-scroll h-[calc(100vh-12rem)]">
-                        {initialNamePrompt && renderNamePrompt()}
                         {(home && !initialNamePrompt) && renderHomeDocumentNames()}
                         {(!home && !initialNamePrompt) && renderProjectDocumentNames()}
                     </div>
