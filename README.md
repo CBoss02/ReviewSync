@@ -30,6 +30,7 @@ npm install
 # Install dependencies for the frontend
 cd ../frontend
 npm install
+# If you encounter errors, run npm install --force
 
 # Start the backend server
 cd ../backend
