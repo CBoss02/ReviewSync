@@ -9,7 +9,6 @@ const transporter = nodemailer.createTransport({
     }
 });
 
-
 exports.createUser = async (req, res) => {
     try {
         // Creating user document in Firestore
@@ -234,30 +233,31 @@ exports.getPermissions = async (req, res) => {
 
 exports.notifyReviewers = async (req, res) => {
     try {
-        const { userIds, DocumentName } = req.body; // Array of user IDs and the document ID from request body
-
+        const { userIds } = req.body; // Array of user IDs and the document ID from request body
         // Fetch user emails from their IDs
-        const usersRef = db.collection('users');
-        const promises = userIds.map(userId => usersRef.doc(userId).get());
-        const userDocs = await Promise.all(promises);
+        if(userIds.length > 0)
+        {
+            const usersRef = db.collection('users');
+            const promises = userIds.map(userId => usersRef.doc(userId).get());
+            const userDocs = await Promise.all(promises);
 
-        const userEmails = userDocs.map(doc => doc.exists ? doc.data().email : null).filter(email => email != null);
+            const userEmails = userDocs.map(doc => doc.exists ? doc.data().email : null).filter(email => email != null);
 
-        // Send an email to each user individually
-        for (const email of userEmails) {
-            const mailOptions = {
-                from: 'reviewsyncinc@gmail.com', // sender address
-                to: email, // send to individual user
-                subject: 'Document Addition Notification', // Subject line
-                text: `You have been added as a reviewer to a new document. ${DocumentName}`, // plain text body
-            };
+            // Send an email to each user individually
+            for (const email of userEmails) {
+                const mailOptions = {
+                    from: 'reviewsyncinc@gmail.com', // sender address
+                    to: email, // send to individual user
+                    subject: 'Document Addition Notification', // Subject line
+                    text: `You have been added as a reviewer to a new document.`, // plain text body
+                };
+                // Send email
+                transporter.sendMail(mailOptions);
+                console.log('Email sent to:', email);
+            }
 
-            // Send email
-            await transporter.sendMail(mailOptions);
-            console.log('Email sent to:', email);
+            res.status(200).send({ message: 'Emails sent successfully' });
         }
-
-        res.status(200).send({ message: 'Emails sent successfully' });
     } catch (error) {
         console.error('Error notifying users:', error);
         res.status(500).send(error.message);

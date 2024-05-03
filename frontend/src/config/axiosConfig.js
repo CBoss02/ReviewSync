@@ -6,7 +6,7 @@ const api = axios.create({
         "Content-Type": "application/json",
         "Access-Control-Allow-Origin": "*",
     },
-    timeout: 10000,
+    timeout: 100000,
 });
 
 api.interceptors.request.use(function (config) {

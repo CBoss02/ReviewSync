@@ -189,8 +189,15 @@ exports.getEmployeesOnProject = async (req, res) => {
                 const employeeData = employee.data();
                 if(employee.id !== uid && employeeData.projects.includes(data.projectID))
                 {
-                    const name = employeeData.first_name.concat(" ").concat(employeeData.last_name)
-                    employees.push(name)
+                    if(data.names)
+                    {
+                        const name = employeeData.first_name.concat(" ").concat(employeeData.last_name)
+                        employees.push(name)
+                    }
+                    else
+                    {
+                        employees.push(employee.id)
+                    }
                 }
             })
         }

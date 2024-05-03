@@ -104,6 +104,16 @@ function DocumentUpload({ projectId, canSelect }) {
         }
     };
 
+    const notifyReviewers = async () => {
+        if(projectId === null) //Send emails to selected employees
+            await api.post('/api/users/notifyReviewers', {userIds: selectedReviewers});
+        else //Fetch employees' ids on this project and email them
+        {
+            const response = await api.post('/api/projects/getEmployeesOnProject', {projectID: projectId, names: false});
+            await api.post('/api/users/notifyReviewers', {userIds: response.data.employees});
+        }
+    }
+
     const filteredEmployees = searchTerm.length === 0
         ? employees.slice(0, 5) // Show first 5 employees if no search term
         : employees.filter(employee => {
@@ -162,8 +172,8 @@ function DocumentUpload({ projectId, canSelect }) {
                                                 File:</h2>
                                             <p className="text-md">{file.name}</p>
                                         </div>
-                                        {canSelect && (<h2 className="text-lg font-semibold mt-4">Select Reviewers</h2>)}
-                                        {canSelect && (
+                                        {canSelect && projectId === null && (<h2 className="text-lg font-semibold mt-4">Select Reviewers</h2>)}
+                                        {canSelect && projectId === null && (
                                         <input
                                             type="text"
                                             placeholder="Search employees..."
@@ -173,7 +183,7 @@ function DocumentUpload({ projectId, canSelect }) {
                                         />
                                         )}
                                     </>
-                                    {dropdownOpen && canSelect && (
+                                    {dropdownOpen && canSelect && projectId === null && (
                                         <div
                                             className="w-full border border-gray-300 p-2 rounded-b max-h-60 overflow-auto">
                                             {filteredEmployees.map(employee => (
@@ -190,7 +200,12 @@ function DocumentUpload({ projectId, canSelect }) {
                                         </div>
                                     )}
                                     <button className="w-full bg-indigo-600 text-white p-2 rounded mt-2"
-                                            onClick={handleUpload}>
+                                            onClick={() => {
+                                                const name = handleUpload().then(() => {
+                                                    if((selectedReviewers.length > 0) || (projectId !== null))
+                                                        notifyReviewers()
+                                                })
+                                            }}>
                                         Upload
                                     </button>
                                 </div>

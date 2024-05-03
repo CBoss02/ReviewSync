@@ -348,7 +348,7 @@ const DocumentPage = () => {
                 className="flex items-center justify-between text-gray-700 dark:text-gray-100 w-full my-2 py-2 border-b-2 border-b-gray-400 gap-1">
                 <h1 className="text-xl font-semibold">{document.name || "Document Viewer"}</h1>
                 <h1 className="flex items-center justify-right gap-5">
-                    {permissions[4] && renderEmployeeList()}
+                    {permissions[4] && document.project === "null" && renderEmployeeList()}
                     {(permissions[0] || permissions[2] || permissions[5]) && (
                     <Menu as="div" className="relative inline-block text-left">
                         <div>

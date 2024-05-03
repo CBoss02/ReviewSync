@@ -2,7 +2,15 @@ const {storage, db} = require('../config/firebase-config');
 const express = require("express");
 const {getDownloadURL} = require("firebase-admin/storage");
 const {FieldValue} = require('firebase-admin').firestore;
-
+const nodemailer = require('nodemailer');
+// Configure the transporter for NodeMailer
+const transporter = nodemailer.createTransport({
+    service: 'gmail', // Use Gmail; you can change this as needed
+    auth: {
+        user: 'reviewsyncinc@gmail.com', // Your email
+        pass: 'bwsoptvkfsdgxqtq\n' // Your email password
+    }
+});
 
 exports.uploadDocument = async (req, res) => {
     const user = await db.collection('users').doc(req.user.uid).get();
@@ -43,7 +51,7 @@ exports.uploadDocument = async (req, res) => {
                     revision: 0,
                 },
                 reviewers: reviewers,
-                project: req.params.projectId,
+                project: req.body.project,
                 url: downloadUrl,
                 contentType: req.file.mimetype,
                 createdAt: new Date(),
@@ -249,9 +257,19 @@ exports.updateEmployee = async (req, res) => {
             await db.collection("companies").doc(companyID).collection("documents").doc(req.params.documentId).update({
                 reviewers: FieldValue.arrayUnion(data.employeeID)
             })
-            await db.collection("users").doc(data.employeeID).update({
+            const employeeDoc = db.collection("users").doc(data.employeeID);
+            await employeeDoc.update({
                 documents: FieldValue.arrayUnion(req.params.documentId),
             })
+            const employee = await employeeDoc.get();
+            const mailOptions = {
+                from: 'reviewsyncinc@gmail.com', // sender address
+                to: employee.data().email, // send to individual user
+                subject: 'Document Addition Notification', // Subject line
+                text: `You have been added as a reviewer to a new document. ${documentData.name}`, // plain text body
+            };
+            // Send email
+            transporter.sendMail(mailOptions);
         }
         res.status(200).send();
     } catch (error) {

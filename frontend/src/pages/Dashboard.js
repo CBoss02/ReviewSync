@@ -105,7 +105,8 @@ export default function Dashboard() {
     const fetchEmployeesOnProject = async () => {
         try {
             await api.post("/api/projects/getEmployeesOnProject", {
-                projectID: projectID
+                projectID: projectID,
+                names: true
             }).then((response) => {
                 setSelectedPeople(response.data.employees)
             });
