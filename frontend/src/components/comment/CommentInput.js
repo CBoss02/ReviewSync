@@ -1,9 +1,13 @@
 // src/components/comment/CommentInput.js
 import React, {useEffect, useState} from 'react';
 import api from "../../config/axiosConfig";
+import {useAuth} from "../../contexts/AuthContext";
+import {useNavigate} from "react-router-dom";
 
 const CommentInput = (props) => {
     const [newComment, setNewComment] = useState('');
+    const { logout } = useAuth();
+    const navigate = useNavigate();
 
     const handleChange = (e) => {
         setNewComment(e.target.value);
@@ -13,13 +17,29 @@ const CommentInput = (props) => {
         e.preventDefault();
         if(newComment !== '') {
             if(props.commentId !== undefined) {
-                await api.post(`/api/documents/addReply/${props.documentId}/${props.commentId}`, {
-                    comment: newComment
-                });
+                try {
+                    await api.post(`/api/documents/addReply/${props.documentId}/${props.commentId}`, {
+                        comment: newComment
+                    });
+                } catch (error) {
+                    if(error.response.data === 'Invalid token')
+                    {
+                        logout();
+                        navigate("/login");
+                    }
+                }
             } else {
-                await api.post(`/api/documents/addComment/${props.documentId}`, {
-                    comment: newComment
-                });
+                try {
+                    await api.post(`/api/documents/addComment/${props.documentId}`, {
+                        comment: newComment
+                    });
+                } catch (error) {
+                    if(error.response.data === 'Invalid token')
+                    {
+                        logout();
+                        navigate("/login");
+                    }
+                }
             }
             if(props.socket) {
                 props.socket.emit('comment', {

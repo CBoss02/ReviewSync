@@ -22,13 +22,10 @@ exports.createUser = async (req, res) => {
             projects: []
         });
 
-        // Send welcome email after successful creation
-        await sendEmail(req.body.email, "Welcome to Our Service", "Hello " + req.body.first_name + ", welcome to our service!");
-
-        res.status(200).send("User created successfully and email sent.");
+        res.status(200).send("User created successfully");
 
     } catch (error) {
-        console.error("Failed to create user or send email", error);
+        console.error("Failed to create user", error);
         res.status(400).send(error.message);
     }
 }
@@ -44,134 +41,6 @@ exports.getUser = async (req, res) => {
         return res.status(404).send('User not found');
     } else {
         return res.status(200).send(doc.data());
-    }
-}
-
-exports.getUserById = async (req, res) => {
-    const userId = req.body.userId;
-    try {
-        const user = await db.collection("users").doc(userId).get();
-        if (user.exists) {
-            res.status(200).send(user.data());
-        } else {
-            res.status(404).send("User not found");
-        }
-    } catch (error) {
-        res.status(400).send(error.message);
-    }
-}
-
-exports.updateUser = async (req, res) => {
-
-}
-
-exports.deleteUser = async (req, res) => {
-
-}
-
-exports.getCUpdatedFlag = async (req, res) => {
-    try {
-        const user = await db.collection("users").doc(req.body.uid).get();
-        const userData = user.data()
-        res.status(200).send({cUpdated: userData.cUpdated});
-    } catch (error) {
-        res.status(400).send(error.message);
-    }
-}
-
-exports.resetCUpdatedFlag = async (req, res) => {
-    try {
-        await db.collection("users").doc(req.body.uid).update({
-            cUpdated: false
-        })
-    } catch (error) {
-        res.status(400).send(error.message);
-    }
-}
-
-exports.getRoleUpdatedFlag = async (req, res) => {
-    try {
-        const user = await db.collection("users").doc(req.body.uid).get();
-        const userData = user.data()
-        res.status(200).send({roleUpdated: userData.roleUpdated});
-    } catch (error) {
-        res.status(400).send(error.message);
-    }
-}
-
-exports.resetRoleUpdatedFlag = async (req, res) => {
-    try {
-        await db.collection("users").doc(req.body.uid).update({
-            roleUpdated: false
-        })
-    } catch (error) {
-        res.status(400).send(error.message);
-    }
-}
-
-exports.getDUpdatedFlag = async (req, res) => {
-    try {
-        const user = await db.collection("users").doc(req.body.uid).get();
-        const userData = user.data()
-        res.status(200).send({dUpdated: userData.dUpdated});
-    } catch (error) {
-        res.status(400).send(error.message);
-    }
-}
-
-exports.resetDUpdatedFlag = async (req, res) => {
-    try {
-        await db.collection("users").doc(req.body.uid).update({
-            dUpdated: false
-        })
-    } catch (error) {
-        res.status(400).send(error.message);
-    }
-}
-
-exports.getPUpdatedFlag = async (req, res) => {
-    try {
-        const user = await db.collection("users").doc(req.body.uid).get();
-        const userData = user.data()
-        res.status(200).send({pUpdated: userData.pUpdated});
-    } catch (error) {
-        res.status(400).send(error.message);
-    }
-}
-
-exports.resetPUpdatedFlag = async (req, res) => {
-    try {
-        await db.collection("users").doc(req.body.uid).update({
-            pUpdated: false
-        })
-        res.status(200).send();
-    } catch (error) {
-        res.status(400).send(error.message);
-    }
-}
-
-exports.getCurrentUser = async (req, res) => {
-    try {
-        const user = req.currentUser;
-        if (user) {
-            console.log(user);
-            res.status(200).send(user);
-        } else {
-            console.log("User not found");
-            res.status(400).send("User not found");
-        }
-    } catch (error) {
-        res.status(404).send(error.message);
-    }
-}
-
-exports.getName = async (req, res) => {
-    try {
-        const uid = req.user.uid;
-        const user = await db.collection("users").doc(uid).get();
-        res.status(200).send({first_name: user.data().first_name, last_name: user.data().last_name})
-    } catch (error) {
-        res.status(404).send(error.message);
     }
 }
 
@@ -197,32 +66,13 @@ exports.updateLName = async (req, res) => {
     }
 }
 
-exports.uploadDocument = async (req, res) => {
-    try {
-        const user = req.currentUser;
-        if (user) {
-            const document = {
-                document_name: req.body.document_name,
-                document_url: req.body.document_url,
-                user_id: user.uid,
-            }
-            await db.collection("companies").add(document);
-            res.status(200).send("Document uploaded successfully");
-        } else {
-            res.status(400).send("User not found");
-        }
-    } catch (error) {
-        res.status(404).send(error.message);
-    }
-}
-
 exports.getPermissions = async (req, res) => {
     const user = await db.collection("users").doc(req.user.uid).get();
     const userData = user.data();
     const roleID = userData.role;
-    if (roleID === null)
+    if (roleID === null) //Failsafe in case this user might not have been assigned a role
         res.status(200).send({permissions: [false, false, false, false, false, false, false]});
-    else if (roleID === "owner")
+    else if (roleID === "owner") //Owners have all permissions
         res.status(200).send({permissions: [true, true, true, true, true, true, true]});
     else
     {
@@ -252,7 +102,7 @@ exports.notifyReviewers = async (req, res) => {
                     text: `You have been added as a reviewer to a new document.`, // plain text body
                 };
                 // Send email
-                transporter.sendMail(mailOptions);
+                await transporter.sendMail(mailOptions);
                 console.log('Email sent to:', email);
             }
 

@@ -68,6 +68,21 @@ exports.uploadDocument = async (req, res) => {
                 await db.collection('users').doc(req.user.uid).update({
                     documents: FieldValue.arrayUnion(docRef.id),
                 });
+                if(Array.isArray(reviewers) && reviewers.length > 0)
+                {
+                    for(let i = 0; i < reviewers.length; i++)
+                    {
+                        await db.collection("users").doc(reviewers[i]).update({
+                            documents: FieldValue.arrayUnion(docRef.id)
+                        })
+                    }
+                }
+                else if(typeof reviewers == "string") //One reviewer added
+                {
+                    await db.collection("users").doc(reviewers).update({
+                        documents: FieldValue.arrayUnion(docRef.id)
+                    })
+                }
             }
 
             res.status(200).send({id: docRef.id, url: downloadUrl});
@@ -179,20 +194,6 @@ exports.getHomeDocuments = async (req, res) => {
     }
 };
 
-exports.getDocuments = async (req, res) => {
-    try {
-        const documents = [];
-        const snapshot = await db.collection('documents').get();
-        snapshot.forEach(doc => {
-            documents.push({id: doc.id, ...doc.data()});
-        });
-        res.status(200).json(documents);
-    } catch (error) {
-        console.error('Failed to retrieve document:', error);
-        res.status(500).json({error: error.message});
-    }
-};
-
 exports.getDocument = async (req, res) => {
     const user = await db.collection('users').doc(req.user.uid).get();
 
@@ -262,14 +263,15 @@ exports.updateEmployee = async (req, res) => {
                 documents: FieldValue.arrayUnion(req.params.documentId),
             })
             const employee = await employeeDoc.get();
+            console.log("here")
             const mailOptions = {
                 from: 'reviewsyncinc@gmail.com', // sender address
                 to: employee.data().email, // send to individual user
                 subject: 'Document Addition Notification', // Subject line
-                text: `You have been added as a reviewer to a new document. ${documentData.name}`, // plain text body
+                text: `You have been added as a reviewer to a new document.`, // plain text body
             };
             // Send email
-            transporter.sendMail(mailOptions);
+            await transporter.sendMail(mailOptions);
         }
         res.status(200).send();
     } catch (error) {
@@ -383,22 +385,6 @@ exports.deleteComment = async (req, res) => {
         }).then(() => {
             res.status(200).send();
         });
-    } catch (error) {
-        res.status(400).send(error.message);
-    }
-}
-
-exports.deleteReply = async (req, res) => {
-    try {
-        const replyData = req.body;
-        const user = await db.collection("users").doc(replyData.reply.owner.id).get();
-        const companyID = user.data().company;
-        const collection = await db.collection("companies").doc(companyID).collection("documents").doc(replyData.documentID).collection("comments");
-        await collection.doc(replyData.parentID).update({
-            replies: FieldValue.arrayRemove(replyData.reply)
-        }).then(() => {
-            res.status(200).send();
-        })
     } catch (error) {
         res.status(400).send(error.message);
     }

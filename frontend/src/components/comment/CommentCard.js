@@ -4,11 +4,15 @@ import CommentInput from "./CommentInput";
 import {Menu, Transition} from "@headlessui/react";
 import {useAuth} from "../../contexts/AuthContext";
 import api from "../../config/axiosConfig";
+import {useNavigate} from "react-router-dom";
 
 function CommentCard({comment, documentId, document, isReplyActive, setReplyActive, permissions, socket}) {
     const [viewReplies, setViewReplies] = useState(false);
 
     const auth = useAuth();
+    const { logout } = useAuth();
+
+    const navigate = useNavigate();
 
     const handleViewReplies = () => {
         setViewReplies(!viewReplies);
@@ -39,6 +43,11 @@ function CommentCard({comment, documentId, document, isReplyActive, setReplyActi
             }
         } catch (error) {
             console.error('Failed to delete comment:', error);
+            if(error.response.data === 'Invalid token')
+            {
+                logout();
+                navigate("/login");
+            }
         }
     }
 

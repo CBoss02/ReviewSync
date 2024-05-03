@@ -1,4 +1,4 @@
-// src/components/DocumentViewer.js
+// src/components/DocumentPage.js
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import api from '../config/axiosConfig'; // Axios configuration path
@@ -9,6 +9,7 @@ import {Listbox, Menu, Transition} from '@headlessui/react';
 import { Fragment } from 'react';
 import io from 'socket.io-client';
 import {useAuth} from "../contexts/AuthContext";
+import useIdleTimeout from "../components/idleTimer/idleTimer";
 
 // Server endpoint for socket connection
 const ENDPOINT = 'http://localhost:3001';
@@ -28,12 +29,10 @@ const DocumentPage = () => {
     const [dragging, setDragging] = useState(false);
     const [permissions, setPermissions] = useState([]);
     const [comments, setComments] = useState([]);
-    const [searchTerm, setSearchTerm] = useState('');
-    const [dropdownOpen, setDropdownOpen] = useState(false);
     const [employees, setEmployees] = useState([]);
     const [selectedPeople, setSelectedPeople] = useState([]);
-    const [error, setError] = useState('');
-    const [filteredEmployees, setFilteredEmployees] = useState([]);
+
+    useIdleTimeout();
 
     const { logout } = useAuth();
 
@@ -44,6 +43,11 @@ const DocumentPage = () => {
             setComments(response.data);
         } catch (error) {
             console.error('Failed to fetch comments', error);
+            if(error.response.data === 'Invalid token')
+            {
+                logout();
+                navigate("/login");
+            }
         }
     }
 
@@ -55,6 +59,11 @@ const DocumentPage = () => {
             setIsLoading(false);
         } catch (error) {
             console.error('Failed to fetch document', error);
+            if(error.response.data === 'Invalid token')
+            {
+                logout();
+                navigate("/login");
+            }
         }
     }
 
@@ -85,11 +94,20 @@ const DocumentPage = () => {
 
     // Fetches user permissions
     useEffect(() => {
-        const fetchPermissions = async () => {
-            const response = await api.get("/api/users/getPermissions");
-            setPermissions(response.data.permissions);
-        }
-        fetchPermissions();
+            const fetchPermissions = async () => {
+                try {
+                    const response = await api.get("/api/users/getPermissions");
+                    setPermissions(response.data.permissions);
+                } catch (error) {
+                    console.error('Failed to fetch permissions:', error);
+                    if(error.response.data === 'Invalid token')
+                    {
+                        logout();
+                        navigate("/login");
+                    }
+                }
+            }
+            fetchPermissions();
     }, []);
 
     const navigate = useNavigate();
@@ -142,6 +160,11 @@ const DocumentPage = () => {
             setFile(null);
         } catch (error) {
             console.error('Failed to upload revision:', error);
+            if(error.response.data === 'Invalid token')
+            {
+                logout();
+                navigate("/login");
+            }
         }
     }
 
@@ -153,6 +176,11 @@ const DocumentPage = () => {
                navigate('/dashboard');
             } catch (error) {
                 console.error('Failed to close review:', error);
+                if(error.response.data === 'Invalid token')
+                {
+                    logout();
+                    navigate("/login");
+                }
             }
         }
     }
@@ -167,6 +195,11 @@ const DocumentPage = () => {
                 }
             } catch (error) {
                 console.error('Failed to resolve comments:', error);
+                if(error.response.data === 'Invalid token')
+                {
+                    logout();
+                    navigate("/login");
+                }
             }
         }
     }
@@ -180,7 +213,7 @@ const DocumentPage = () => {
             if(error.response.data === 'Invalid token')
             {
                 logout();
-                navigate('/login');
+                navigate("/login");
             }
         }
     }
@@ -194,7 +227,7 @@ const DocumentPage = () => {
             if(error.response.data === 'Invalid token')
             {
                 logout();
-                navigate('/login');
+                navigate("/login");
             }
         }
     };
@@ -219,7 +252,8 @@ const DocumentPage = () => {
             if(error.response.data === 'Invalid token')
             {
                 logout();
-                navigate('/login')}
+                navigate("/login");
+            }
         }
     }
 

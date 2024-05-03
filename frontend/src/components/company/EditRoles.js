@@ -13,6 +13,8 @@ export default function EditRoles() {
 
     useIdleTimeout();
 
+    const { logout } = useAuth();
+
 //Default roles object that holds its name, permissions and an id
     let initialRoles = [{
         permissions: [false,true,true,true,true,true,true],
@@ -23,9 +25,9 @@ export default function EditRoles() {
         /* it can be read or not*/
         //close: false,
         //comment: true,
-        //notify: true,
         //resolve: true,
         //respond: true,
+        //select and notify: true,
         //revise: true,
         //upload: true,
     }, {
@@ -34,9 +36,9 @@ export default function EditRoles() {
         id: 2,
         //close: false,
         //comment: false,
-        //notify: false,
         //resolve: false,
         //respond: false,
+        //select and notify: false,
         //revise: false,
         //upload: false,
     }, {
@@ -45,9 +47,9 @@ export default function EditRoles() {
         id: 3,
         //close: true,
         //comment: true,
-        //notify: false,
-        //resolve: true,
+        //resolve: false,
         //respond: true,
+        //select and notify: true,
         //revise: false,
         //upload: false,
     }, {
@@ -56,9 +58,9 @@ export default function EditRoles() {
         id: 4,
         //close: false,
         //comment: true,
-        //notify: false,
         //resolve: false,
-        //respond: true,
+        //respond: false,
+        //select and notify: true,
         //revise: false,
         //upload: false,
     }];
@@ -75,7 +77,7 @@ export default function EditRoles() {
     useEffect(() => {
         const fetchRoles = async () => {
             try {
-                const response = await api.post('/api/companies/getRoles', {uid: uid});
+                const response = await api.get('/api/companies/getRoles');
                 if(response.data.roles.length !== 0)
                 {
                     setRoles(response.data.roles)
@@ -88,9 +90,13 @@ export default function EditRoles() {
                 }
             } catch (error) {
                 console.error('Failed to fetch roles:', error);
+                if(error.response.data === 'Invalid token') //if user's login token has expired, log them out
+                {
+                    logout();
+                    navigate("/login");
+                }
                 setRoles(initialRoles)
                 selectRole(initialRoles[0])
-                // Handle error (e.g., show an error message to the user)
             }//end try catch
         };//end fetchRoles const
         const fetchCompanyName = async () => {
@@ -99,7 +105,11 @@ export default function EditRoles() {
                 setCompanyName(response.data.companyName)
             } catch (error) {
                 console.error('Failed to fetch company name:', error);
-                // Handle error (e.g., show an error message to the user)
+                if(error.response.data === 'Invalid token') //if user's login token has expired, log them out
+                {
+                    logout();
+                    navigate("/login");
+                }
             }//end try catch
         };//end fetchCompanyName
         fetchCompanyName();
@@ -122,7 +132,13 @@ export default function EditRoles() {
                 await api.put('/api/companies/addOrUpdateRoles', {
                     uid: uid, roles: roles
                 }).catch(function (error) {
-                    if (error.response) {
+                    if(error.response.data === 'Invalid token') //if user's login token has expired, log them out
+                    {
+                        logout();
+                        navigate("/login");
+                    }
+                    if (error.response.status === 405)
+                    {
                         alert(error.response.data.message);
                     }//end if
                 });

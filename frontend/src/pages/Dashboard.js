@@ -27,10 +27,10 @@ export default function Dashboard() {
 
     useIdleTimeout(); //starts a timer that will log the user out after 10 minutes of inactivity
 
-    const auth = useAuth(); //we may get rid of this entirely
+    const auth = useAuth();
     const uid = auth.currentUser.uid;
 
-    const { logout } = useAuth(); //called when calling the API tells us that a user's login token has expired
+    const { logout } = useAuth();
 
     //Fetches the projects this user has access to
     const fetchProjects = async () => {
@@ -43,6 +43,7 @@ export default function Dashboard() {
             if(error.response.data === 'Invalid token') //if user's login token has expired, log them out
             {
                 logout();
+                navigate("/login");
             }
         }
     };
@@ -58,6 +59,7 @@ export default function Dashboard() {
             if(error.response.data === 'Invalid token')
             {
                 logout();
+                navigate("/login");
             }
         }
     };
@@ -69,6 +71,11 @@ export default function Dashboard() {
             setPermissions(response.data.permissions)
         } catch (error) {
             console.error('Failed to fetch permissions:', error);
+            if(error.response.data === 'Invalid token')
+            {
+                logout();
+                navigate("/login");
+            }
         }
     }
 
@@ -80,6 +87,11 @@ export default function Dashboard() {
             });
         } catch (error) {
             console.error('Failed to fetch employees:', error);
+            if(error.response.data === 'Invalid token')
+            {
+                logout();
+                navigate("/login");
+            }
         }
     }
 
@@ -93,8 +105,10 @@ export default function Dashboard() {
             });
         } catch (error) {
             console.error('Failed to fetch project documents:', error);
-            if (error.response.data === 'Invalid token') {
+            if (error.response.data === 'Invalid token')
+            {
                 logout();
+                navigate("/login");
             }
         }
     };
@@ -113,6 +127,7 @@ export default function Dashboard() {
             if(error.response.data === 'Invalid token')
             {
                 logout();
+                navigate("/login");
             }
         }
     };
@@ -134,6 +149,7 @@ export default function Dashboard() {
             if(error.response.data === 'Invalid token')
             {
                 logout();
+                navigate("/login");
             }
         }
     }
@@ -158,6 +174,7 @@ export default function Dashboard() {
             if(error.response.data === 'Invalid token')
             {
                 logout();
+                navigate("/login");
             }
         }
     }
@@ -174,6 +191,7 @@ export default function Dashboard() {
             if(error.response.data === 'Invalid token')
             {
                 logout();
+                navigate("/login");
             }
         }
     }
@@ -185,13 +203,28 @@ export default function Dashboard() {
                 { data:
                         { projectID: projectID }
                 }).then(() => {
+                //Find the index of the project that we want to delete
+                for(let project of projects){
+                    if(project.id === projectID) {
+                        let index  = projects.indexOf(project);
+                        //filter out the project we want to "delete"
+                        setProjects(projects.filter(project => project !== projects[index]));
+                    }//end nested if
+                }//end for
+                //Set the active project ot the home page
+                setProjectID(null);
+                setHome(true);
+                setOwner(false); //Navigate to the Home page
             })
         } catch (error) {
             console.error('Failed to delete project:', error);
             if(error.response.data === 'Invalid token')
             {
                 logout();
+                navigate("/login");
             }
+            if(error.response.status === 405)
+                alert(error.response.data.message)
         }
     }
 
@@ -419,18 +452,6 @@ export default function Dashboard() {
                 <button className="flex pt-4 -ml-1 pb-0"
                         onClick={async () => {
                             await deleteProject()
-                            //Find the index of the project that we want to delete
-                            for(let project of projects){
-                                if(project.id === projectID) {
-                                    let index  = projects.indexOf(project);
-                                    //filter out the project we want to "delete"
-                                    setProjects(projects.filter(project => project !== projects[index]));
-                                }//end nested if
-                            }//end for
-                            //Set the active project ot the home page
-                            setProjectID(null);
-                            setHome(true);
-                            setOwner(false); //Navigate to the Home page
                         }}//end onCLick
                 >
                     <img

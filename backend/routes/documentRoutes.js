@@ -1,5 +1,5 @@
 const express = require('express');
-const { uploadDocument, getDocuments,  getHomeDocuments, deleteComment, deleteReply, addComment, addReply, getComments, getAllDocuments, getDocument,
+const { uploadDocument, getHomeDocuments, deleteComment, addComment, addReply, getComments, getAllDocuments, getDocument,
     resolveComment,
     uploadRevision,
     getEmployeesOnDocument,
@@ -20,13 +20,10 @@ router.put('/updateEmployee/:documentId', authMiddleware, updateEmployee);
 router.get('/getDocument/:documentId', authMiddleware, getDocument)
 router.get('/getAllDocuments/:projectId?',authMiddleware, getAllDocuments);
 router.delete("/deleteComment", deleteComment);
-router.get("/getComments", getComments);
-router.get('/', getDocuments);
 router.post("/addComment/:documentId", authMiddleware, addComment);
 router.get('/getComments/:documentId', authMiddleware, getComments);
 router.post("/addReply/:documentId/:commentId", authMiddleware, addReply);
 router.delete("/deleteComment/:documentId/:commentId", authMiddleware, deleteComment);
-router.delete("/deleteReply", deleteReply); //does not need middleware because you access the uid through the data in the request itself: replyData.reply.owner.id
 router.get('/getHomeDocuments', authMiddleware, getHomeDocuments);
 router.post('/resolveComment/:documentId/:commentId', authMiddleware, resolveComment);
 router.post('/resolveAllComments/:documentId', authMiddleware, resolveAllComments);

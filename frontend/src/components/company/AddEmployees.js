@@ -8,6 +8,7 @@ import useIdleTimeout from "../idleTimer/idleTimer"
 
 const EmployeeRoles = () => {
     const auth = useAuth();
+    const { logout } = useAuth();
     const uid = auth.currentUser.uid;
 
     const [employees, setEmployees] = useState([{ email: '', role: '' }]);
@@ -20,19 +21,29 @@ const EmployeeRoles = () => {
     useEffect(() => {
         const fetchRoles = async () => {
             try {
-                const response = await api.post('/api/companies/getRoles', {uid: uid});
+                const response = await api.get('/api/companies/getRoles');
                 setRoles(response.data.roles)
-            } catch (error) {console.error('Failed to fetch roles:', error);
-                // Handle error (e.g., show an error message to the user)
+            } catch (error) {
+                console.error('Failed to fetch roles:', error);
+                if(error.response.data === 'Invalid token') //if user's login token has expired, log them out
+                {
+                    logout();
+                    navigate("/login");
+                }
             }//end try catch
         };//end fetchRoles const
         const fetchEmailsAndRoles = async () => {
             try {
-                const response = await api.post('/api/companies/getEmailsAndRoles', {uid: uid});
+                const response = await api.get('/api/companies/getEmailsAndRoles');
                 if(response.data.emailsAndRoles.length !== 0)
                     setEmployees(response.data.emailsAndRoles)
-            } catch (error) {console.error('Failed to fetch emails and roles:', error);
-                // Handle error (e.g., show an error message to the user)
+            } catch (error) {
+                console.error('Failed to fetch emails and roles:', error);
+                if(error.response.data === 'Invalid token') //if user's login token has expired, log them out
+                {
+                    logout();
+                    navigate("/login");
+                }
             }//end try catch
         };//end fetchEmailsAndRoles const
         const fetchCompanyName = async () => {
@@ -41,6 +52,11 @@ const EmployeeRoles = () => {
                 setCompanyName(response.data.companyName)
             } catch (error) {
                 console.error('Failed to fetch company name:', error);
+                if(error.response.data === 'Invalid token') //if user's login token has expired, log them out
+                {
+                    logout();
+                    navigate("/login");
+                }
                 // Handle error (e.g., show an error message to the user)
             }//end try catch
         };//end fetchCompanyName
@@ -88,14 +104,17 @@ const EmployeeRoles = () => {
                 // Reset the form or redirect the user as necessary
             } catch (error) {
                 console.error('Error adding employees:', error);
+                if(error.response.data === 'Invalid token') //if user's login token has expired, log them out
+                {
+                    logout();
+                    navigate("/login");
+                }
             }
         }
     };
 
     return (
-
         <div className="flex flex-col justify-center items-center mb-auto mx-auto mt-24">
-
             {companyName && (
             <h2 className="mt-24 mb-4 text-center text-2xl font-bold leading-9 tracking-tight text-gray-900 dark:text-white">
                 {/*Edit your company's roles*/}

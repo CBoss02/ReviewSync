@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import api from "../../config/axiosConfig";
 import { UploadIcon, XIcon } from "@heroicons/react/solid";
+import {useAuth} from "../../contexts/AuthContext";
+import {useNavigate} from "react-router-dom";
 
 function DocumentUpload({ projectId, canSelect }) {
     const [file, setFile] = useState(null);
@@ -11,17 +13,24 @@ function DocumentUpload({ projectId, canSelect }) {
     const [dropdownOpen, setDropdownOpen] = useState(false);
     const [employees, setEmployees] = useState([]);
 
+    const { logout } = useAuth();
+    const navigate = useNavigate();
+
     // Fetch all employees only once when the component mounts
     useEffect(() => {
         const fetchAllEmployees = async () => {
             try {
-                const response = await api.get('/api/companies/getAllEmployees');
+                const response = await api.get('/api/companies/getEmployeesWithEmails');
                 setEmployees(response.data);
             } catch (error) {
                 console.error('Failed to fetch employees:', error);
+                if(error.response.data === 'Invalid token') //if user's login token has expired, log them out
+                {
+                    logout();
+                    navigate("/login");
+                }
             }
         };
-
         fetchAllEmployees();
     }, []);
 

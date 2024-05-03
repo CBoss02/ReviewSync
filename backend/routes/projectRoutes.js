@@ -1,9 +1,6 @@
 const express = require("express");
-
 const {
     getProjects,
-    getProject,
-    getAllProjects,
     createProject,
     updateName,
     updateEmployee,
@@ -13,9 +10,6 @@ const {
 } = require("../controllers/projectController");
 const authMiddleware = require("../middleware/authMiddleware");
 const router = express.Router();
-
-router.get('/getProject/:projectId', authMiddleware, getProject);
-router.get("/getAllProjects", authMiddleware,  getAllProjects);
 
 router.get("/getProjects", authMiddleware, getProjects);
 router.post("/getProjectDocuments", authMiddleware, getProjectDocuments);

@@ -3,29 +3,22 @@ const { createCompany, getCompanyID,
     addOrUpdateRoles, modifyPendingListAndEditRoles,
     getEmailsAndRoles, getRoles,
     getEmployees, addEmployeeToCompany,
-    getCompanyName, getEUpdatedFlag,
-    resetEUpdatedFlag, getRolesUpdatedFlag,
-    resetRolesUpdatedFlag, getCompany, getAllEmployees, getCompanyOwner
+    getCompanyName, getEmployeesWithEmails, getCompanyOwner
 } = require("../controllers/companyController");
 const authMiddleware = require("../middleware/authMiddleware");
 
 const router = express.Router();
 
-router.post("/createCompany", createCompany);
+router.post("/createCompany", authMiddleware, createCompany);
 router.get("/getCompanyID", authMiddleware, getCompanyID);
 router.get("/getCompanyName", authMiddleware, getCompanyName);
 router.get("/getEmployees", authMiddleware, getEmployees);
-router.get("/getAllEmployees", authMiddleware, getAllEmployees);
-router.put("/modifyPendingListAndEditRoles", modifyPendingListAndEditRoles);
-router.put("/addEmployeeToCompany", addEmployeeToCompany);
-router.post("/getRoles", getRoles);
-router.put("/addOrUpdateRoles", addOrUpdateRoles);
-router.post("/getEmailsAndRoles", getEmailsAndRoles);
-router.post("/getEUpdatedFlag", getEUpdatedFlag);
-router.put("/resetEUpdatedFlag", resetEUpdatedFlag);
-router.post("/getRolesUpdatedFlag", getRolesUpdatedFlag);
-router.put("/resetRolesUpdatedFlag", resetRolesUpdatedFlag);
-router.get("/getCompany", authMiddleware, getCompany);
+router.get("/getEmployeesWithEmails", authMiddleware, getEmployeesWithEmails);
+router.put("/modifyPendingListAndEditRoles", authMiddleware, modifyPendingListAndEditRoles);
+router.put("/addEmployeeToCompany", authMiddleware, addEmployeeToCompany);
+router.get("/getRoles", authMiddleware, getRoles);
+router.put("/addOrUpdateRoles", authMiddleware, addOrUpdateRoles);
+router.get("/getEmailsAndRoles", authMiddleware, getEmailsAndRoles);
 router.get("/getCompanyOwner", authMiddleware, getCompanyOwner);
 
 module.exports = router;

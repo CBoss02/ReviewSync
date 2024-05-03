@@ -5,6 +5,7 @@ import {
     signOut,
     sendEmailVerification,
 } from "firebase/auth";
+import {useNavigate} from "react-router-dom";
 
 
 import auth from "../config/firebase-config";
@@ -54,8 +55,6 @@ export function AuthProvider({children}) {
             const userCredential = await signInWithEmailAndPassword(auth, email, password);
             const token = await userCredential.user.getIdToken();
             localStorage.setItem('token', token);
-            const response = await api.get('api/companies/getCompanyID');
-            return response.data.companyID;
         } catch (error) {
             alert("Failed to log in.");
             console.log("Failed to log in:", error)

@@ -1,6 +1,6 @@
 import { LogoutIcon } from "@heroicons/react/outline";
 import {useEffect, useRef, useState} from "react";
-import { Link } from "react-router-dom";
+import {Link, useNavigate} from "react-router-dom";
 
 import { useAuth } from "../../contexts/AuthContext";
 import Logout from "../authentication/Logout";
@@ -11,9 +11,11 @@ import api from "../../config/axiosConfig";
 
 export default function Header() {
     const [modal, setModal] = useState(false);
-    const { currentUser } = useAuth();
+    const { currentUser, logout } = useAuth();
     const [companyName, setCompanyName] = useState("");
     const [isOwner, setIsOwner] = useState(false);
+    const navigate = useNavigate();
+
 
     useEffect(() => {
         if (currentUser) {
@@ -25,9 +27,13 @@ export default function Header() {
                     setIsOwner(ownerResponse.data.owner === currentUser.uid);
                 } catch (error) {
                     console.error('Failed to fetch company details:', error);
+                    if(error.response.data === 'Invalid token') //if user's login token has expired, log them out
+                    {
+                        logout();
+                        navigate("/login");
+                    }
                 }
             };
-
             fetchCompanyNameAndOwner();
         } else {
             setCompanyName(""); // Reset company name when logged out

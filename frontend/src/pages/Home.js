@@ -9,13 +9,13 @@ import api from "../config/axiosConfig"; // Import useNavigate
 //import auth from "../config/firebase";
 
 export default function Home() {
-
     //Caleb's code from index.js used to navigate into the /edit-roles page
     const navigate = useNavigate(); // Instantiate useNavigate
     const [companyName, setCompanyName] = useState("") ;
     const [companyID, setCompanyID] = useState();
     const [error, setError] = useState("");
     const auth = useAuth();
+    const { logout } = useAuth();
     const uid = auth.currentUser.uid;
 
     useIdleTimeout();
@@ -33,27 +33,19 @@ export default function Home() {
 
     //Gets the user's company if they have one when the page loads
     useEffect(() => {
-        const fetchCompanyName = async () => {
-            try {
-                const response = await api.get('/api/companies/getCompanyName');
-                setCompanyName(response.data.companyName)
-            } catch (error) {
-                console.error('Failed to fetch company name:', error);
-                // Handle error (e.g., show an error message to the user)
-            }//end try catch
-        };//end fetchCompanyName
-
         const fetchCompanyID = async () => {
             try {
                 const response = await api.get('/api/companies/getCompanyID');
                 setCompanyID(response.data.companyID)
             } catch (error) {
                 console.error('Failed to fetch company id:', error);
-                // Handle error (e.g., show an error message to the user)
+                if(error.response.data === 'Invalid token') //if user's login token has expired, log them out
+                {
+                    logout();
+                    navigate("/login");
+                }
             }//end try catch
         };//end fetchCompanyID
-
-        fetchCompanyName();
         fetchCompanyID();
     }, []);
 
@@ -75,23 +67,32 @@ export default function Home() {
     const submitCompany = async (companyName) => {
         try {
             await api.post("/api/companies/createCompany", {
-                owner: uid,
                 name: companyName
             });
         } catch (error) {
             console.error('Failed to join the company:', error);
+            if(error.response.data === 'Invalid token') //if user's login token has expired, log them out
+            {
+                logout();
+                navigate("/login");
+            }
         }//end try catch
     }
 
     const joinCompany = async () => {
         try {
             await api.put('/api/companies/addEmployeeToCompany', {
-                userID: uid, companyName: companyName
+                companyName: companyName
             }).then(() => {
                 navigate('/dashboard')
             }).catch(error => {
                 if(error.response.status === 405)
                     alert(error.response.data.message)
+                if(error.response.data === 'Invalid token') //if user's login token has expired, log them out
+                {
+                    logout();
+                    navigate("/login");
+                }
             })
         } catch (error) {
             console.error('Failed to join the company:', error);
@@ -117,7 +118,6 @@ export default function Home() {
 
 
     return (
-
         <div className="flex flex-col items-center justify-center h-screen transition-all duration-500">
             {/*If the user doesn't already have a company, allow them to join or create a company*/}
             {!companyID ? (
@@ -163,7 +163,6 @@ export default function Home() {
                 //When the user already has a company navigate to the dashboard
                 navigate("/dashboard")
             )}
-
         </div>
     );
 }

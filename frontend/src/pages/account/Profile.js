@@ -3,7 +3,9 @@ import {sendPasswordResetEmail} from "firebase/auth";
 import auth from "../../config/firebase-config";
 import saveIcon from "../../assets/icons/GreenSave-Icon.png";
 import api from "../../config/axiosConfig";
-import useIdleTimeout from "../../components/idleTimer/idleTimer"
+import useIdleTimeout from "../../components/idleTimer/idleTimer";
+import {useAuth} from "../../contexts/AuthContext";
+import {useNavigate} from 'react-router-dom';
 
 export default function Profile() {
     const [fNameInput, setFNameInput] = useState("");
@@ -12,7 +14,11 @@ export default function Profile() {
     const [companyName, setCompanyName] = useState("");
     const [role, setRole] = useState("");
 
+    const navigate = useNavigate();
+
     useIdleTimeout();
+
+    const { logout } = useAuth();
 
     const handleFNameChange = (event) => {
         setFNameInput(event.target.value);
@@ -22,8 +28,8 @@ export default function Profile() {
         setLNameInput(event.target.value);
     };
 
+    //Fetch a user's email, role, and name
     useEffect(() => {
-
         const fetchUser = async () => {
             try {
                 await api.get("/api/users/getUser").then((response) => {
@@ -34,6 +40,11 @@ export default function Profile() {
                 });
             } catch (error) {
                 console.error('Failed to fetch user:', error);
+                if(error.response.data === 'Invalid token')
+                {
+                    logout();
+                    navigate("/login");
+                }
             }
         }
 
@@ -43,10 +54,13 @@ export default function Profile() {
                 setCompanyName(response.data.companyName)
             } catch (error) {
                 console.error('Failed to fetch company name:', error);
-                // Handle error (e.g., show an error message to the user)
+                if(error.response.data === 'Invalid token') //if user's login token has expired, log them out
+                {
+                    logout();
+                    navigate("/login");
+                }
             }//end try catch
         };//end fetchCompanyName
-
         fetchUser();
         fetchCompanyName();
     }, []);
@@ -58,6 +72,11 @@ export default function Profile() {
             })
         } catch (error) {
             console.error('Failed to fetch name:', error);
+            if(error.response.data === 'Invalid token')
+            {
+                logout();
+                navigate("/login");
+            }
         }
     }
 
@@ -68,6 +87,11 @@ export default function Profile() {
             })
         } catch (error) {
             console.error('Failed to fetch name:', error);
+            if(error.response.data === 'Invalid token')
+            {
+                logout();
+                navigate("/login");
+            }
         }
     }
 
