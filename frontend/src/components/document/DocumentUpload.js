@@ -10,7 +10,6 @@ function DocumentUpload({ projectId, canSelect }) {
     const [searchTerm, setSearchTerm] = useState('');
     const [dropdownOpen, setDropdownOpen] = useState(false);
     const [employees, setEmployees] = useState([]);
-    const [error, setError] = useState('');
 
     // Fetch all employees only once when the component mounts
     useEffect(() => {
@@ -20,7 +19,6 @@ function DocumentUpload({ projectId, canSelect }) {
                 setEmployees(response.data);
             } catch (error) {
                 console.error('Failed to fetch employees:', error);
-                setError(error);
             }
         };
 
@@ -129,7 +127,7 @@ function DocumentUpload({ projectId, canSelect }) {
 
     return (
         <div>
-            <button className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-700"
+            <button className="px-4 py-2 bg-indigo-700 text-white rounded hover:bg-indigo-500"
                     onClick={() => setShowUpload(true)}>Upload Document
             </button>
 
@@ -148,7 +146,7 @@ function DocumentUpload({ projectId, canSelect }) {
                             </button>
                         </div>
                         <div
-                            className={`p-5 border-4 ${dragging ? 'border-blue-500' : 'border-0'} rounded-lg relative border-white`}
+                            className={`p-5 border-4 ${dragging ? 'border-indigo-500' : 'border-0'} rounded-lg relative border-white`}
                             style={{width: '450px'}}>
                             <h1 className="text-lg font-semibold text-center">Upload Document</h1>
                             <div className="flex flex-col items-center justify-center w-full border-2 border-dashed mt-2 mb-2 p-4 text-indigo-700">

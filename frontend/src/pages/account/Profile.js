@@ -118,9 +118,12 @@ export default function Profile() {
             <h1 className="justify-start w-96 -mr-6 my-2 text-md dark:text-white">
                 Company: {companyName}
             </h1>
-            <h1 className="justify-start w-96 -mr-6 my-2 text-md dark:text-white">
-                Role: {role}
-            </h1>
+            {role === "owner" &&
+                <h1 className="justify-start w-96 -mr-6 my-2 text-md dark:text-white">
+                    Role: Owner
+                </h1>
+            }
+
             <h1 className="justify-start w-96 -mr-6 my-2 pb-2 text-md dark:text-white">
                 Email: {email}
             </h1>
