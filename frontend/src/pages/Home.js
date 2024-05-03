@@ -16,7 +16,6 @@ export default function Home() {
     const [error, setError] = useState("");
     const auth = useAuth();
     const { logout } = useAuth();
-    const uid = auth.currentUser.uid;
 
     useIdleTimeout();
 
@@ -115,7 +114,6 @@ export default function Home() {
 
     // Conditional class to apply transition effects
     const transitionClass = isVisible ? "opacity-100 scale-100" : "opacity-0 scale-95";
-
 
     return (
         <div className="flex flex-col items-center justify-center h-screen transition-all duration-500">
