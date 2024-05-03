@@ -160,7 +160,8 @@ exports.getHomeDocuments = async (req, res) => {
         const snapshot = await db.collection("companies").doc(companyID).collection("documents").get();
 
         snapshot.forEach(doc => {
-            if (documentIDs.includes(doc.id)) {
+            const docData = doc.data();
+            if ((documentIDs.includes(doc.id)) && (docData.state.name !== 'Closed')) {
                 documents.push({id: doc.id, ...doc.data()});
             }
         });
