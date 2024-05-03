@@ -23,8 +23,6 @@ export default function Dashboard() {
     const [permissions, setPermissions] = useState([]); //user's permissions, in this case only relevant if they are able to upload documents or not
     const [employees, setEmployees] = useState([]); //employees in company, for when a user creates a project and needs to add employees to it
     const [owner, setOwner] = useState(false); //keeps track if user is owner of project currently being examined
-    const [popupIsOpen, setPopupIsOpen] = useState(false); //for document upload
-    const [file, setFile] = useState(null); //for document upload
     const navigate = useNavigate();
 
     useIdleTimeout(); //starts a timer that will log the user out after 10 minutes of inactivity
@@ -196,28 +194,6 @@ export default function Dashboard() {
         }
     }
 
-    //Uploads a document to the database
-    const handleUpload = async () => {
-        const formData = new FormData();
-        formData.append('file', file);
-        formData.append('projectID', projectID);
-        try {
-            const response = await api.post('/api/documents/uploadDocument', formData, {
-                headers: {
-                    'Content-Type': 'multipart/form-data',
-                }
-            });
-            console.log('Upload successful', response.data);
-            setPopupIsOpen(false);
-        } catch (error) {
-            console.error('Upload failed', error);
-            if(error.response.data === 'Invalid token')
-            {
-                logout();
-            }
-        }
-    };
-
     //Immediately on render, get a user's permissions, projects, home documents, and the employees in the company
     useEffect(() => {
         fetchPermissions();
@@ -263,7 +239,7 @@ export default function Dashboard() {
         return projects.map((data) => (
                 <>
                     <button
-                        className="flex justify-center bg-blue-700 hover:bg-blue-500 text-white font-bold py-2 px-4 rounded min-w-80 transition-all duration-500"
+                        className="flex justify-center bg-indigo-700 hover:bg-indigo-500 text-white font-bold py-2 px-4 rounded min-w-80 transition-all duration-500"
                         onClick={async () => {
                             setProjectID(data.id)
                             setHome(false)
@@ -290,7 +266,7 @@ export default function Dashboard() {
     const renderHomeDocumentNames = () => {
         return homeDocuments.map((document) => (
             <button
-                className="bg-blue-700 hover:bg-blue-500 min-w-80 text-white font-bold py-2 px-4 rounded transition-all duration-500"
+                className="bg-indigo-700 hover:bg-indigo-500 min-w-80 text-white font-bold py-2 px-4 rounded transition-all duration-500"
                 onClick={() => handleDocumentRedirect(document.id)}
             >
                 <p>{document.name}</p>
@@ -301,7 +277,7 @@ export default function Dashboard() {
     const renderProjectDocumentNames = () => {
         return projectDocuments.map((document) => (
             <button
-                className="bg-blue-700 hover:bg-blue-500 min-w-80 text-white font-bold py-2 px-4 rounded transition-all duration-500"
+                className="bg-indigo-700 hover:bg-indigo-500 min-w-80 text-white font-bold py-2 px-4 rounded transition-all duration-500"
                 onClick={() => handleDocumentRedirect(document.id)}
             >
                 <p>{document.name}</p>
@@ -327,7 +303,7 @@ export default function Dashboard() {
                     onChange={handleInputChange}
                 />
                 <button
-                    className="flex justify-center py-2.5 h-9 w-12 bg-blue-700 hover:bg-blue-500 text-white font-bold px-4 rounded-full"
+                    className="flex justify-center py-2.5 h-9 w-12 bg-indigo-700 hover:bg-indigo-500 text-white font-bold px-4 rounded-full"
                     onClick={async () => {
                         await addProject()
                     }}
@@ -500,7 +476,7 @@ export default function Dashboard() {
                         sx={{border: '2px solid grey'}}
                     >
                         <button
-                            className="flex justify-center bg-blue-700 hover:bg-blue-500 text-white font-bold py-2 px-4 rounded min-w-80 transition-all duration-500"
+                            className="flex justify-center bg-indigo-700 hover:bg-indigo-500 text-white font-bold py-2 px-4 rounded min-w-80 transition-all duration-500"
                             onClick={async () => {
                                 setOwner(false)
                                 setHome(true)
@@ -519,7 +495,7 @@ export default function Dashboard() {
                         {renderProjectNames()}
                         <>
                             <button
-                                className="bg-blue-700 hover:bg-blue-500 min-w-80 text-white font-bold py-2 px-4 rounded transition-all duration-500"
+                                className="bg-indigo-700 hover:bg-indigo-500 min-w-80 text-white font-bold py-2 px-4 rounded transition-all duration-500"
                                 onClick={async () => {
                                     setInitialNamePrompt(true)
                                     setInputValue("")
