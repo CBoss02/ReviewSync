@@ -42,19 +42,21 @@ exports.uploadDocument = async (req, res) => {
                     revision: 0,
                 },
                 reviewers: reviewers,
-                project: req.body.project,
+                project: req.params.projectId,
                 url: downloadUrl,
                 contentType: req.file.mimetype,
                 createdAt: new Date(),
             });
 
-            await db.collection('users').doc(req.user.uid).update({
-                documents: FieldValue.arrayUnion(docRef.id),
-            });
-
             // Check if project ID is provided and add document to project
-            if ((req.params.projectId !== undefined) && (req.params.projectID !== null)) {
+            if ((req.params.projectId !== undefined) && (req.params.projectId !== null)) {
                 await db.collection('companies').doc(companyId).collection('projects').doc(req.params.projectId).update({
+                    documents: FieldValue.arrayUnion(docRef.id),
+                });
+            }
+            else
+            {
+                await db.collection('users').doc(req.user.uid).update({
                     documents: FieldValue.arrayUnion(docRef.id),
                 });
             }
