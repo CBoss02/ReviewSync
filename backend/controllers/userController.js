@@ -1,5 +1,14 @@
 const {db} = require("../config/firebase-config");
-const sendEmail = require('./emailController'); // Import sendEmail from mailer.js
+const nodemailer = require('nodemailer');
+// Configure the transporter for NodeMailer
+const transporter = nodemailer.createTransport({
+    service: 'gmail', // Use Gmail; you can change this as needed
+    auth: {
+        user: 'reviewsyncinc@gmail.com', // Your email
+        pass: 'bwsoptvkfsdgxqtq\n' // Your email password
+    }
+});
+
 
 exports.createUser = async (req, res) => {
     try {
@@ -208,54 +217,49 @@ exports.uploadDocument = async (req, res) => {
     }
 }
 
-/*
 exports.getPermissions = async (req, res) => {
-    const data = req.body;
-    const user = await db.collection("users").doc(data.uid).get();
+    const user = await db.collection("users").doc(req.user.uid).get();
     const userData = user.data();
     const roleID = userData.role;
-    if (roleID === "owner") {
+    if (roleID === null)
+        res.status(200).send({permissions: [false, false, false, false, false, false, false]});
+    else if (roleID === "owner")
         res.status(200).send({permissions: [true, true, true, true, true, true, true]});
-    } else {
-      //  const role = await db.collection("companies").doc(userData.company).collection("roles").doc(roleID).get();
-        const role = {data: () => ({permissions: [true, true, true, true, true, true, true]})};
-        const roleData = role.data();
-        const permissions = roleData.permissions;
-        res.status(200).send({permissions: permissions});
+    else
+    {
+        const role = await db.collection("companies").doc(userData.company).collection("roles").doc(roleID).get();
+        res.status(200).send({permissions: role.data().permissions});
     }
 }
-*/
 
-exports.getPermissions = async (req, res) => {
+exports.notifyReviewers = async (req, res) => {
     try {
-        const userDoc = await db.collection("users").doc(req.user.uid).get();
+        const { userIds, DocumentName } = req.body; // Array of user IDs and the document ID from request body
 
-        if (!userDoc.exists) {
-            return res.status(404).send({ error: "User not found" });
+        // Fetch user emails from their IDs
+        const usersRef = db.collection('users');
+        const promises = userIds.map(userId => usersRef.doc(userId).get());
+        const userDocs = await Promise.all(promises);
+
+        const userEmails = userDocs.map(doc => doc.exists ? doc.data().email : null).filter(email => email != null);
+
+        // Send an email to each user individually
+        for (const email of userEmails) {
+            const mailOptions = {
+                from: 'reviewsyncinc@gmail.com', // sender address
+                to: email, // send to individual user
+                subject: 'Document Addition Notification', // Subject line
+                text: `You have been added as a reviewer to a new document. ${DocumentName}`, // plain text body
+            };
+
+            // Send email
+            await transporter.sendMail(mailOptions);
+            console.log('Email sent to:', email);
         }
 
-        const userData = userDoc.data();
-        const { role, company } = userData;
-        console.log("Role:", role);
-
-        if(role === null) {
-            return res.status(200).send({ permissions: [false, false, false, false, false, false, false] });
-        }
-
-        if (role === "owner") {
-            return res.status(200).send({ permissions: [true, true, true, true, true, true, true] });
-        }
-
-        const roleRef = db.collection("companies").doc(company).collection("roles").doc(role);
-        const roleDoc = await roleRef.get();
-        if (!roleDoc.exists) {
-            return res.status(404).send({ error: "Role not found" });
-        }
-        const roleData = roleDoc.data();
-        return res.status(200).send({ permissions: roleData.permissions });
+        res.status(200).send({ message: 'Emails sent successfully' });
     } catch (error) {
-        console.error("Error fetching permissions:", error);
-        return res.status(500).send({ error: "Internal Server Error" });
+        console.error('Error notifying users:', error);
+        res.status(500).send(error.message);
     }
 };
-

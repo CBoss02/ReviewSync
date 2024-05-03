@@ -2,7 +2,7 @@ import React, {Fragment, useState, useEffect} from "react";
 import {ArrowRightIcon} from "@heroicons/react/solid";
 import {useAuth} from "../contexts/AuthContext";
 import {Box, Divider} from "@mui/material";
-import {Listbox, Transition, Dialog} from '@headlessui/react';
+import {Listbox, Transition} from '@headlessui/react';
 import {CheckIcon, ChevronDoubleDownIcon} from '@heroicons/react/solid';
 import DocumentUpload from "../components/document/DocumentUpload";
 import api from "../config/axiosConfig";
@@ -25,12 +25,6 @@ export default function Dashboard() {
     const [owner, setOwner] = useState(false); //keeps track if user is owner of project currently being examined
     const [popupIsOpen, setPopupIsOpen] = useState(false); //for document upload
     const [file, setFile] = useState(null); //for document upload
-    const [eUpdated, setEUpdated] = useState(false); //Indicates if employees in company have changed
-    const [rolesUpdated, setRolesUpdated] = useState(false); //Indicates if company roles have changed
-    const [cUpdated, setCUpdated] = useState(false); //Indicates if a user has been removed from a company
-    const [dUpdated, setDUpdated] = useState(false); //Indicates if a user has been added to/removed from a document
-    const [pUpdated, setPUpdated] = useState(false); //Indicates if a user has been added to/removed from a project
-    const [roleUpdated, setRoleUpdated] = useState(false); //Indicates if a user's role has changed
     const navigate = useNavigate();
 
     useIdleTimeout(); //starts a timer that will log the user out after 10 minutes of inactivity
@@ -39,171 +33,6 @@ export default function Dashboard() {
     const uid = auth.currentUser.uid;
 
     const { logout } = useAuth(); //called when calling the API tells us that a user's login token has expired
-
-    const fetchEUpdatedFlag = async () => {
-        try {
-            await api.post("/api/companies/getEUpdatedFlag", {
-                uid: uid
-            }).then((response) => {
-                if(response.data.eUpdated)
-                {
-                    fetchEmployees()
-                    resetEUpdatedFlag()
-                }
-            });
-        } catch (error) {
-            console.error('Failed to fetch eUpdated flag:', error);
-        }
-    }
-
-    const resetEUpdatedFlag = async () => {
-        try {
-            await api.put("/api/companies/resetEUpdatedFlag", {
-                uid: uid
-            })
-        } catch (error) {
-            console.error('Failed to reset eUpdated flag:', error);
-        }
-    }
-
-    const fetchRolesUpdatedFlag = async () => {
-        try {
-            await api.post("/api/companies/getRolesUpdatedFlag", {
-                uid: uid
-            }).then((response) => {
-                if(response.data.rolesUpdated)
-                {
-                    fetchPermissions()
-                    resetRolesUpdatedFlag()
-                }
-            });
-        } catch (error) {
-            console.error('Failed to fetch rolesUpdated flag:', error);
-        }
-    }
-
-    const resetRolesUpdatedFlag = async () => {
-        try {
-            await api.put("/api/companies/resetRolesUpdatedFlag", {
-                uid: uid
-            })
-        } catch (error) {
-            console.error('Failed to reset rolesUpdated flag:', error);
-        }
-    }
-
-    const fetchCUpdatedFlag = async () => {
-        try {
-            await api.post("/api/users/getCUpdatedFlag", {
-                uid: uid
-            }).then((response) => {
-                if(response.data.cUpdated)
-                {
-                    //redirect
-                    resetCUpdatedFlag()
-                }
-            });
-        } catch (error) {
-            console.error('Failed to fetch cUpdated flag:', error);
-        }
-    }
-
-    const resetCUpdatedFlag = async () => {
-        try {
-            await api.put("/api/users/resetCUpdatedFlag", {
-                uid: uid
-            })
-        } catch (error) {
-            console.error('Failed to reset cUpdated flag:', error);
-        }
-    }
-
-    const fetchRoleUpdatedFlag = async () => {
-        try {
-            await api.post("/api/users/getRoleUpdatedFlag", {
-                uid: uid
-            }).then((response) => {
-                if(response.data.roleUpdated)
-                {
-                    fetchPermissions()
-                    resetRoleUpdatedFlag()
-                }
-            });
-        } catch (error) {
-            console.error('Failed to fetch roleUpdated flag:', error);
-        }
-    }
-
-    const resetRoleUpdatedFlag = async () => {
-        try {
-            await api.put("/api/users/resetRoleUpdatedFlag", {
-                uid: uid
-            })
-        } catch (error) {
-            console.error('Failed to reset rolesUpdated flag:', error);
-        }
-    }
-
-    const fetchDUpdatedFlag = async () => {
-        try {
-            await api.post("/api/users/getDUpdatedFlag", {
-                uid: uid
-            }).then((response) => {
-                if(response.data.dUpdated)
-                {
-                    //refetch documents
-                    resetDUpdatedFlag()
-                }
-            });
-        } catch (error) {
-            console.error('Failed to fetch dUpdated flag:', error);
-        }
-    }
-
-    const resetDUpdatedFlag = async () => {
-        try {
-            await api.put("/api/users/resetDUpdatedFlag", {
-                uid: uid
-            })
-        } catch (error) {
-            console.error('Failed to reset dUpdated flag:', error);
-        }
-    }
-
-    const fetchPUpdatedFlag = async () => {
-        try {
-            await api.post("/api/users/getPUpdatedFlag", {
-                uid: uid
-            }).then((response) => {
-                if(response.data.pUpdated)
-                {
-                    fetchProjects()
-                    resetPUpdatedFlag()
-                }
-            });
-        } catch (error) {
-            console.error('Failed to fetch pUpdated flag:', error);
-        }
-    }
-
-    const resetPUpdatedFlag = async () => {
-        try {
-            await api.put("/api/users/resetPUpdatedFlag", {
-                uid: uid
-            })
-        } catch (error) {
-            console.error('Failed to fetch pUpdated flag:', error);
-        }
-    }
-
-    const fetchFlags = async () => {
-        fetchEUpdatedFlag()
-        fetchRolesUpdatedFlag()
-        fetchCUpdatedFlag()
-        fetchRoleUpdatedFlag()
-        fetchDUpdatedFlag()
-        fetchPUpdatedFlag()
-    }
 
     //Fetches the projects this user has access to
     const fetchProjects = async () => {
@@ -299,7 +128,6 @@ export default function Dashboard() {
             }).then(() => {
                 handleLocalNewProject(inputValue, uid)
                 setInitialNamePrompt(false)
-                setPUpdated(true) //prob will get rid
                 setHome(true)
                 setOwner(false)
                 setProjectID(null)
@@ -327,9 +155,7 @@ export default function Dashboard() {
             await api.put("/api/projects/updateName", {
                 name: inputValue,
                 projectID: projectID
-            }).then(() => {
-                setPUpdated(true)
-            })
+            });
         } catch (error) {
             console.error('Failed to add project:', error);
             if(error.response.data === 'Invalid token')
@@ -402,15 +228,6 @@ export default function Dashboard() {
         fetchHomeDocuments();
     }, []);
 
-    /* Minimize calls to DB when testing to avoid maxing out firebase quota
-    useEffect(() => {
-        const interval = setInterval(() => {
-            //fetchFlags()
-        }, 5000); //check every 5 seconds
-        return () => clearInterval(interval);
-    }, []);
-    */
-
     //When the project ID changes (when the user clicks on a project), get the documents in this project, and if the user is the owner, get the employees on this project
     useEffect(() => {
         if(!home)
@@ -443,11 +260,6 @@ export default function Dashboard() {
         }));//end map
     }//end function
 
-    //When a file is selected by the user
-    const handleFileChange = event => {
-        setFile(event.target.files[0]);
-    };
-
     //Displays the projects as a list of buttons
     const renderProjectNames = () => {
         return projects.map((data) => (
@@ -472,7 +284,6 @@ export default function Dashboard() {
         )
     }
 
-
     const handleDocumentRedirect = (documentId) => {
         navigate(`/document/${documentId}`);
     }
@@ -493,47 +304,11 @@ export default function Dashboard() {
         return projectDocuments.map((document) => (
             <button
                 className="bg-blue-700 hover:bg-blue-500 min-w-80 text-white font-bold py-2 px-4 rounded transition-all duration-500"
-                onClick={() => console.log("ok")}
+                onClick={() => handleDocumentRedirect(document.id)}
             >
                 <p>{document.name}</p>
             </button>
         ))
-    }
-
-    //We're probably going to switch to Megh's component for this but I'll leave it here just in case
-    const renderPopup = () => {
-        return (
-            <>
-                <Dialog as="div" className="relative z-10" open={popupIsOpen} onClose={() => setPopupIsOpen(false)}>
-                    <div className="fixed inset-0 overflow-y-auto">
-                        <div className="flex min-h-full items-center justify-center p-4 text-center">
-                            <Dialog.Panel
-                                className="w-full max-w-md transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all">
-                                <Dialog.Title
-                                    as="h3"
-                                    className="text-lg font-medium leading-6 text-black-900"
-                                    style={{marginBottom: "15px"}}
-                                >
-                                    Upload a new document
-                                </Dialog.Title>
-                                <div>
-                                    <input type="file" onChange={handleFileChange}/>
-                                </div>
-                                <div className="mt-4">
-                                    <button
-                                        type="button"
-                                        className="inline-flex justify-center rounded-md border border-transparent bg-green-100 px-4 py-2 text-sm font-medium text-black-900 hover:bg-blue-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
-                                        onClick={handleUpload}
-                                    >
-                                        Upload
-                                    </button>
-                                </div>
-                            </Dialog.Panel>
-                        </div>
-                    </div>
-                </Dialog>
-            </>
-        )
     }
 
     //Displays a prompt to name a new project, and calls the function to add the project to the database when they submit it
@@ -647,7 +422,6 @@ export default function Dashboard() {
                     <button className="flex z-10 justify-end h-8 w-auto mt-0.5 -ml-9 "
                             onClick={async () => {
                                 await updateName()
-                                setPUpdated(true);
                                 handleLocalRename(inputValue);
                                 //Change the local projects array to reflect the changes
                             }}
@@ -803,7 +577,7 @@ export default function Dashboard() {
                         {(home && !initialNamePrompt) && renderHomeDocumentNames()}
                         {(!home && !initialNamePrompt) && renderProjectDocumentNames()}
                         {(permissions[6] && !initialNamePrompt) && (
-                            <DocumentUpload projectId={projectID}/>
+                            <DocumentUpload projectId={projectID} canSelect={permissions[4]}/>
                         )}
                     </Box>
                 </div>

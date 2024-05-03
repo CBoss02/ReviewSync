@@ -69,7 +69,7 @@ function CommentCard({comment, documentId, document, isReplyActive, setReplyActi
                         </span>
 
                         {
-                            (auth.currentUser.uid === comment.owner.uid || auth.currentUser.uid === document.owner || permissions[3] === true) &&
+                            (auth.currentUser.uid === comment.owner.uid || auth.currentUser.uid === document.owner || permissions[2]) &&
                             <Menu as="div" className="relative inline-block text-left">
                                 <div>
                                     <Menu.Button
@@ -93,7 +93,7 @@ function CommentCard({comment, documentId, document, isReplyActive, setReplyActi
                                     <Menu.Items
                                         className="absolute right-0 w-48 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
                                         <div className="py-1">
-                                            {permissions[3] === true &&
+                                            {permissions[2] &&
                                                 <Menu.Item>
                                                     {({active}) => (
                                                         <button
@@ -126,7 +126,7 @@ function CommentCard({comment, documentId, document, isReplyActive, setReplyActi
                     <p className="text-sm text-justify">{comment.text}</p>
                 </div>
                 <div className="flex flex-row items-center justify-between w-full py-1 px-3">
-                    {permissions[4] === true &&
+                    {permissions[3] &&
                     <button
                         className="text-xs font-semibold text-blue-700 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
                         onClick={setReplyActive}>
@@ -149,7 +149,7 @@ function CommentCard({comment, documentId, document, isReplyActive, setReplyActi
                     }
                 </div>
             </div>
-            {isReplyActive && <CommentInput documentId={documentId} commentId={comment.id} socket={socket}/>}
+            {isReplyActive && <CommentInput documentId={documentId} commentId={comment.id}/>}
             {viewReplies && comment.replies.map(reply => (
                 <>
                     <div className="flex flex-col items-center p-2 rounded-b-lg bg-gray-300 dark:bg-gray-700 mr-2 ml-4">
