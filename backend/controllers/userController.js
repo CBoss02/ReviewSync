@@ -209,8 +209,7 @@ exports.uploadDocument = async (req, res) => {
 }
 
 exports.getPermissions = async (req, res) => {
-    const data = req.body;
-    const user = await db.collection("users").doc(data.uid).get();
+    const user = await db.collection("users").doc(req.user.uid).get();
     const userData = user.data();
     const roleID = userData.role;
     if (roleID === null)

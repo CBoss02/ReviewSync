@@ -5,7 +5,7 @@ import {ChatIcon, DotsHorizontalIcon} from "@heroicons/react/solid";
 import CommentCard from "./CommentCard";
 import CommentInput from "./CommentInput";
 
-const CommentSection = ({documentId, document}) => {
+const CommentSection = ({documentId, document, permissions}) => {
     const [newComment, setNewComment] = useState('');
     const [comments, setComments] = useState([]);
     const [activeReplyId, setActiveReplyId] = useState(null);
@@ -53,7 +53,9 @@ const CommentSection = ({documentId, document}) => {
 
     return (
         <div className="w-1/3 p-2 flex flex-col bg-gray-100 dark:bg-gray-800">
+            {permissions[1] && (
             <CommentInput documentId={documentId}/>
+            )}
             <div className="flex flex-grow flex-col gap-2 overflow-y-scroll" style={{maxHeight: 'calc(100vh - 200px)'}}>
                 {comments.map(comment => (
                     <>
@@ -65,6 +67,7 @@ const CommentSection = ({documentId, document}) => {
                                 isReplyActive={comment.id === activeReplyId}
                                 setReplyActive={() => handleActiveReplyId(comment.id)}
                                 document={document}
+                                permissions={permissions}
                             />
                         }
                     </>

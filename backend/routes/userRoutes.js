@@ -13,7 +13,7 @@ router.get('/getUser', authMiddleware, getUser);
 router.get('/getName', authMiddleware, getName);
 router.put("/updateFName", authMiddleware, updateFName);
 router.put("/updateLName", authMiddleware, updateLName);
-router.post("/getPermissions", getPermissions);
+router.get("/getPermissions", authMiddleware, getPermissions);
 router.post("/getCUpdatedFlag", getCUpdatedFlag);
 router.put("/resetCUpdatedFlag", resetCUpdatedFlag);
 router.post("/getRoleUpdatedFlag", getRoleUpdatedFlag);

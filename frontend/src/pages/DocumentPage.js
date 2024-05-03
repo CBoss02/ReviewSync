@@ -26,6 +26,7 @@ function classNames(...classes) {
 const DocumentPage = () => {
     const {documentId} = useParams();
     const [document, setDocument] = useState({});
+    const [permissions, setPermissions] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [showUpload, setShowUpload] = useState(false);
     const [file, setFile] = useState(null);
@@ -69,6 +70,19 @@ const DocumentPage = () => {
     }
 
     const auth = useAuth();
+
+    // Fetches user permissions
+    useEffect(() => {
+        const fetchPermissions = async () => {
+            try {
+                const response = await api.get("/api/users/getPermissions");
+                setPermissions(response.data.permissions);
+            } catch (error) {
+                console.log(error)
+            }
+        }
+        fetchPermissions();
+    }, []);
 
     const fetchDocument = async () => {
         try {
@@ -307,8 +321,8 @@ const DocumentPage = () => {
                 className="flex items-center justify-between text-gray-700 dark:text-gray-100 w-full my-2 py-2 border-b-2 border-b-gray-400 gap-1">
                 <h1 className="text-xl font-semibold">{document.name || "Document Viewer"}</h1>
                 <h1 className="flex items-center justify-right gap-5">
-                    {renderEmployeeList()}
-                    {auth.currentUser.uid === document.owner &&
+                    {permissions[4] && renderEmployeeList()}
+                    {(permissions[0] || permissions[2] || permissions[5]) && (
                     <Menu as="div" className="relative inline-block text-left">
                         <div>
                             <Menu.Button
@@ -332,6 +346,7 @@ const DocumentPage = () => {
                             <Menu.Items
                                 className="absolute right-0 z-10 w-56 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
                                 <div className="py-1">
+                                    {permissions[5] && (
                                     <Menu.Item>
                                         {({active}) => (
                                             <button
@@ -341,6 +356,8 @@ const DocumentPage = () => {
                                             </button>
                                         )}
                                     </Menu.Item>
+                                    )}
+                                    {permissions[2] && (
                                     <Menu.Item>
                                         {({active}) => (
                                             <button
@@ -350,6 +367,8 @@ const DocumentPage = () => {
                                             </button>
                                         )}
                                     </Menu.Item>
+                                    )}
+                                    {permissions[0] && (
                                     <form method="POST" action="#">
                                         <Menu.Item>
                                             {({active}) => (
@@ -366,16 +385,17 @@ const DocumentPage = () => {
                                             )}
                                         </Menu.Item>
                                     </form>
+                                    )}
                                 </div>
                             </Menu.Items>
                         </Transition>
                     </Menu>
-                }
+                    )}
                 </h1>
             </header>
             <div className="flex w-full justify-center gap-2 h-[calc(100vh-11rem)]">
                 <DocumentFrame document={document}/>
-                <CommentSection documentId={documentId} document={document}/>
+                <CommentSection documentId={documentId} document={document} permissions={permissions}/>
             </div>
         </div>
     );
