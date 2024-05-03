@@ -3,7 +3,7 @@ const authMiddleware = require("../middleware/authMiddleware");
 const {getUser, createUser, getName, updateFName,
     updateLName, getPermissions, getCUpdatedFlag,
     resetCUpdatedFlag, getRoleUpdatedFlag, resetRoleUpdatedFlag,
-    getDUpdatedFlag, resetDUpdatedFlag, getPUpdatedFlag, resetPUpdatedFlag
+    getDUpdatedFlag, resetDUpdatedFlag, getPUpdatedFlag, resetPUpdatedFlag, notifyReviewers
 } = require("../controllers/userController");
 
 const router = express.Router();
@@ -21,6 +21,7 @@ router.put("/resetRoleUpdatedFlag", resetRoleUpdatedFlag);
 router.post("/getDUpdatedFlag", getDUpdatedFlag);
 router.put("/resetDUpdatedFlag", resetDUpdatedFlag);
 router.post("/getPUpdatedFlag", getPUpdatedFlag);
+router.post("/notifyReviewers", notifyReviewers);
 router.put("/resetPUpdatedFlag", resetPUpdatedFlag);
 
 router.get('/test', (req, res) => {
