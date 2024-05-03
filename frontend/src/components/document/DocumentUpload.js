@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import api from "../../config/axiosConfig";
 import { UploadIcon, XIcon } from "@heroicons/react/solid";
 
-function DocumentUpload({ projectId }) {
+function DocumentUpload({ projectId, canSelect }) {
     const [file, setFile] = useState(null);
     const [showUpload, setShowUpload] = useState(false);
     const [dragging, setDragging] = useState(false);
@@ -162,7 +162,8 @@ function DocumentUpload({ projectId }) {
                                                 File:</h2>
                                             <p className="text-md">{file.name}</p>
                                         </div>
-                                        <h2 className="text-lg font-semibold mt-4">Select Reviewers</h2>
+                                        {canSelect && (<h2 className="text-lg font-semibold mt-4">Select Reviewers</h2>)}
+                                        {canSelect && (
                                         <input
                                             type="text"
                                             placeholder="Search employees..."
@@ -170,8 +171,9 @@ function DocumentUpload({ projectId }) {
                                             onChange={handleSearchChange}
                                             onFocus={() => setDropdownOpen(true)}
                                         />
+                                        )}
                                     </>
-                                    {dropdownOpen && (
+                                    {dropdownOpen && canSelect && (
                                         <div
                                             className="w-full border border-gray-300 p-2 rounded-b max-h-60 overflow-auto">
                                             {filteredEmployees.map(employee => (
