@@ -4,10 +4,11 @@ import { useNavigate, useParams } from 'react-router-dom';
 import api from '../config/axiosConfig'; // Axios configuration path
 import DocumentFrame from '../components/document/DocumentFrame'; // Path to DocumentFrame component
 import CommentSection from '../components/comment/CommentSection'; // Path to CommentSection component
-import { DotsHorizontalIcon, UploadIcon, XIcon } from '@heroicons/react/solid';
-import { Menu, Transition } from '@headlessui/react';
+import {CheckIcon, ChevronDoubleDownIcon, DotsHorizontalIcon, UploadIcon, XIcon} from '@heroicons/react/solid';
+import {Listbox, Menu, Transition} from '@headlessui/react';
 import { Fragment } from 'react';
 import io from 'socket.io-client';
+import {useAuth} from "../contexts/AuthContext";
 
 // Server endpoint for socket connection
 const ENDPOINT = 'http://localhost:3001';
@@ -33,6 +34,8 @@ const DocumentPage = () => {
     const [selectedPeople, setSelectedPeople] = useState([]);
     const [error, setError] = useState('');
     const [filteredEmployees, setFilteredEmployees] = useState([]);
+
+    const { logout } = useAuth();
 
     // Fetches comments for the document
     const fetchComments = async () => {
@@ -198,15 +201,10 @@ const DocumentPage = () => {
 
     useEffect(() => {
         fetchEmployees().then(() => {
-            fetchEmployeesOnDocument().then(() => {
-                fetchDocument()
-            })
+            fetchEmployeesOnDocument();
         });
     }, []);
 
-    const handleEditReviewers = async () => {
-        console.log('Editing reviewers...');
-    }
 
     if (isLoading) {
         return <div>Loading document...</div>;}

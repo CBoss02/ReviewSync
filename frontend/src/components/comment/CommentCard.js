@@ -42,13 +42,6 @@ function CommentCard({comment, documentId, document, isReplyActive, setReplyActi
         }
     }
 
-    const handleDeleteReply = async (commentId, replyId) => {
-        try {
-            await api.delete(`/api/documents/deleteReply/${documentId}/${commentId}/${replyId}`);
-        } catch (error) {
-            console.error('Failed to delete reply:', error);
-        }
-    }
 
     const classNames = (...classes) => {
         return classes.filter(Boolean).join(' ')
@@ -149,7 +142,7 @@ function CommentCard({comment, documentId, document, isReplyActive, setReplyActi
                     }
                 </div>
             </div>
-            {isReplyActive && <CommentInput documentId={documentId} commentId={comment.id}/>}
+            {isReplyActive && <CommentInput documentId={documentId} commentId={comment.id} socket={socket}/>}
             {viewReplies && comment.replies.map(reply => (
                 <>
                     <div className="flex flex-col items-center p-2 rounded-b-lg bg-gray-300 dark:bg-gray-700 mr-2 ml-4">

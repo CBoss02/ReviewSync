@@ -8,7 +8,6 @@ import io from 'socket.io-client';
 
 const CommentSection = ({documentId, document, permissions, comments, socket}) => {
     const [newComment, setNewComment] = useState('');
-    const [comments, setComments] = useState([]);
     const [activeReplyId, setActiveReplyId] = useState(null);
 
     const handleActiveReplyId = (commentId) => {
