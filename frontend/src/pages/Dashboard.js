@@ -318,24 +318,12 @@ export default function Dashboard() {
     const renderHomeDocumentNames = () => {
         return homeDocuments.map((document) => (
             <DocumentCard document={document} handleDocumentRedirect={handleDocumentRedirect}/>
-            /*<button
-                className="bg-indigo-700 hover:bg-indigo-500 min-w-80 text-white font-bold py-2 px-4 rounded transition-all duration-500"
-                onClick={() => handleDocumentRedirect(document.id)}
-            >
-                <p>{document.name}</p>
-            </button>*/
         ))
     }
 
     const renderProjectDocumentNames = () => {
         return projectDocuments.map((document) => (
             <DocumentCard document={document} handleDocumentRedirect={handleDocumentRedirect}/>
-            /*<button
-                className="bg-indigo-700 hover:bg-indigo-500 min-w-80 text-white font-bold py-2 px-4 rounded transition-all duration-500"
-                onClick={() => handleDocumentRedirect(document.id)}
-            >
-                <p>{document.name}</p>
-            </button>*/
         ))
     }
 
@@ -495,7 +483,7 @@ export default function Dashboard() {
                 className="flex-shrink-0 dark:border-gray-700 border-b-2 px-14 py-1 flex justify-between items-center">
                 <h1 className="text-3xl font-bold text-gray-500">Dashboard</h1>
             </header>
-            <div className="flex flex-row items-start m-2 gap-4">
+            <div className="flex flex-row items-start m-2">
                 <div className="flex-col w-1/3 items-center h-[calc(100vh-8rem)] overflow-y-scroll">
                     <div className="flex-col w-full space-y-2 p-3">
                         <button
@@ -557,8 +545,8 @@ export default function Dashboard() {
                         </div>
                     </div>
                     <div
-                        className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5
-                        gap-4 p-2 overflow-y-scroll h-[calc(100vh-12rem)]">
+                        className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4
+                        p-2 overflow-y-scroll ">
                         {(home && !initialNamePrompt) && renderHomeDocumentNames()}
                         {(!home && !initialNamePrompt) && renderProjectDocumentNames()}
                     </div>
