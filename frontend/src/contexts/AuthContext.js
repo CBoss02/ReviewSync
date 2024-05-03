@@ -5,8 +5,6 @@ import {
     signOut,
     sendEmailVerification,
 } from "firebase/auth";
-import {useNavigate} from "react-router-dom";
-
 
 import auth from "../config/firebase-config";
 import api from "../config/axiosConfig";
