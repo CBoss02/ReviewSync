@@ -120,7 +120,10 @@ exports.uploadRevision = async (req, res) => {
             }
         });
 
-        const downloadUrl = await getDownloadURL(file);
+        const downloadUrl = await storageRef.file(filePath).getSignedUrl({
+            action: 'read',
+            expires: '03-09-2491'
+        });
 
         try {
             const document = await db.collection('companies').doc(companyId).collection('documents').doc(req.params.documentId).get();
