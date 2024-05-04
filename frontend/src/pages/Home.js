@@ -105,8 +105,9 @@ export default function Home() {
             //Search for a company with the name and respond accordingly
         }else if(state === 2) {
             //Create a company with the name passed
-            submitCompany(companyName).then(() => {
-                navigate('/edit-roles');
+            submitCompany(companyName).then(async () => {
+                await navigate('/edit-roles')
+                window.location.reload();
             }) // Navigate to /edit-roles
         }//end if
 
