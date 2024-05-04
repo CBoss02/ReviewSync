@@ -268,7 +268,6 @@ exports.updateEmployee = async (req, res) => {
                 documents: FieldValue.arrayUnion(req.params.documentId),
             })
             const employee = await employeeDoc.get();
-            console.log("here")
             const mailOptions = {
                 from: 'reviewsyncinc@gmail.com', // sender address
                 to: employee.data().email, // send to individual user
