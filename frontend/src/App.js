@@ -3,33 +3,76 @@ import Register from "./components/authentication/Register";
 import Login from "./components/authentication/Login";
 import {AuthProvider} from "./contexts/AuthContext";
 import ErrorMessage from "./components/layouts/ErrorMessage";
-import Header from "./components/layouts/Header";
 import WithPrivateRoute from "./utils/WithPrivateRoute";
+import Dashboard from "./pages/Dashboard"
+import VerifyEmail from "./pages/VerifyEmail";
+import Profile from "./pages/account/Profile";
 import Home from "./pages/Home";
 import EditRoles from "./components/company/EditRoles";
 import AddEmployees from "./components/company/AddEmployees";
+import DocumentPage from "./pages/DocumentPage";
+import AppLayout from "./components/layouts/AppLayout";
 
 function App() {
     return (
         <AuthProvider>
             <Router>
-                <Header />
-                <ErrorMessage />
+                <AppLayout>
+                <ErrorMessage/>
                 <Routes>
-                    <Route path="/register" element={<Register />}/>
-                    <Route path="/login" element={<Login />}/>
+                    <Route path="/register" element={<Register/>}/>
+                    <Route path="/login" element={<Login/>}/>
+                    <Route path="/verify-email" element={<VerifyEmail />}/>
+                    <Route path="/" element={
+                        <WithPrivateRoute>
+                            <Home/>
+                        </WithPrivateRoute>
+                    }/>
                     <Route
-                        exact
-                        path="/"
+                        path="/edit-roles"
                         element={
                             <WithPrivateRoute>
-                                <Home />
+                                <EditRoles/>
                             </WithPrivateRoute>
                         }
                     />
-                    <Route path="/edit-roles" element={<EditRoles />}/>
-                    <Route path="/add-employees" element={<AddEmployees />}/>
+                    <Route
+                        path="/add-employees"
+                        element={
+                            <WithPrivateRoute>
+                                <AddEmployees/>
+                            </WithPrivateRoute>
+                        }
+                    />
+
+                    <Route
+                        exact
+                        path="/profile"
+                        element={
+                            <WithPrivateRoute>
+                                <Profile/>
+                            </WithPrivateRoute>
+                        }
+                    />
+                    <Route
+                        exact
+                        path="/dashboard"
+                        element={
+                        <WithPrivateRoute>
+                            <Dashboard/>
+                        </WithPrivateRoute>}
+                    />
+                    <Route
+                        exact
+                        path="/document/:documentId"
+                        element={
+                        <WithPrivateRoute>
+                            <DocumentPage />
+                        </WithPrivateRoute>
+                    }/>
+                    <Route path="*" element={<h1>Not Found</h1>}/>
                 </Routes>
+                </AppLayout>
             </Router>
         </AuthProvider>
     );

@@ -1,47 +1,39 @@
 import React, {useEffect} from "react";
 import { useAuth } from "../../contexts/AuthContext";
 import { useNavigate} from "react-router-dom";
+import {createUserWithEmailAndPassword} from "firebase/auth";
+import auth from "../../config/firebase-config";
+import api from "../../config/axiosConfig";
+
 
 export default function Register() {
-    const navigate = useNavigate();
-    const {currentUser, register, setError} = useAuth();
-    const [loading, setLoading] = React.useState(false);
-
-    useEffect(() => {
-        if (currentUser) {
-            navigate("/");
-        }
-    }, [currentUser, navigate]);
-
-    const [formData, setFormData] = React.useState({
-        first_name: "",
-        last_name: "",
-        email: "",
-        password: "",
-        verify_password: ""
+    const [form, setForm] = React.useState({
+        first_name: '',
+        last_name: '',
+        email: '',
+        password: '',
+        verify_password: '',
     });
 
+    const { register } = useAuth();
+    const navigate = useNavigate();
+    const [loading, setLoading] = React.useState(false);
+    const [error, setError] = React.useState('');
+
     const handleFormChange = (e) => {
-        const {name, value} = e.target;
-        setFormData({
-            ...formData,
-            [name]: value
+        setForm({
+            ...form,
+            [e.target.name]: e.target.value
         });
-        console.log(formData);
     }
 
     const handleFormSubmit = async (e) => {
         e.preventDefault();
-
-        if (formData.password !== formData.verify_password) {
-            return alert("Passwords do not match");
-        }
-
         try {
             setError("");
             setLoading(true);
-            await register(formData.email, formData.password);
-            navigate("/profile");
+            await register(form.email, form.password, form.first_name, form.last_name);
+            navigate("/");
         } catch (error) {
             console.error(error);
             setError("Failed to create an account");
@@ -58,7 +50,7 @@ export default function Register() {
                         src="https://tailwindui.com/img/logos/mark.svg?color=indigo&shade=600"
                         alt="Your Company"
                     />
-                    <h2 className="mt-10 text-center text-2xl font-bold leading-9 tracking-tight text-gray-900">
+                    <h2 className="mt-10 text-center text-2xl font-bold leading-9 tracking-tight  dark:text-white">
                         Register new account
                     </h2>
                 </div>
@@ -66,7 +58,7 @@ export default function Register() {
                 <div className="mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
                     <form className="space-y-6" onChange={handleFormChange} onSubmit={handleFormSubmit}>
                         <div>
-                            <label htmlFor="first_name" className="block text-sm font-medium leading-6 text-gray-900">
+                            <label htmlFor="first_name" className="block text-sm font-medium leading-6 text-gray-900 dark:text-white -mb-1">
                                 First name
                             </label>
                             <div className="mt-2">
@@ -76,12 +68,15 @@ export default function Register() {
                                     type="text"
                                     autoComplete="first_name"
                                     required
-                                    className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                                    className="block w-full rounded-md border-0 py-1.5 px-2 text-gray-900 shadow-sm  ring-inset
+                                    placeholder:text-gray-400  focus:ring-inset sm:text-sm sm:leading-6 ring-1 ring-gray-300
+                                    focus:ring-indigo-600 focus:ring-2 focus:outline-0
+                                    dark:ring-2 dark:ring-indigo-600 dark:focus:ring-indigo-300"
                                 />
                             </div>
                         </div>
                         <div>
-                            <label htmlFor="last_name" className="block text-sm font-medium leading-6 text-gray-900">
+                            <label htmlFor="last_name" className="block text-sm font-medium leading-6 text-gray-900 dark:text-white -mb-1">
                                 Last name
                             </label>
                             <div className="mt-2">
@@ -91,12 +86,15 @@ export default function Register() {
                                     type="text"
                                     autoComplete="last_name"
                                     required
-                                    className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                                    className="block w-full rounded-md border-0 py-1.5 px-2 text-gray-900 shadow-sm  ring-inset
+                                    placeholder:text-gray-400  focus:ring-inset sm:text-sm sm:leading-6 ring-1 ring-gray-300
+                                    focus:ring-indigo-600 focus:ring-2 focus:outline-0
+                                    dark:ring-2 dark:ring-indigo-600 dark:focus:ring-indigo-300"
                                 />
                             </div>
                         </div>
                         <div>
-                            <label htmlFor="email" className="block text-sm font-medium leading-6 text-gray-900">
+                            <label htmlFor="email" className="block text-sm font-medium leading-6 text-gray-900 dark:text-white -mb-1">
                                 Email address
                             </label>
                             <div className="mt-2">
@@ -106,14 +104,17 @@ export default function Register() {
                                     type="email"
                                     autoComplete="email"
                                     required
-                                    className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                                    className="block w-full rounded-md border-0 py-1.5 px-2 text-gray-900 shadow-sm  ring-inset
+                                    placeholder:text-gray-400  focus:ring-inset sm:text-sm sm:leading-6 ring-1 ring-gray-300
+                                    focus:ring-indigo-600 focus:ring-2 focus:outline-0
+                                    dark:ring-2 dark:ring-indigo-600 dark:focus:ring-indigo-300"
                                 />
                             </div>
                         </div>
 
                         <div>
                             <div className="flex items-center justify-between">
-                                <label htmlFor="password" className="block text-sm font-medium leading-6 text-gray-900">
+                                <label htmlFor="password" className="block text-sm font-medium leading-6 text-gray-900 dark:text-white -mb-1">
                                     Password
                                 </label>
                             </div>
@@ -124,14 +125,17 @@ export default function Register() {
                                     type="password"
                                     autoComplete="current-password"
                                     required
-                                    className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                                    className="block w-full rounded-md border-0 py-1.5 px-2 text-gray-900 shadow-sm  ring-inset
+                                    placeholder:text-gray-400  focus:ring-inset sm:text-sm sm:leading-6 ring-1 ring-gray-300
+                                    focus:ring-indigo-600 focus:ring-2 focus:outline-0
+                                    dark:ring-2 dark:ring-indigo-600 dark:focus:ring-indigo-300"
                                 />
                             </div>
                         </div>
 
                         <div>
                             <div className="flex items-center justify-between">
-                                <label htmlFor="verify_password" className="block text-sm font-medium leading-6 text-gray-900">
+                                <label htmlFor="verify_password" className="block text-sm font-medium leading-6 text-gray-900 dark:text-white -mb-1">
                                     Verify password
                                 </label>
                             </div>
@@ -141,7 +145,10 @@ export default function Register() {
                                     name="verify_password"
                                     type="password"
                                     required
-                                    className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                                    className="block w-full rounded-md border-0 py-1.5 px-2 text-gray-900 shadow-sm  ring-inset
+                                    placeholder:text-gray-400  focus:ring-inset sm:text-sm sm:leading-6 ring-1 ring-gray-300
+                                    focus:ring-indigo-600 focus:ring-2 focus:outline-0
+                                    dark:ring-2 dark:ring-indigo-600 dark:focus:ring-indigo-300"
                                 />
                             </div>
                         </div>

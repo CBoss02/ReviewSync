@@ -1,45 +1,55 @@
-import React, {useEffect} from "react";
+import React, {useEffect, useState} from "react";
+//import {useAuth} from "../../contexts/AuthContext";
+import {Navigate, useNavigate} from "react-router-dom";
+import {signInWithEmailAndPassword, sendPasswordResetEmail, getAuth} from "firebase/auth";
 import {useAuth} from "../../contexts/AuthContext";
-import {useNavigate} from "react-router-dom";
 
 export default function Login() {
-    const navigate = useNavigate();
-    const [formData, setFormData] = React.useState({
-        email: "",
-        password: ""
+    const [formData, setFormData] = useState({
+        email: '',
+        password: ''
     });
-    const [loading, setLoading] = React.useState(false);
 
-    const {currentUser, login, setError} = useAuth();
-
-    useEffect(() => {
-        if (currentUser) {
-            navigate("/");
-        }
-    }, [currentUser, navigate]);
+    const auth = getAuth();
+    const { login } = useAuth();
+    const navigate = useNavigate();
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState('');
 
     const handleFormChange = (e) => {
-        const {name, value} = e.target;
         setFormData({
             ...formData,
-            [name]: value
+            [e.target.name]: e.target.value
         });
-    }
+    };
 
     const handleFormSubmit = async (e) => {
         e.preventDefault();
-
         try {
             setError("");
             setLoading(true);
             await login(formData.email, formData.password);
-            navigate("/");
+            navigate('/');
         } catch (error) {
-            console.error(error);
+            console.error("Failed to login:", error);
             setError("Failed to log in");
         }
         setLoading(false);
-    }
+    };
+
+    const handleForgotPassword = async (e) => {
+        e.preventDefault();
+        if(formData.email === "")
+            alert("Please enter an email address so we can send you a password reset email.");
+        else
+        {
+            sendPasswordResetEmail(auth, formData.email).then(() => {
+                alert("If your email matches an existing account, we have sent you a password reset email.");
+            }).catch(error => {
+                alert("Please enter a valid email address.");
+            })
+        }
+    };
 
     return (
         <>
@@ -50,7 +60,7 @@ export default function Login() {
                         src="https://tailwindui.com/img/logos/mark.svg?color=indigo&shade=600"
                         alt="Your Company"
                     />
-                    <h2 className="mt-10 text-center text-2xl font-bold leading-9 tracking-tight text-gray-900">
+                    <h2 className="mt-10 text-center text-2xl font-bold leading-9 tracking-tight text-gray-900 dark:text-white">
                         Sign in to your account
                     </h2>
                 </div>
@@ -58,7 +68,7 @@ export default function Login() {
                 <div className="mt-10 sm:mx-auto sm:w-full sm:max-w-sm">
                     <form className="space-y-6" onChange={handleFormChange} onSubmit={handleFormSubmit}>
                         <div>
-                            <label htmlFor="email" className="block text-sm font-medium leading-6 text-gray-900">
+                            <label htmlFor="email" className="block text-sm font-medium leading-6 text-gray-900 dark:text-white">
                                 Email address
                             </label>
                             <div className="mt-2">
@@ -68,18 +78,21 @@ export default function Login() {
                                     type="email"
                                     autoComplete="email"
                                     required
-                                    className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                                    className="block w-full rounded-md border-0 py-1.5 px-2 text-gray-900 shadow-sm  ring-inset
+                                    placeholder:text-gray-400  focus:ring-inset sm:text-sm sm:leading-6 ring-1 ring-gray-300
+                                    focus:ring-indigo-600 focus:ring-2 focus:outline-0
+                                    dark:ring-2 dark:ring-indigo-600 dark:focus:ring-indigo-300"
                                 />
                             </div>
                         </div>
 
                         <div>
                             <div className="flex items-center justify-between">
-                                <label htmlFor="password" className="block text-sm font-medium leading-6 text-gray-900">
+                                <label htmlFor="password" className="block text-sm font-medium leading-6 text-gray-900 dark:text-white">
                                     Password
                                 </label>
                                 <div className="text-sm">
-                                    <a href="#" className="font-semibold text-indigo-600 hover:text-indigo-500">
+                                    <a href="#" className="font-semibold text-indigo-600 hover:text-indigo-500" onClick={handleForgotPassword}>
                                         Forgot password?
                                     </a>
                                 </div>
@@ -91,7 +104,10 @@ export default function Login() {
                                     type="password"
                                     autoComplete="current-password"
                                     required
-                                    className="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-indigo-600 sm:text-sm sm:leading-6"
+                                    className="block w-full rounded-md border-0 py-1.5 px-2 text-gray-900 shadow-sm  ring-inset
+                                    placeholder:text-gray-400  focus:ring-inset sm:text-sm sm:leading-6 ring-1 ring-gray-300
+                                    focus:ring-indigo-600 focus:ring-2 focus:outline-0
+                                    dark:ring-2 dark:ring-indigo-600 dark:focus:ring-indigo-300"
                                 />
                             </div>
                         </div>
